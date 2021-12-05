@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Old-School-RuneScape-Cache-Tools:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Old_School_RuneScape_Cache_Tools_jar</output-path>
+    <root id="archive" name="Old-School-RuneScape-Cache-Tools.jar">
+      <element id="module-output" name="Old-School-RuneScape-Cache-Tools" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/vorbis-java-core-0.8.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/rs-cache-library-5.2.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
