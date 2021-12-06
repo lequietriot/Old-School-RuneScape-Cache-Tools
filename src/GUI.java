@@ -532,7 +532,7 @@ public class GUI extends JFrame {
                     try {
                         String trimmedName = file.getName().substring(0, file.getName().indexOf(".")).trim();
                         if (trimmedName.contains("-")) {
-                            selectedFile = Integer.parseInt(trimmedName.substring(trimmedName.indexOf("-")).replace("-", "").trim());
+                            selectedFile = Integer.parseInt(trimmedName.substring(trimmedName.indexOf("-")).trim().replace("-", "").trim());
                             trimmedName = trimmedName.substring(0, trimmedName.indexOf("-")).trim();
                         }
                         cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
@@ -558,7 +558,7 @@ public class GUI extends JFrame {
                     try {
                         String trimmedName = file.getName().substring(0, file.getName().indexOf(".")).trim();
                         if (trimmedName.contains("-")) {
-                            selectedFile = Integer.parseInt(trimmedName.substring(trimmedName.indexOf("-")).replace("-", "").trim());
+                            selectedFile = Integer.parseInt(trimmedName.substring(trimmedName.indexOf("-")).trim().replace("-", "").trim());
                             trimmedName = trimmedName.substring(0, trimmedName.indexOf("-")).trim();
                         }
                         cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
