@@ -8,16 +8,11 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -251,7 +246,7 @@ public class GUI extends JFrame {
                 byte[] rendered = devicePcmPlayer.byteArrayOutputStream.toByteArray();
                 AudioInputStream audioInputStream = new AudioInputStream(new ByteArrayInputStream(rendered), devicePcmPlayer.format, rendered.length);
                 try {
-                    File outputFilePath = new File(defaultCachePath + File.separator + "Output");
+                    File outputFilePath = new File(cacheLibrary.getPath() + File.separator + "Output");
                     boolean madeDirectory = outputFilePath.mkdirs();
                     AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(outputFilePath + File.separator + SoundConstants.currentSongName + ".wav"));
                     if (madeDirectory) {
@@ -379,8 +374,26 @@ public class GUI extends JFrame {
 
         JPanel cacheOperationsButtonPanel = new JPanel();
 
-        JButton addFileButton = new JButton("Add");
-        addFileButton.addActionListener(e -> addCacheFile());
+        JButton addFilesButton = new JButton("Add Files");
+        addFilesButton.addActionListener(e -> addCacheFiles());
+
+        JButton replaceFilesButton = new JButton("Replace Files");
+        replaceFilesButton.addActionListener(e -> replaceCacheFiles());
+
+        JButton removeFileButton = new JButton("Remove File");
+        removeFileButton.addActionListener(e -> removeCacheFile());
+
+        JButton setArchiveNameButton = new JButton("Set Archive Name");
+        setArchiveNameButton.addActionListener(e -> setCacheArchiveName());
+
+        JButton exportAllDataButton = new JButton("Export Index data");
+        exportAllDataButton.addActionListener(e -> dumpAllData());
+
+        cacheOperationsButtonPanel.add(addFilesButton);
+        cacheOperationsButtonPanel.add(replaceFilesButton);
+        cacheOperationsButtonPanel.add(removeFileButton);
+        cacheOperationsButtonPanel.add(setArchiveNameButton);
+        cacheOperationsButtonPanel.add(exportAllDataButton);
 
         JTable infoTable = new JTable();
 
@@ -494,11 +507,9 @@ public class GUI extends JFrame {
 
         cacheInfoPanel.add(infoTable);
 
-        cacheOperationsButtonPanel.add(addFileButton);
-
-        cacheInfoSplitPanel.setRightComponent(cacheInfoPanel);
-        cacheInfoSplitPanel.setLeftComponent(cacheOperationsButtonPanel);
-        cacheInfoSplitPanel.setDividerLocation(160);
+        cacheInfoSplitPanel.setRightComponent(cacheOperationsButtonPanel);
+        cacheInfoSplitPanel.setLeftComponent(cacheInfoPanel);
+        cacheInfoSplitPanel.setDividerLocation(240);
         cacheInfoSplitPanel.setEnabled(false);
 
         splitCacheViewPane.setLeftComponent(cacheScrollPane);
@@ -510,11 +521,110 @@ public class GUI extends JFrame {
         contentPanel.revalidate();
     }
 
-    private void addCacheFile() {
+    private void addCacheFiles() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setMultiSelectionEnabled(true);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File[] files = fileChooser.getSelectedFiles();
+            for (File file : files) {
+                if (cacheLibrary.getIndex(selectedIndex) != null) {
+                    try {
+                        String trimmedName = file.getName().substring(0, file.getName().indexOf(".")).trim();
+                        if (trimmedName.contains("-")) {
+                            selectedFile = Integer.parseInt(trimmedName.substring(trimmedName.indexOf("-")).replace("-", "").trim());
+                            trimmedName = trimmedName.substring(0, trimmedName.indexOf("-")).trim();
+                        }
+                        cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
+                        if (cacheLibrary.getIndex(selectedIndex).update()) {
+                            loadCache(new File(cacheLibrary.getPath()));
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
 
+    private void replaceCacheFiles() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setMultiSelectionEnabled(true);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File[] files = fileChooser.getSelectedFiles();
+            for (File file : files) {
+                if (cacheLibrary.getIndex(selectedIndex) != null) {
+                    try {
+                        String trimmedName = file.getName().substring(0, file.getName().indexOf(".")).trim();
+                        if (trimmedName.contains("-")) {
+                            selectedFile = Integer.parseInt(trimmedName.substring(trimmedName.indexOf("-")).replace("-", "").trim());
+                            trimmedName = trimmedName.substring(0, trimmedName.indexOf("-")).trim();
+                        }
+                        cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
+                        if (cacheLibrary.getIndex(selectedIndex).update()) {
+                            loadCache(new File(cacheLibrary.getPath()));
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+    private void setCacheArchiveName() {
+        String fileNameToSet = JOptionPane.showInputDialog("Set Archive Name", "");
+        if (fileNameToSet != null) {
+            if (cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive) != null) {
+                Archive renamedArchive = cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive);
+                renamedArchive.setName(fileNameToSet.toLowerCase().hashCode());
+                cacheLibrary.getIndex(selectedIndex).addArchive(renamedArchive, true);
+                if (cacheLibrary.getIndex(selectedIndex).update()) {
+                    loadCache(new File(cacheLibrary.getPath()));
+                }
+            }
+        }
+    }
+
+    private void removeCacheFile() {
+        cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).removeFile(selectedFile);
+        if (cacheLibrary.getIndex(selectedIndex).update()) {
+            loadCache(new File(cacheLibrary.getPath()));
+            JOptionPane.showMessageDialog(this, "Cache File " + selectedFile + " has been removed.");
+        }
+    }
+
+    private void dumpAllData() {
+        JFileChooser folderChooser = new JFileChooser();
+        folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if (folderChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selected = folderChooser.getSelectedFile();
+            File indexDirectory = new File(selected + File.separator + "Index " + selectedIndex);
+            if (indexDirectory.mkdirs()) {
+                JOptionPane.showMessageDialog(this, "Created an Index " + selectedIndex + " folder.");
+            }
+            for (Archive archive : cacheLibrary.getIndex(selectedIndex).getArchives()) {
+                try {
+                    File archiveData = new File(indexDirectory + File.separator + archive.getId() + ".dat");
+                    FileOutputStream archiveOutputStream = new FileOutputStream(archiveData);
+                    for (org.displee.cache.index.archive.file.File archiveFileData : cacheLibrary.getIndex(selectedIndex).getArchive(archive.getId()).getFiles()) {
+                        if (archiveFileData.getId() != 0) {
+                            File fileData = new File(indexDirectory + File.separator + archive.getId() + "-" + archiveFileData.getId() + ".dat");
+                            FileOutputStream fileOutputStream = new FileOutputStream(fileData);
+                            fileOutputStream.write(archiveFileData.getData());
+                            fileOutputStream.flush();
+                            fileOutputStream.close();
+                        }
+                        else {
+                            archiveOutputStream.write(archiveFileData.getData());
+                            archiveOutputStream.flush();
+                            archiveOutputStream.close();
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
