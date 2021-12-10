@@ -1,3 +1,8 @@
+package application;
+
+import decoders.MidiDecoder;
+import decoders.VorbisDecoder;
+import encoders.MidiEncoder;
 import org.displee.CacheLibrary;
 import org.displee.cache.index.Index;
 import org.displee.cache.index.archive.Archive;
@@ -8,18 +13,22 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class GUI extends JFrame {
 
-    static CacheLibrary cacheLibrary;
+    public CacheLibrary cacheLibrary;
 
     static DevicePcmPlayer devicePcmPlayer;
 
@@ -37,9 +46,9 @@ public class GUI extends JFrame {
 
     DefaultMutableTreeNode fileNode;
 
-    int selectedIndex;
-    int selectedArchive;
-    int selectedFile;
+    public int selectedIndex;
+    public int selectedArchive;
+    public int selectedFile;
 
     private static final File defaultCachePath;
 
@@ -49,11 +58,17 @@ public class GUI extends JFrame {
 
     GUI() {
         super("Old School RuneScape Cache Tools");
-        setSize(600, 480);
+        setSize(620, 480);
         setLocationRelativeTo(null);
         setResizable(false);
         setIconImage(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            SwingUtilities.updateComponentTreeUI(this);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
 
         JMenuBar jMenuBar = new JMenuBar();
         setJMenuBar(jMenuBar);
@@ -65,8 +80,30 @@ public class GUI extends JFrame {
         loadCache.addActionListener(e -> chooseCacheFolder());
         fileMenu.add(loadCache);
 
+        JMenu encoderMenu = new JMenu("Data Encoders");
+        jMenuBar.add(encoderMenu);
+
+        JMenuItem midiEncoder = new JMenuItem("MIDI Encoder");
+        midiEncoder.addActionListener(e -> new MidiEncoder(this));
+        encoderMenu.add(midiEncoder);
+
+        JMenu decoderMenu = new JMenu("Data Decoders");
+        jMenuBar.add(decoderMenu);
+
+        JMenuItem midiDecoder = new JMenuItem("MIDI Decoder");
+        midiDecoder.addActionListener(e -> new MidiDecoder(this));
+        decoderMenu.add(midiDecoder);
+
+        JMenuItem vorbisDecoder = new JMenuItem("Vorbis Decoder");
+        vorbisDecoder.addActionListener(e -> new VorbisDecoder(this));
+        decoderMenu.add(vorbisDecoder);
+
         JMenu toolsMenu = new JMenu("Tools");
         jMenuBar.add(toolsMenu);
+
+        JMenuItem nameHashGuess = new JMenuItem("Name Hash Guesser");
+        nameHashGuess.addActionListener(e -> bruteForceHash());
+        //toolsMenu.add(nameHashGuess);
 
         JMenuItem musicPlayer = new JMenuItem("Music Player");
         musicPlayer.addActionListener(e -> chooseMusicTrack());
@@ -74,7 +111,7 @@ public class GUI extends JFrame {
 
         JMenuItem enumDumper = new JMenuItem("Enum Printer");
         enumDumper.addActionListener(e -> printEnums());
-        //toolsMenu.add(enumDumper);
+        toolsMenu.add(enumDumper);
 
         JLabel loadCacheLabel = new JLabel("Please load your cache from the File menu to begin!");
         loadCacheLabel.setVerticalAlignment(SwingConstants.CENTER);
@@ -127,7 +164,7 @@ public class GUI extends JFrame {
 
         JLabel musicIndexLabel = new JLabel("Cache Index Selection");
 
-        String[] musicIndices = new String[]{"Music Tracks (6)", "Fanfares/Jingles (11)"};
+        String[] musicIndices = new String[]{"Music Tracks (6)", "Music Jingles (11)"};
         JComboBox<String> musicIndexComboBox = new JComboBox<>(musicIndices);
         musicIndexComboBox.addActionListener(e -> changeIndex(musicIndexComboBox));
 
@@ -155,7 +192,7 @@ public class GUI extends JFrame {
 
         musicPlayerMasterPanel.setLeftComponent(settingsPanel);
         musicPlayerMasterPanel.setRightComponent(musicPlayerPanel);
-        musicPlayerMasterPanel.setDividerLocation(200);
+        musicPlayerMasterPanel.setDividerLocation(160);
         musicPlayerMasterPanel.setEnabled(false);
 
         setContentPane(musicPlayerMasterPanel);
@@ -269,7 +306,7 @@ public class GUI extends JFrame {
         revalidate();
     }
 
-    private static void initSoundEngine() throws LineUnavailableException {
+    private void initSoundEngine() throws LineUnavailableException {
         new Thread(() -> {
             try {
                 if (midiPcmStream == null) {
@@ -380,17 +417,21 @@ public class GUI extends JFrame {
         JButton replaceFilesButton = new JButton("Replace Files");
         replaceFilesButton.addActionListener(e -> replaceCacheFiles());
 
+        JButton exportFileButton = new JButton("Export File");
+        exportFileButton.addActionListener(e -> exportFileData());
+
         JButton removeFileButton = new JButton("Remove File");
         removeFileButton.addActionListener(e -> removeCacheFile());
 
-        JButton setArchiveNameButton = new JButton("Set Archive Name");
+        JButton setArchiveNameButton = new JButton("Set Archive name");
         setArchiveNameButton.addActionListener(e -> setCacheArchiveName());
 
-        JButton exportAllDataButton = new JButton("Export Index data");
+        JButton exportAllDataButton = new JButton("Export all Index data");
         exportAllDataButton.addActionListener(e -> dumpAllData());
 
         cacheOperationsButtonPanel.add(addFilesButton);
         cacheOperationsButtonPanel.add(replaceFilesButton);
+        cacheOperationsButtonPanel.add(exportFileButton);
         cacheOperationsButtonPanel.add(removeFileButton);
         cacheOperationsButtonPanel.add(setArchiveNameButton);
         cacheOperationsButtonPanel.add(exportAllDataButton);
@@ -404,6 +445,10 @@ public class GUI extends JFrame {
                 selectedIndex = Integer.parseInt(cacheTree.getLastSelectedPathComponent().toString().replace("Index ", "").trim());
 
                 Object[][] indexFields = new Object[][] {
+
+                    new Object[] {
+                        "Cache Index Name", CacheConstantsOSRS.values()[selectedIndex].getIndexDescription()
+                    },
 
                     new Object[] {
                         "Cache Index ID", selectedIndex
@@ -509,12 +554,12 @@ public class GUI extends JFrame {
 
         cacheInfoSplitPanel.setRightComponent(cacheOperationsButtonPanel);
         cacheInfoSplitPanel.setLeftComponent(cacheInfoPanel);
-        cacheInfoSplitPanel.setDividerLocation(240);
+        cacheInfoSplitPanel.setDividerLocation(260);
         cacheInfoSplitPanel.setEnabled(false);
 
         splitCacheViewPane.setLeftComponent(cacheScrollPane);
         splitCacheViewPane.setRightComponent(cacheInfoSplitPanel);
-        splitCacheViewPane.setDividerLocation(160);
+        splitCacheViewPane.setDividerLocation(140);
         splitCacheViewPane.setEnabled(false);
 
         contentPanel.add(splitCacheViewPane, BorderLayout.CENTER);
@@ -572,6 +617,7 @@ public class GUI extends JFrame {
             }
         }
     }
+
     private void setCacheArchiveName() {
         String fileNameToSet = JOptionPane.showInputDialog("Set Archive Name", "");
         if (fileNameToSet != null) {
@@ -594,6 +640,32 @@ public class GUI extends JFrame {
         }
     }
 
+    private void exportFileData() {
+        JFileChooser folderChooser = new JFileChooser();
+        folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if (folderChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selected = folderChooser.getSelectedFile();
+            try {
+                if (selectedFile == 0) {
+                    File archiveData = new File(selected.getPath() + File.separator + selectedArchive + ".dat");
+                    FileOutputStream archiveOutputStream = new FileOutputStream(archiveData);
+                    archiveOutputStream.write(cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(0).getData());
+                    archiveOutputStream.flush();
+                    archiveOutputStream.close();
+                }
+                else {
+                    File fileData = new File(selected.getPath() + File.separator + selectedArchive + "-" + selectedFile + ".dat");
+                    FileOutputStream fileOutputStream = new FileOutputStream(fileData);
+                    fileOutputStream.write(cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile).getData());
+                    fileOutputStream.flush();
+                    fileOutputStream.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void dumpAllData() {
         JFileChooser folderChooser = new JFileChooser();
         folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -605,20 +677,21 @@ public class GUI extends JFrame {
             }
             for (Archive archive : cacheLibrary.getIndex(selectedIndex).getArchives()) {
                 try {
-                    File archiveData = new File(indexDirectory + File.separator + archive.getId() + ".dat");
-                    FileOutputStream archiveOutputStream = new FileOutputStream(archiveData);
                     for (org.displee.cache.index.archive.file.File archiveFileData : cacheLibrary.getIndex(selectedIndex).getArchive(archive.getId()).getFiles()) {
-                        if (archiveFileData.getId() != 0) {
-                            File fileData = new File(indexDirectory + File.separator + archive.getId() + "-" + archiveFileData.getId() + ".dat");
-                            FileOutputStream fileOutputStream = new FileOutputStream(fileData);
-                            fileOutputStream.write(archiveFileData.getData());
-                            fileOutputStream.flush();
-                            fileOutputStream.close();
-                        }
-                        else {
-                            archiveOutputStream.write(archiveFileData.getData());
-                            archiveOutputStream.flush();
-                            archiveOutputStream.close();
+                        if (archiveFileData.getData() != null) {
+                            if (archiveFileData.getId() != 0) {
+                                File fileData = new File(indexDirectory + File.separator + archive.getId() + "-" + archiveFileData.getId() + ".dat");
+                                FileOutputStream fileOutputStream = new FileOutputStream(fileData);
+                                fileOutputStream.write(archiveFileData.getData());
+                                fileOutputStream.flush();
+                                fileOutputStream.close();
+                            } else {
+                                File archiveData = new File(indexDirectory + File.separator + archive.getId() + ".dat");
+                                FileOutputStream archiveOutputStream = new FileOutputStream(archiveData);
+                                archiveOutputStream.write(archiveFileData.getData());
+                                archiveOutputStream.flush();
+                                archiveOutputStream.close();
+                            }
                         }
                     }
                 } catch (IOException e) {
@@ -648,6 +721,10 @@ public class GUI extends JFrame {
                 }
             }
         }
+    }
+
+    private void bruteForceHash() {
+        int hashName = cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getName();
     }
 
     private void printEnums() {

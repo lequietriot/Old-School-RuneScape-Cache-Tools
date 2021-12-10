@@ -1,7 +1,17 @@
 package runescape;
 
 import org.displee.cache.index.Index;
+import org.gagravarr.ogg.OggFile;
+import org.gagravarr.ogg.OggPacket;
+import org.gagravarr.ogg.OggPacketWriter;
+import org.gagravarr.vorbis.VorbisComments;
+import org.gagravarr.vorbis.VorbisFile;
+import org.gagravarr.vorbis.VorbisInfo;
+import org.gagravarr.vorbis.VorbisSetup;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class VorbisSample extends Node {

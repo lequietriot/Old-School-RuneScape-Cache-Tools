@@ -21,6 +21,8 @@
  */
 package runescape;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.zip.CRC32;
@@ -347,5 +349,20 @@ public final class ByteBufferUtils {
         } else {
             return var2; // L: 31
         }
+    }
+    public static void putVarIntDos(DataOutputStream dos, int value) throws IOException {
+        if ((value & ~0x7f) != 0) {
+            if ((value & ~0x3fff) != 0) {
+                if ((~0x1fffff & value) != 0) {
+                    if ((~0xfffffff & value) != 0) {
+                        dos.write(value >>> 28 | 0x80);
+                    }
+                    dos.write(value >>> 21 | 0x80);
+                }
+                dos.write(value >>> 14 | 0x80);
+            }
+            dos.write(value >>> 7 | 0x80);
+        }
+        dos.write(0x7f & value);
     }
 }
