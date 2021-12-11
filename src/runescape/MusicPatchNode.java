@@ -2,15 +2,15 @@ package runescape;
 
 public class MusicPatchNode extends Node {
 
-	int field2996;
+	int midiChannel;
 	MusicPatchNode2 field2988;
 	MusicPatch patch;
 	RawSound rawSound;
 	int field2989;
-	int field2990;
-	int field2991;
+	int midiNote;
+	int midiNoteVolume;
 	int field2992;
-	int field2993;
+	int soundTransposition;
 	int field2997;
 	int field2998;
 	int field2986;

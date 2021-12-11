@@ -135,17 +135,17 @@ public class MidiPcmStream extends PcmStream {
 
 	protected synchronized void fill(int[] var1, int var2, int var3) {
 		if (this.midiFile.isReady()) {
-			int var4 = this.midiFile.division * this.field2931 / SoundConstants.sampleRate;
+			int tempo = this.midiFile.division * this.field2931 / SoundConstants.sampleRate;
 
 			do {
-				long var5 = this.field2953 + (long)var4 * (long)var3;
+				long var5 = this.field2953 + (long) tempo * (long)var3;
 				if (this.field2954 - var5 >= 0L) {
 					this.field2953 = var5;
 					break;
 				}
 
-				int var7 = (int)((this.field2954 - this.field2953 + (long)var4 - 1L) / (long)var4);
-				this.field2953 += (long)var7 * (long)var4;
+				int var7 = (int)((this.field2954 - this.field2953 + (long) tempo - 1L) / (long) tempo);
+				this.field2953 += (long)var7 * (long)tempo;
 				this.patchStream.fill(var1, var2, var7);
 				var2 += var7;
 				var3 -= var7;
@@ -230,14 +230,14 @@ public class MidiPcmStream extends PcmStream {
 		this.method4847(var1, var2, 64);
 		if ((this.field2944[var1] & 2) != 0) {
 			for (MusicPatchNode var4 = (MusicPatchNode)this.patchStream.queue.first(); var4 != null; var4 = (MusicPatchNode)this.patchStream.queue.next()) {
-				if (var4.field2996 == var1 && var4.field2999 < 0) {
-					this.field2952[var1][var4.field2990] = null;
+				if (var4.midiChannel == var1 && var4.field2999 < 0) {
+					this.field2952[var1][var4.midiNote] = null;
 					this.field2952[var1][var2] = var4;
-					int var8 = (var4.field2998 * var4.field2997 >> 12) + var4.field2993;
-					var4.field2993 += var2 - var4.field2990 << 8;
-					var4.field2997 = var8 - var4.field2993;
+					int var8 = (var4.field2998 * var4.field2997 >> 12) + var4.soundTransposition;
+					var4.soundTransposition += var2 - var4.midiNote << 8;
+					var4.field2997 = var8 - var4.soundTransposition;
 					var4.field2998 = 4096;
-					var4.field2990 = var2;
+					var4.midiNote = var2;
 					return;
 				}
 			}
@@ -248,15 +248,15 @@ public class MidiPcmStream extends PcmStream {
 			RawSound var5 = var9.rawSounds[var2];
 			if (var5 != null) {
 				MusicPatchNode var6 = new MusicPatchNode();
-				var6.field2996 = var1;
+				var6.midiChannel = var1;
 				var6.patch = var9;
 				var6.rawSound = var5;
 				var6.field2988 = var9.field2976[var2];
 				var6.field2989 = var9.field2977[var2];
-				var6.field2990 = var2;
-				var6.field2991 = var3 * var3 * var9.field2974[var2] * var9.field2973 + 1024 >> 11;
+				var6.midiNote = var2;
+				var6.midiNoteVolume = var3 * var3 * var9.field2974[var2] * var9.field2973 + 1024 >> 11;
 				var6.field2992 = var9.field2971[var2] & 255;
-				var6.field2993 = (var2 << 8) - (var9.pitchOffset[var2] & 32767);
+				var6.soundTransposition = (var2 << 8) - (var9.pitchOffset[var2] & 32767);
 				var6.field2986 = 0;
 				var6.field3004 = 0;
 				var6.field2994 = 0;
@@ -276,7 +276,7 @@ public class MidiPcmStream extends PcmStream {
 				if (var6.field2989 >= 0) {
 					MusicPatchNode var7 = this.field2949[var1][var6.field2989];
 					if (var7 != null && var7.field2999 < 0) {
-						this.field2952[var1][var7.field2990] = null;
+						this.field2952[var1][var7.midiNote] = null;
 						var7.field2999 = 0;
 					}
 
@@ -294,14 +294,14 @@ public class MidiPcmStream extends PcmStream {
 		int var4;
 		if (var2 && var1.rawSound.field238) {
 			int var5 = var3 + var3 - var1.rawSound.start;
-			var4 = (int)((long)this.field2932[var1.field2996] * (long)var5 >> 6);
+			var4 = (int)((long)this.field2932[var1.midiChannel] * (long)var5 >> 6);
 			var3 <<= 8;
 			if (var4 >= var3) {
 				var4 = var3 + var3 - 1 - var4;
 				var1.stream.method922();
 			}
 		} else {
-			var4 = (int)((long)var3 * (long)this.field2932[var1.field2996] >> 6);
+			var4 = (int)((long)var3 * (long)this.field2932[var1.midiChannel] >> 6);
 		}
 
 		var1.stream.method825(var4);
@@ -313,7 +313,7 @@ public class MidiPcmStream extends PcmStream {
 			this.field2952[var1][var2] = null;
 			if ((this.field2944[var1] & 2) != 0) {
 				for (MusicPatchNode var5 = (MusicPatchNode)this.patchStream.queue.last(); var5 != null; var5 = (MusicPatchNode)this.patchStream.queue.previous()) {
-					if (var4.field2996 == var5.field2996 && var5.field2999 < 0 && var4 != var5) {
+					if (var4.midiChannel == var5.midiChannel && var5.field2999 < 0 && var4 != var5) {
 						var4.field2999 = 0;
 						break;
 					}
@@ -337,7 +337,7 @@ public class MidiPcmStream extends PcmStream {
 
 	void method4770(int var1) {
 		for (MusicPatchNode var2 = (MusicPatchNode)this.patchStream.queue.last(); var2 != null; var2 = (MusicPatchNode)this.patchStream.queue.previous()) {
-			if (var1 < 0 || var2.field2996 == var1) {
+			if (var1 < 0 || var2.midiChannel == var1) {
 				if (var2.stream != null) {
 					var2.stream.method830(SoundConstants.sampleRate / 100);
 					if (var2.stream.method834()) {
@@ -348,7 +348,7 @@ public class MidiPcmStream extends PcmStream {
 				}
 
 				if (var2.field2999 < 0) {
-					this.field2952[var2.field2996][var2.field2990] = null;
+					this.field2952[var2.midiChannel][var2.midiNote] = null;
 				}
 
 				var2.remove();
@@ -382,8 +382,8 @@ public class MidiPcmStream extends PcmStream {
 
 	void method4772(int var1) {
 		for (MusicPatchNode var2 = (MusicPatchNode)this.patchStream.queue.last(); var2 != null; var2 = (MusicPatchNode)this.patchStream.queue.previous()) {
-			if ((var1 < 0 || var2.field2996 == var1) && var2.field2999 < 0) {
-				this.field2952[var2.field2996][var2.field2990] = null;
+			if ((var1 < 0 || var2.midiChannel == var1) && var2.field2999 < 0) {
+				this.field2952[var2.midiChannel][var2.midiNote] = null;
 				var2.field2999 = 0;
 			}
 		}
@@ -408,7 +408,7 @@ public class MidiPcmStream extends PcmStream {
 	void method4774(int var1) {
 		if ((this.field2944[var1] & 2) != 0) {
 			for (MusicPatchNode var2 = (MusicPatchNode)this.patchStream.queue.last(); var2 != null; var2 = (MusicPatchNode)this.patchStream.queue.previous()) {
-				if (var2.field2996 == var1 && this.field2952[var1][var2.field2990] == null && var2.field2999 < 0) {
+				if (var2.midiChannel == var1 && this.field2952[var1][var2.midiNote] == null && var2.field2999 < 0) {
 					var2.field2999 = 0;
 				}
 			}
@@ -419,7 +419,7 @@ public class MidiPcmStream extends PcmStream {
 	void method4775(int var1) {
 		if ((this.field2944[var1] & 4) != 0) {
 			for (MusicPatchNode var2 = (MusicPatchNode) this.patchStream.queue.last(); var2 != null; var2 = (MusicPatchNode) this.patchStream.queue.previous()) {
-				if (var2.field2996 == var1) {
+				if (var2.midiChannel == var1) {
 					var2.field3003 = 0;
 				}
 			}
@@ -622,18 +622,18 @@ public class MidiPcmStream extends PcmStream {
 	}
 
 	int method4778(MusicPatchNode var1) {
-		int var2 = (var1.field2998 * var1.field2997 >> 12) + var1.field2993;
-		var2 += (this.field2938[var1.field2996] - 8192) * this.field2943[var1.field2996] >> 12;
+		int var2 = (var1.field2998 * var1.field2997 >> 12) + var1.soundTransposition;
+		var2 += (this.field2938[var1.midiChannel] - 8192) * this.field2943[var1.midiChannel] >> 12;
 		MusicPatchNode2 var3 = var1.field2988;
 		int var4;
-		if (var3.field2911 > 0 && (var3.field2917 > 0 || this.field2939[var1.field2996] > 0)) {
+		if (var3.field2911 > 0 && (var3.field2917 > 0 || this.field2939[var1.midiChannel] > 0)) {
 			var4 = var3.field2917 << 2;
 			int var5 = var3.field2919 << 1;
 			if (var1.field3001 < var5) {
 				var4 = var4 * var1.field3001 / var5;
 			}
 
-			var4 += this.field2939[var1.field2996] >> 7;
+			var4 += this.field2939[var1.midiChannel] >> 7;
 			double var6 = Math.sin(0.01227184630308513D * (double)(var1.field3002 & 511));
 			var2 += (int)(var6 * (double)var4);
 		}
@@ -644,9 +644,9 @@ public class MidiPcmStream extends PcmStream {
 
 	int method4779(MusicPatchNode var1) {
 		MusicPatchNode2 var2 = var1.field2988;
-		int var3 = this.field2934[var1.field2996] * this.field2956[var1.field2996] + 4096 >> 13;
+		int var3 = this.field2934[var1.midiChannel] * this.field2956[var1.midiChannel] + 4096 >> 13;
 		var3 = var3 * var3 + 16384 >> 15;
-		var3 = var3 * var1.field2991 + 16384 >> 15;
+		var3 = var3 * var1.midiNoteVolume + 16384 >> 15;
 		var3 = var3 * this.volume + 128 >> 8;
 		if (var2.field2913 > 0) {
 			var3 = (int)((double)var3 * Math.pow(0.5D, (double)var2.field2913 * (double)var1.field2986 * 1.953125E-5D) + 0.5D);
@@ -684,7 +684,7 @@ public class MidiPcmStream extends PcmStream {
 	}
 
 	int method4780(MusicPatchNode var1) {
-		int var2 = this.field2933[var1.field2996];
+		int var2 = this.field2933[var1.midiChannel];
 		return var2 < 8192 ? var2 * var1.field2992 + 32 >> 6 : 16384 - ((128 - var1.field2992) * (16384 - var2) + 32 >> 6);
 	}
 
@@ -733,8 +733,8 @@ public class MidiPcmStream extends PcmStream {
 		if (var1.stream == null) {
 			if (var1.field2999 >= 0) {
 				var1.remove();
-				if (var1.field2989 > 0 && var1 == this.field2949[var1.field2996][var1.field2989]) {
-					this.field2949[var1.field2996][var1.field2989] = null;
+				if (var1.field2989 > 0 && var1 == this.field2949[var1.midiChannel][var1.field2989]) {
+					this.field2949[var1.midiChannel][var1.field2989] = null;
 				}
 			}
 
@@ -749,7 +749,7 @@ public class MidiPcmStream extends PcmStream {
 		if (var1.field2999 < 0 || var1.stream != null && !var1.stream.method833()) {
 			int var5 = var1.field2998;
 			if (var5 > 0) {
-				var5 -= (int)(16.0D * Math.pow(2.0D, 4.921259842519685E-4D * (double)this.field2940[var1.field2996]) + 0.5D);
+				var5 -= (int)(16.0D * Math.pow(2.0D, 4.921259842519685E-4D * (double)this.field2940[var1.midiChannel]) + 0.5D);
 				if (var5 < 0) {
 					var5 = 0;
 				}
@@ -762,7 +762,7 @@ public class MidiPcmStream extends PcmStream {
 			boolean var7 = false;
 			++var1.field3001;
 			var1.field3002 += var6.field2911;
-			double var8 = 5.086263020833333E-6D * (double)((var1.field2990 - 60 << 8) + (var1.field2997 * var1.field2998 >> 12));
+			double var8 = 5.086263020833333E-6D * (double)((var1.midiNote - 60 << 8) + (var1.field2997 * var1.field2998 >> 12));
 			if (var6.field2913 > 0) {
 				if (var6.field2912 > 0) {
 					var1.field2986 += (int)(128.0D * Math.pow(2.0D, (double)var6.field2912 * var8) + 0.5D);
@@ -787,7 +787,7 @@ public class MidiPcmStream extends PcmStream {
 				}
 			}
 
-			if (var1.field2999 >= 0 && var6.field2914 != null && (this.field2944[var1.field2996] & 1) == 0 && (var1.field2989 < 0 || var1 != this.field2949[var1.field2996][var1.field2989])) {
+			if (var1.field2999 >= 0 && var6.field2914 != null && (this.field2944[var1.midiChannel] & 1) == 0 && (var1.field2989 < 0 || var1 != this.field2949[var1.midiChannel][var1.field2989])) {
 				if (var6.field2915 > 0) {
 					var1.field2999 += (int)(128.0D * Math.pow(2.0D, var8 * (double)var6.field2915) + 0.5D);
 				} else {
@@ -818,8 +818,8 @@ public class MidiPcmStream extends PcmStream {
 				var1.method4992();
 				if (var1.field2999 >= 0) {
 					var1.remove();
-					if (var1.field2989 > 0 && var1 == this.field2949[var1.field2996][var1.field2989]) {
-						this.field2949[var1.field2996][var1.field2989] = null;
+					if (var1.field2989 > 0 && var1 == this.field2949[var1.midiChannel][var1.field2989]) {
+						this.field2949[var1.midiChannel][var1.field2989] = null;
 					}
 				}
 
@@ -831,8 +831,8 @@ public class MidiPcmStream extends PcmStream {
 		} else {
 			var1.method4992();
 			var1.remove();
-			if (var1.field2989 > 0 && var1 == this.field2949[var1.field2996][var1.field2989]) {
-				this.field2949[var1.field2996][var1.field2989] = null;
+			if (var1.field2989 > 0 && var1 == this.field2949[var1.midiChannel][var1.field2989]) {
+				this.field2949[var1.midiChannel][var1.field2989] = null;
 			}
 
 			return true;

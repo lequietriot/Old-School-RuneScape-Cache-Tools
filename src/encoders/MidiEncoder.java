@@ -2,7 +2,6 @@ package encoders;
 
 import application.GUI;
 import runescape.ByteBufferUtils;
-import runescape.MusicTrack;
 
 import javax.sound.midi.*;
 import javax.swing.*;
@@ -11,7 +10,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class MidiEncoder extends MusicTrack {
+public class MidiEncoder {
 
     private static final int NOTE_OFF = 0x80;
     private static final int NOTE_ON = 0x90;

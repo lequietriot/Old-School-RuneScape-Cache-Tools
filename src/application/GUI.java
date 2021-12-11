@@ -3,17 +3,20 @@ package application;
 import decoders.MidiDecoder;
 import decoders.VorbisDecoder;
 import encoders.MidiEncoder;
+import encoders.VorbisEncoder;
 import org.displee.CacheLibrary;
 import org.displee.cache.index.Index;
 import org.displee.cache.index.archive.Archive;
 import runescape.*;
 
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -87,6 +90,11 @@ public class GUI extends JFrame {
         midiEncoder.addActionListener(e -> new MidiEncoder(this));
         encoderMenu.add(midiEncoder);
 
+        JMenuItem vorbisEncoder = new JMenuItem("Vorbis Encoder");
+        vorbisEncoder.addActionListener(e -> new VorbisEncoder(this));
+        encoderMenu.add(vorbisEncoder);
+
+
         JMenu decoderMenu = new JMenu("Data Decoders");
         jMenuBar.add(decoderMenu);
 
@@ -101,17 +109,13 @@ public class GUI extends JFrame {
         JMenu toolsMenu = new JMenu("Tools");
         jMenuBar.add(toolsMenu);
 
-        JMenuItem nameHashGuess = new JMenuItem("Name Hash Guesser");
-        nameHashGuess.addActionListener(e -> bruteForceHash());
-        //toolsMenu.add(nameHashGuess);
-
         JMenuItem musicPlayer = new JMenuItem("Music Player");
         musicPlayer.addActionListener(e -> chooseMusicTrack());
         toolsMenu.add(musicPlayer);
 
-        JMenuItem enumDumper = new JMenuItem("Enum Printer");
-        enumDumper.addActionListener(e -> printEnums());
-        toolsMenu.add(enumDumper);
+        JMenuItem musicPort = new JMenuItem("Use Music Port");
+        musicPort.addActionListener(e -> useMusicPort());
+        toolsMenu.add(musicPort);
 
         JLabel loadCacheLabel = new JLabel("Please load your cache from the File menu to begin!");
         loadCacheLabel.setVerticalAlignment(SwingConstants.CENTER);
@@ -197,6 +201,59 @@ public class GUI extends JFrame {
 
         setContentPane(musicPlayerMasterPanel);
         revalidate();
+    }
+
+    private void useMusicPort() {
+        new Thread(() -> {
+            if (midiPcmStream != null) {
+                stopSong();
+            }
+
+            MusicTrack musicTrack = new MusicTrack();
+            musicTrack.table = new NodeHashTable(cacheLibrary.getIndex(15).getArchives().length);
+            for (Archive archive : cacheLibrary.getIndex(15).getArchives()) {
+                byte[] bytes = new byte[128];
+                Arrays.fill(bytes, (byte) 1);
+                musicTrack.table.put(new ByteArrayNode(bytes), archive.getId());
+            }
+
+            midiPcmStream = new MidiPcmStream();
+            midiPcmStream.method4761(9, 128);
+            midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.getIndex(15), new SoundCache(cacheLibrary.getIndex(4), cacheLibrary.getIndex(14)), 0);
+            midiPcmStream.setPcmStreamVolume(255);
+
+            MidiReceiver midiReceiver = new MidiReceiver(midiPcmStream);
+            MidiDevice.Info[] infoArray = MidiSystem.getMidiDeviceInfo();
+
+            SoundConstants.pcmPlayerProvider = new DevicePcmPlayerProvider();
+            devicePcmPlayer = (DevicePcmPlayer) SoundConstants.pcmPlayerProvider.player();
+
+            try {
+                for (MidiDevice.Info info : infoArray) {
+                    MidiDevice midiDevice = MidiSystem.getMidiDevice(info);
+                    if (midiDevice.getDeviceInfo().getName().contains("Port")) {
+                        if (!midiDevice.isOpen()) {
+                            midiDevice.open();
+                            if (midiDevice.getMaxTransmitters() != 0) {
+                                midiDevice.getTransmitter().setReceiver(midiReceiver);
+                                System.out.println(midiDevice.getDeviceInfo() + " set!");
+                            }
+                        }
+                    }
+                }
+
+                devicePcmPlayer.init();
+                devicePcmPlayer.setStream(midiPcmStream);
+                devicePcmPlayer.open(512);
+                devicePcmPlayer.samples = new int[512];
+                while (true) {
+                    devicePcmPlayer.fill(devicePcmPlayer.samples, 256);
+                    devicePcmPlayer.write();
+                }
+            } catch (MidiUnavailableException | LineUnavailableException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void changeIndex(JComboBox<String> musicIndexComboBox) {
@@ -445,10 +502,6 @@ public class GUI extends JFrame {
                 selectedIndex = Integer.parseInt(cacheTree.getLastSelectedPathComponent().toString().replace("Index ", "").trim());
 
                 Object[][] indexFields = new Object[][] {
-
-                    new Object[] {
-                        "Cache Index Name", CacheConstantsOSRS.values()[selectedIndex].getIndexDescription()
-                    },
 
                     new Object[] {
                         "Cache Index ID", selectedIndex
@@ -721,15 +774,5 @@ public class GUI extends JFrame {
                 }
             }
         }
-    }
-
-    private void bruteForceHash() {
-        int hashName = cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getName();
-    }
-
-    private void printEnums() {
-        EnumComposition enumComposition = new EnumComposition();
-        enumComposition.decode(new Buffer(cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile).getData()));
-        System.out.println(Arrays.toString(enumComposition.strVals));
     }
 }

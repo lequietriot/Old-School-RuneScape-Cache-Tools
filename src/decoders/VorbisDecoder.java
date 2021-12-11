@@ -88,9 +88,8 @@ public class VorbisDecoder {
             oggPacketWriter.setGranulePosition(packet + 1);
             oggPacketWriter.bufferPacket(oggPacket, true);
         }
-
-        oggPacketWriter.flush();
-        oggPacketWriter.close();
+        fileOutputStream.flush();
+        fileOutputStream.close();
     }
 
 }

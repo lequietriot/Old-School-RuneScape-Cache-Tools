@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 
 public class MusicTrack extends Node {
 
-	NodeHashTable table;
+	public NodeHashTable table;
 	public byte[] midi;
 
 	public MusicTrack() {
