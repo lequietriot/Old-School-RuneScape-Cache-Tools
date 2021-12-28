@@ -1,6 +1,12 @@
 package runescape;
 
+import com.sun.media.sound.*;
+
+import javax.sound.midi.Patch;
+import javax.sound.sampled.AudioInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class MusicPatch extends Node {
 
@@ -421,7 +427,6 @@ public class MusicPatch extends Node {
 				this.field2971[var47] = (byte) var48;
 			}
 
-			Object var45 = null;
 		}
 
 		for (var27 = 0; var27 < var12; ++var27) {
@@ -460,6 +465,7 @@ public class MusicPatch extends Node {
 				var41.field2919 = buffer.get() & 0xFF;
 			}
 		}
+
 	}
 
 	boolean method4945(SoundCache var1, byte[] var2, int[] var3) {
@@ -499,4 +505,88 @@ public class MusicPatch extends Node {
 		this.sampleOffset = null;
 	}
 
+	public void mapSoundFontSamples(int key, int channel, SF2Soundbank sf2Soundbank) {
+
+		if (channel == 0) {
+			Arrays.fill(field2971, (byte) 0);
+		}
+
+		if (channel == 1) {
+			Arrays.fill(field2971, (byte) 127);
+		}
+
+		Patch patch;
+
+		int bank = 0;
+		int patchNumber = key;
+
+		while (patchNumber > 127) {
+			patchNumber = patchNumber - 128;
+			bank++;
+		}
+
+		bank = bank * 128;
+
+		patch = new Patch(bank, patchNumber);
+
+		if (sf2Soundbank.getInstrument(patch) != null) {
+			for (SF2InstrumentRegion sf2InstrumentRegion : ((SF2Instrument) sf2Soundbank.getInstrument(patch)).getRegions()) {
+				 for (SF2LayerRegion sf2LayerRegion : sf2InstrumentRegion.getLayer().getRegions()) {
+					 SF2Sample sf2Sample = sf2LayerRegion.getSample();
+					 try {
+						 byte[] sampleData = Buffer.readAllBytes((AudioInputStream) sf2Sample.getData());
+						 byte[] noteRange = sf2LayerRegion.getBytes(SF2Region.GENERATOR_KEYRANGE);
+						 int loopModes = sf2LayerRegion.getInteger(SF2Region.GENERATOR_SAMPLEMODES);
+						 int loopModeGlobal = sf2InstrumentRegion.getLayer().getGlobalRegion().getInteger(SF2Region.GENERATOR_SAMPLEMODES);
+						 int pitchCorrection = sf2Sample.getPitchCorrection();
+						 byte[] overridingNote = sf2LayerRegion.getBytes(SF2Region.GENERATOR_OVERRIDINGROOTKEY);
+						 int fineTune = sf2LayerRegion.getInteger(SF2Region.GENERATOR_FINETUNE) * 256 / 100;
+						 int coarseTune = sf2LayerRegion.getInteger(SF2Region.GENERATOR_COARSETUNE) * 256 / 100;
+
+						 if (noteRange[0] == noteRange[1]) {
+							 noteRange[1]++;
+						 }
+
+						 if (loopModeGlobal != loopModes) {
+							 loopModes = loopModeGlobal;
+						 }
+
+						 for (int note = noteRange[0]; note < noteRange[1] + 1; note++) {
+							 if (loopModes == 1) {
+								 rawSounds[note] = new RawSound((int) sf2Sample.getSampleRate(), getEightBitData(sampleData), (int) sf2Sample.getStartLoop(), (int) sf2Sample.getEndLoop());
+								 if (overridingNote != null && overridingNote[0] != -1) {
+									 this.pitchOffset[note] = (short) ((overridingNote[0] * 256) - ((pitchCorrection + fineTune + coarseTune)));
+								 } else {
+									 this.pitchOffset[note] = (short) (((sf2Sample.getOriginalPitch() * 256) - ((pitchCorrection + fineTune + coarseTune))));
+								 }
+
+								 this.pitchOffset[note] = (short) (this.pitchOffset[note] - 32768);
+
+							 } else {
+								 rawSounds[note] = new RawSound((int) sf2Sample.getSampleRate(), getEightBitData(sampleData), 0, 0);
+								 if (overridingNote != null && overridingNote[0] != -1) {
+									 this.pitchOffset[note] = (short) ((overridingNote[0] * 256) + ((pitchCorrection + fineTune + coarseTune)));
+								 } else {
+									 this.pitchOffset[note] = (short) (((sf2Sample.getOriginalPitch() * 256) + ((pitchCorrection + fineTune + coarseTune))));
+								 }
+							 }
+						 }
+					 } catch (IOException e) {
+						 e.printStackTrace();
+					 }
+				 }
+			}
+		}
+	}
+
+	public byte[] getEightBitData(byte[] sampleBytes) {
+
+		byte[] compressedData = new byte[sampleBytes.length / 2];
+
+		for (int index = 0; index < compressedData.length; index++) {
+			compressedData[index] = sampleBytes[index * 2 + 1];
+		}
+
+		return compressedData;
+	}
 }

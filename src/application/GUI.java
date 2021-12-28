@@ -1,5 +1,6 @@
 package application;
 
+import com.sun.media.sound.SF2Soundbank;
 import decoders.MidiDecoder;
 import decoders.VorbisDecoder;
 import encoders.MidiEncoder;
@@ -34,6 +35,8 @@ public class GUI extends JFrame {
     public CacheLibrary cacheLibrary;
 
     static DevicePcmPlayer devicePcmPlayer;
+
+    static DevicePcmPlayer[] devicePcmPlayers;
 
     static MidiPcmStream midiPcmStream;
 
@@ -116,6 +119,14 @@ public class GUI extends JFrame {
         JMenuItem musicPort = new JMenuItem("Use Music Port");
         musicPort.addActionListener(e -> useMusicPort());
         toolsMenu.add(musicPort);
+
+        JMenuItem print = new JMenuItem("Print Enum Values");
+        print.addActionListener(e -> printValues());
+        toolsMenu.add(print);
+
+        JMenuItem quickTest = new JMenuItem("Quick Test");
+        quickTest.addActionListener(e -> quickTestSound());
+        toolsMenu.add(quickTest);
 
         JLabel loadCacheLabel = new JLabel("Please load your cache from the File menu to begin!");
         loadCacheLabel.setVerticalAlignment(SwingConstants.CENTER);
@@ -258,10 +269,10 @@ public class GUI extends JFrame {
 
     private void changeIndex(JComboBox<String> musicIndexComboBox) {
         if (musicIndexComboBox.getSelectedItem() == "Music Tracks (6)") {
-            SoundConstants.selectedMusicIndex = 6;
+            SoundConstants.currentMusicIndex = 6;
         }
-        if (musicIndexComboBox.getSelectedItem() == "Fanfares/Jingles (11)") {
-            SoundConstants.selectedMusicIndex = 11;
+        if (musicIndexComboBox.getSelectedItem() == "Music Jingles (11)") {
+            SoundConstants.currentMusicIndex = 11;
         }
     }
 
@@ -318,10 +329,10 @@ public class GUI extends JFrame {
             else {
                 try {
                     if (Integer.parseInt(SoundConstants.currentSongName) != -1) {
-                        musicTrack = MusicTrack.readTrack(cacheLibrary.getIndex(SoundConstants.selectedMusicIndex), Integer.parseInt(SoundConstants.currentSongName), 0);
+                        musicTrack = MusicTrack.readTrack(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), Integer.parseInt(SoundConstants.currentSongName), 0);
                     }
                 } catch (NumberFormatException e) {
-                    musicTrack = MusicTrack.readTrackFromString(cacheLibrary.getIndex(SoundConstants.selectedMusicIndex), SoundConstants.currentSongName);
+                    musicTrack = MusicTrack.readTrackFromString(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), SoundConstants.currentSongName);
                 }
             }
 
@@ -373,17 +384,17 @@ public class GUI extends JFrame {
                     SoundConstants.pcmPlayerProvider = new DevicePcmPlayerProvider();
                     devicePcmPlayer = (DevicePcmPlayer) SoundConstants.pcmPlayerProvider.player();
 
-                    MusicTrack musicTrack = new MusicTrack();
+                    MusicTrack musicTrack = null;
                     if (SoundConstants.currentSongName.contains("(Custom)")) {
                         musicTrack = MusicTrack.setTrack(SoundConstants.midiMusicFileBytes);
                     }
                     else {
                         try {
-                            if (Integer.parseInt(SoundConstants.currentSongName) != -1) {
-                                musicTrack = MusicTrack.readTrack(cacheLibrary.getIndex(SoundConstants.selectedMusicIndex), Integer.parseInt(SoundConstants.currentSongName), 0);
+                            if (Integer.parseInt(SoundConstants.currentSongName) > -1) {
+                                musicTrack = MusicTrack.readTrack(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), Integer.parseInt(SoundConstants.currentSongName), 0);
                             }
                         } catch (NumberFormatException e) {
-                            musicTrack = MusicTrack.readTrackFromString(cacheLibrary.getIndex(SoundConstants.selectedMusicIndex), SoundConstants.currentSongName);
+                            musicTrack = MusicTrack.readTrackFromString(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), SoundConstants.currentSongName);
                         }
                     }
 
@@ -633,7 +644,15 @@ public class GUI extends JFrame {
                             selectedFile = Integer.parseInt(trimmedName.substring(trimmedName.indexOf("-")).trim().replace("-", "").trim());
                             trimmedName = trimmedName.substring(0, trimmedName.indexOf("-")).trim();
                         }
-                        cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
+                        else {
+                            selectedFile = 0;
+                        }
+                        if (cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)) != null) {
+                            cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
+                        }
+                        else {
+                            cacheLibrary.getIndex(selectedIndex).addArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
+                        }
                         if (cacheLibrary.getIndex(selectedIndex).update()) {
                             loadCache(new File(cacheLibrary.getPath()));
                         }
@@ -659,7 +678,15 @@ public class GUI extends JFrame {
                             selectedFile = Integer.parseInt(trimmedName.substring(trimmedName.indexOf("-")).trim().replace("-", "").trim());
                             trimmedName = trimmedName.substring(0, trimmedName.indexOf("-")).trim();
                         }
-                        cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
+                        else {
+                            selectedFile = 0;
+                        }
+                        if (cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)) != null) {
+                            cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
+                        }
+                        else {
+                            cacheLibrary.getIndex(selectedIndex).addArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
+                        }
                         if (cacheLibrary.getIndex(selectedIndex).update()) {
                             loadCache(new File(cacheLibrary.getPath()));
                         }
@@ -677,7 +704,7 @@ public class GUI extends JFrame {
             if (cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive) != null) {
                 Archive renamedArchive = cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive);
                 renamedArchive.setName(fileNameToSet.toLowerCase().hashCode());
-                cacheLibrary.getIndex(selectedIndex).addArchive(renamedArchive, true);
+                cacheLibrary.getIndex(selectedIndex).addArchive(renamedArchive, true, true, renamedArchive.getId());
                 if (cacheLibrary.getIndex(selectedIndex).update()) {
                     loadCache(new File(cacheLibrary.getPath()));
                 }
@@ -774,5 +801,97 @@ public class GUI extends JFrame {
                 }
             }
         }
+    }
+
+    private void printValues() {
+        EnumComposition enumComposition = new EnumComposition();
+        enumComposition.decode(new Buffer(cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile).getData()));
+        System.out.println(selectedFile + " Strings: " + Arrays.toString(enumComposition.strVals));
+        System.out.println(selectedFile + " Ints: " + Arrays.toString(enumComposition.intVals));
+        /*
+        try {
+            byte[] mainCache = Files.readAllBytes(Paths.get(defaultCachePath + File.separator + "main_file_cache.idx6"));
+            for (int index = 0; index < mainCache.length; index++) {
+                mainCache[index] = (byte) (mainCache[index] >> 1);
+            }
+
+            FileOutputStream fileOutputStream = new FileOutputStream(defaultCachePath + File.separator + "main_file_cache.idx6");
+            fileOutputStream.write(mainCache);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+         */
+    }
+
+    private void quickTestSound() {
+        new Thread(() -> {
+            try {
+                MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(new SF2Soundbank(new File(System.getProperty("user.home") + File.separator + "Downloads" + File.separator + "RS3 Short.sf2")));
+                DevicePcmPlayer[] devicePcmPlayers = initDevicePcmPlayers(midiPcmStreams);
+                while (true) {
+                    playDevicePcmPlayers(devicePcmPlayers);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private MidiPcmStream[] initMidiPcmStreams(SF2Soundbank sf2Soundbank) {
+
+        MidiPcmStream[] midiPcmStreams = new MidiPcmStream[2];
+
+        for (int index = 0; index < midiPcmStreams.length; index++) {
+            midiPcmStreams[index] = new MidiPcmStream();
+            midiPcmStreams[index].method4761(9, 128);
+            MusicTrack musicTrack = null;
+            if (SoundConstants.currentSongName.contains("(Custom)")) {
+                musicTrack = MusicTrack.setTrack(SoundConstants.midiMusicFileBytes);
+            }
+            else {
+                try {
+                    if (Integer.parseInt(SoundConstants.currentSongName) > -1) {
+                        musicTrack = MusicTrack.readTrack(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), Integer.parseInt(SoundConstants.currentSongName), 0);
+                    }
+                } catch (NumberFormatException e) {
+                    musicTrack = MusicTrack.readTrackFromString(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), SoundConstants.currentSongName);
+                }
+            }
+
+            SoundCache soundCache = new SoundCache(cacheLibrary.getIndex(4), cacheLibrary.getIndex(14));
+
+            if (musicTrack != null && midiPcmStreams[index].loadMusicTrack(musicTrack, cacheLibrary.getIndex(15), soundCache, 0)) {
+                midiPcmStreams[index].setPcmStreamVolume(SoundConstants.volumeLevel);
+                midiPcmStreams[index].setMusicTrack(musicTrack, false);
+                midiPcmStreams[index].loadSoundFont(sf2Soundbank, index);
+            }
+        }
+        return midiPcmStreams;
+    }
+
+    private DevicePcmPlayer[] initDevicePcmPlayers(MidiPcmStream[] midiPcmStreams) {
+
+        DevicePcmPlayer[] devicePcmPlayers = new DevicePcmPlayer[2];
+
+        try {
+            for (int index = 0; index < devicePcmPlayers.length; index++) {
+                devicePcmPlayers[index] = new DevicePcmPlayer();
+                devicePcmPlayers[index].init();
+                devicePcmPlayers[index].setStream(midiPcmStreams[index]);
+                devicePcmPlayers[index].open(2048);
+                devicePcmPlayers[index].samples = new int[512];
+            }
+        } catch (LineUnavailableException e) {
+            e.printStackTrace();
+        }
+        return devicePcmPlayers;
+    }
+
+    private void playDevicePcmPlayers(DevicePcmPlayer[] devicePcmPlayers) {
+        devicePcmPlayers[0].fill(devicePcmPlayers[0].samples, 256);
+        devicePcmPlayers[1].fill(devicePcmPlayers[1].samples, 256);
+        devicePcmPlayers[0].write();
+        devicePcmPlayers[1].write();
     }
 }

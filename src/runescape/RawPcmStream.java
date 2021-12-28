@@ -773,12 +773,12 @@ public class RawPcmStream extends PcmStream {
 		return var1 < 0 ? -var0 : (int)((double)var0 * Math.sqrt((double)var1 * 1.220703125E-4D) + 0.5D); // L: 27
 	}
 
-	public static RawPcmStream createRawPcmStream(RawSound var0, int var1, int var2) {
-		return var0.samples != null && var0.samples.length != 0 ? new RawPcmStream(var0, (int)((long)var0.sampleRate * 256L * (long)var1 / (SoundConstants.sampleRate * 100L)), var2 << 6) : null; // L: 63 64
+	public static RawPcmStream createRawPcmStream(RawSound sound, int pitchFactor, int volumeFactor) {
+		return sound.samples != null && sound.samples.length != 0 ? new RawPcmStream(sound, (int)((long)sound.sampleRate * 256L * (long)pitchFactor / (SoundConstants.sampleRate * 100L)), volumeFactor << 6) : null; // L: 63 64
 	}
 
-	public static RawPcmStream method817(RawSound var0, int var1, int var2, int var3) {
-		return var0.samples != null && var0.samples.length != 0 ? new RawPcmStream(var0, var1, var2, var3) : null; // L: 68 69
+	public static RawPcmStream method817(RawSound sound, int pitchFactor, int volumeFactor, int panFactor) {
+		return sound.samples != null && sound.samples.length != 0 ? new RawPcmStream(sound, pitchFactor, volumeFactor, panFactor) : null; // L: 68 69
 	}
 
 	static int method843(byte[] var0, int[] var1, int var2, int var3, int var4, int var5, int var6, int var7, RawPcmStream var8) {

@@ -1,5 +1,6 @@
 package runescape;
 
+import com.sun.media.sound.SF2Soundbank;
 import org.displee.cache.index.Index;
 
 public class MidiPcmStream extends PcmStream {
@@ -243,7 +244,7 @@ public class MidiPcmStream extends PcmStream {
 			}
 		}
 
-		MusicPatch var9 = (MusicPatch)this.musicPatches.get((long)this.field2936[var1]);
+		MusicPatch var9 = (MusicPatch)this.musicPatches.get(this.field2936[var1]);
 		if (var9 != null) {
 			RawSound var5 = var9.rawSounds[var2];
 			if (var5 != null) {
@@ -263,14 +264,16 @@ public class MidiPcmStream extends PcmStream {
 				var6.field2999 = -1;
 				var6.field3000 = 0;
 				if (this.field2932[var1] == 0) {
-					var6.stream = RawPcmStream.method817(var5, this.method4778(var6), this.method4779(var6), this.method4780(var6));
+					var6.stream = RawPcmStream.method817(var5, this.calculatePitch(var6), this.calculateVolume(var6), this.calculatePanning(var6));
 				} else {
-					var6.stream = RawPcmStream.method817(var5, this.method4778(var6), 0, this.method4780(var6));
+					var6.stream = RawPcmStream.method817(var5, this.calculatePitch(var6), 0, this.calculatePanning(var6));
 					this.method4765(var6, var9.pitchOffset[var2] < 0);
 				}
 
 				if (var9.pitchOffset[var2] < 0) {
-					var6.stream.setNumLoops(-1);
+					if (var6.stream != null) {
+						var6.stream.setNumLoops(-1);
+					}
 				}
 
 				if (var6.field2989 >= 0) {
@@ -621,7 +624,7 @@ public class MidiPcmStream extends PcmStream {
 		this.field2946[var1] = (int)(2097152.0D * Math.pow(2.0D, 5.4931640625E-4D * (double)var2) + 0.5D);
 	}
 
-	int method4778(MusicPatchNode var1) {
+	int calculatePitch(MusicPatchNode var1) {
 		int var2 = (var1.field2998 * var1.field2997 >> 12) + var1.soundTransposition;
 		var2 += (this.field2938[var1.midiChannel] - 8192) * this.field2943[var1.midiChannel] >> 12;
 		MusicPatchNode2 var3 = var1.field2988;
@@ -642,7 +645,7 @@ public class MidiPcmStream extends PcmStream {
 		return var4 < 1 ? 1 : var4;
 	}
 
-	int method4779(MusicPatchNode var1) {
+	int calculateVolume(MusicPatchNode var1) {
 		MusicPatchNode2 var2 = var1.field2988;
 		int var3 = this.field2934[var1.midiChannel] * this.field2956[var1.midiChannel] + 4096 >> 13;
 		var3 = var3 * var3 + 16384 >> 15;
@@ -683,7 +686,7 @@ public class MidiPcmStream extends PcmStream {
 		return var3;
 	}
 
-	int method4780(MusicPatchNode var1) {
+	int calculatePanning(MusicPatchNode var1) {
 		int var2 = this.field2933[var1.midiChannel];
 		return var2 < 8192 ? var2 * var1.field2992 + 32 >> 6 : 16384 - ((128 - var1.field2992) * (16384 - var2) + 32 >> 6);
 	}
@@ -757,7 +760,7 @@ public class MidiPcmStream extends PcmStream {
 				var1.field2998 = var5;
 			}
 
-			var1.stream.method912(this.method4778(var1));
+			var1.stream.method912(this.calculatePitch(var1));
 			MusicPatchNode2 var6 = var1.field2988;
 			boolean var7 = false;
 			++var1.field3001;
@@ -825,7 +828,7 @@ public class MidiPcmStream extends PcmStream {
 
 				return true;
 			} else {
-				var1.stream.method829(var1.field2995, this.method4779(var1), this.method4780(var1));
+				var1.stream.method829(var1.field2995, this.calculateVolume(var1), this.calculatePanning(var1));
 				return false;
 			}
 		} else {
@@ -839,4 +842,11 @@ public class MidiPcmStream extends PcmStream {
 		}
 	}
 
+	public void loadSoundFont(SF2Soundbank sf2Soundbank, int channel) {
+		if (musicPatches != null) {
+			for (MusicPatch musicPatch = (MusicPatch) musicPatches.first(); musicPatch != null; musicPatch = (MusicPatch) musicPatches.next()) {
+				musicPatch.mapSoundFontSamples((int) musicPatch.key, channel, sf2Soundbank);
+			}
+		}
+	}
 }

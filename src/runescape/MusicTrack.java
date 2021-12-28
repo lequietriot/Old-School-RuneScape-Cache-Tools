@@ -231,7 +231,7 @@ public class MusicTrack extends Node {
 				boolean var65 = var64 != var62;
 				var62 = var64 & 15;
 				if (var64 == 7) {
-					if (var65)
+					//if (var65)
 					{
 						midiBuff.put((byte) 255);
 					}
@@ -243,7 +243,7 @@ public class MusicTrack extends Node {
 				}
 
 				if (var64 == 23) {
-					if (var65)
+					//if (var65)
 					{
 						midiBuff.put((byte) 255); // meta event FF
 					}
