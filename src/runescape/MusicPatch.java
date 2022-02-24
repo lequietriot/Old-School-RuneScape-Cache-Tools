@@ -547,7 +547,7 @@ public class MusicPatch extends Node {
 							 noteRange[1]++;
 						 }
 
-						 if (loopModeGlobal != loopModes) {
+						 if (loopModeGlobal != 0) {
 							 loopModes = loopModeGlobal;
 						 }
 

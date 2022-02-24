@@ -22,13 +22,11 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class GUI extends JFrame {
 
@@ -488,8 +486,14 @@ public class GUI extends JFrame {
         JButton exportFileButton = new JButton("Export File");
         exportFileButton.addActionListener(e -> exportFileData());
 
+        JButton removeArchiveButton = new JButton("Remove Archive");
+        removeArchiveButton.addActionListener(e -> removeArchiveFile());
+
         JButton removeFileButton = new JButton("Remove File");
         removeFileButton.addActionListener(e -> removeCacheFile());
+
+        JButton setArchiveNameHashButton = new JButton("Set Archive name hash");
+        setArchiveNameHashButton.addActionListener(e -> setCacheArchiveNameHash());
 
         JButton setArchiveNameButton = new JButton("Set Archive name");
         setArchiveNameButton.addActionListener(e -> setCacheArchiveName());
@@ -500,7 +504,9 @@ public class GUI extends JFrame {
         cacheOperationsButtonPanel.add(addFilesButton);
         cacheOperationsButtonPanel.add(replaceFilesButton);
         cacheOperationsButtonPanel.add(exportFileButton);
+        cacheOperationsButtonPanel.add(removeArchiveButton);
         cacheOperationsButtonPanel.add(removeFileButton);
+        cacheOperationsButtonPanel.add(setArchiveNameHashButton);
         cacheOperationsButtonPanel.add(setArchiveNameButton);
         cacheOperationsButtonPanel.add(exportAllDataButton);
 
@@ -698,6 +704,19 @@ public class GUI extends JFrame {
         }
     }
 
+    private void setCacheArchiveNameHash() {
+        String fileNameToSet = JOptionPane.showInputDialog("Set Archive Name Hash", "");
+        if (fileNameToSet != null) {
+            if (cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive) != null) {
+                Archive renamedArchive = cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive);
+                renamedArchive.setName(Integer.parseInt(fileNameToSet));
+                cacheLibrary.getIndex(selectedIndex).addArchive(renamedArchive, true, true, renamedArchive.getId());
+                if (cacheLibrary.getIndex(selectedIndex).update()) {
+                    loadCache(new File(cacheLibrary.getPath()));
+                }
+            }
+        }
+    }
     private void setCacheArchiveName() {
         String fileNameToSet = JOptionPane.showInputDialog("Set Archive Name", "");
         if (fileNameToSet != null) {
@@ -709,6 +728,14 @@ public class GUI extends JFrame {
                     loadCache(new File(cacheLibrary.getPath()));
                 }
             }
+        }
+    }
+
+    private void removeArchiveFile() {
+        cacheLibrary.getIndex(selectedIndex).removeArchive(selectedArchive);
+        if (cacheLibrary.getIndex(selectedIndex).update()) {
+            loadCache(new File(cacheLibrary.getPath()));
+            JOptionPane.showMessageDialog(this, "Cache Archive " + selectedArchive + " has been removed.");
         }
     }
 
@@ -804,19 +831,49 @@ public class GUI extends JFrame {
     }
 
     private void printValues() {
+
+        File textFile = new File(cacheLibrary.getPath() + File.separator + "Text.txt");
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(textFile);
+            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
+            for (File midi : Objects.requireNonNull(new File(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "MIDI Files").listFiles())) {
+                int index = midi.getName().lastIndexOf(" - ");
+                String midiName = midi.getName().substring(index).replace(".mid", "").replace(" - ", "").trim();
+                String replacement = midi.getName().substring(index).trim();
+                int midiID = Integer.parseInt(midi.getName().replace(replacement, "").trim());
+                bufferedWriter.write("musicTracks.put(\"" + midiName + "\"" + ", " + midiID + ");");
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        /*
         EnumComposition enumComposition = new EnumComposition();
         enumComposition.decode(new Buffer(cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile).getData()));
-        System.out.println(selectedFile + " Strings: " + Arrays.toString(enumComposition.strVals));
-        System.out.println(selectedFile + " Ints: " + Arrays.toString(enumComposition.intVals));
+        System.out.println(Arrays.toString(enumComposition.strVals));
+         */
+        /*
+        File textFile = new File(cacheLibrary.getPath() + File.separator + "Text.txt");
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(textFile);
+            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
+            for (Archive archive : cacheLibrary.getIndex(15).getArchives()) {
+                bufferedWriter.write(archive.getId() + " = " + archive.getId());
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+         */
         /*
         try {
-            byte[] mainCache = Files.readAllBytes(Paths.get(defaultCachePath + File.separator + "main_file_cache.idx6"));
-            for (int index = 0; index < mainCache.length; index++) {
-                mainCache[index] = (byte) (mainCache[index] >> 1);
+            CacheLibrary oldSchoolCache = new CacheLibrary(defaultCachePath.getPath());
+            for (Archive archive : cacheLibrary.getIndex(6).getArchives()) {
+                int name = oldSchoolCache.getIndex(6).getArchive(archive.getId()).getName();
+                archive.setName(name);
             }
-
-            FileOutputStream fileOutputStream = new FileOutputStream(defaultCachePath + File.separator + "main_file_cache.idx6");
-            fileOutputStream.write(mainCache);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -827,7 +884,7 @@ public class GUI extends JFrame {
     private void quickTestSound() {
         new Thread(() -> {
             try {
-                MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(new SF2Soundbank(new File(System.getProperty("user.home") + File.separator + "Downloads" + File.separator + "RS3 Short.sf2")));
+                MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(new SF2Soundbank(new File(System.getProperty("user.home") + File.separator + "Downloads" + File.separator + "Custom.sf2")));
                 DevicePcmPlayer[] devicePcmPlayers = initDevicePcmPlayers(midiPcmStreams);
                 while (true) {
                     playDevicePcmPlayers(devicePcmPlayers);
