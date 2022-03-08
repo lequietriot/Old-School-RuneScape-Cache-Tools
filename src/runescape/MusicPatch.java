@@ -19,7 +19,7 @@ public class MusicPatch extends Node {
 	byte[] field2977;
 	int[] sampleOffset;
 
-	MusicPatch(byte[] var1) {
+	public MusicPatch(byte[] var1) {
 		this.rawSounds = new RawSound[128];
 		this.pitchOffset = new short[128];
 		this.field2974 = new byte[128];
@@ -482,6 +482,7 @@ public class MusicPatch extends Node {
 						if ((var8 & 1) == 0) {
 							var6 = var1.getSoundEffect(var8 >> 2, var3);
 						} else {
+							System.out.println(((var8 >> 2) / 4) - 1);
 							var6 = var1.getMusicSample(var8 >> 2, var3);
 						}
 

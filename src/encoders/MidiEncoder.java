@@ -29,10 +29,13 @@ public class MidiEncoder {
         gui = selectedGUI;
         JFileChooser chooseMidi = new JFileChooser();
         chooseMidi.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooseMidi.setMultiSelectionEnabled(true);
         if (chooseMidi.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
-            File selected = chooseMidi.getSelectedFile();
-            if (selected.getName().endsWith(".mid")) {
-                encode(selected);
+            File[] files = chooseMidi.getSelectedFiles();
+            for (File selected : files) {
+                if (selected.getName().endsWith(".mid")) {
+                    encode(selected);
+                }
             }
         }
     }

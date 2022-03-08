@@ -17,10 +17,13 @@ public class VorbisEncoder {
         gui = currentGUI;
         JFileChooser chooseOgg = new JFileChooser();
         chooseOgg.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooseOgg.setMultiSelectionEnabled(true);
         if (chooseOgg.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
-            File selected = chooseOgg.getSelectedFile();
-            if (selected.getName().endsWith(".ogg")) {
-                encode(selected);
+            File[] files = chooseOgg.getSelectedFiles();
+            for (File selected : files) {
+                if (selected.getName().endsWith(".ogg")) {
+                    encode(selected);
+                }
             }
         }
     }

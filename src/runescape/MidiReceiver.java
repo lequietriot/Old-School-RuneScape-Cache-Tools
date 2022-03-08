@@ -103,19 +103,19 @@ public class MidiReceiver implements Receiver {
                     }
 
                     if (var4 == 99) {
-                        midiPcmStream.field2942[var3] = (var5 << 7) + (midiPcmStream.field2942[var3] & 127);
+                        midiPcmStream.dataEntries[var3] = (var5 << 7) + (midiPcmStream.dataEntries[var3] & 127);
                     }
 
                     if (var4 == 98) {
-                        midiPcmStream.field2942[var3] = (midiPcmStream.field2942[var3] & 16256) + var5;
+                        midiPcmStream.dataEntries[var3] = (midiPcmStream.dataEntries[var3] & 16256) + var5;
                     }
 
                     if (var4 == 101) {
-                        midiPcmStream.field2942[var3] = (var5 << 7) + (midiPcmStream.field2942[var3] & 127) + 16384;
+                        midiPcmStream.dataEntries[var3] = (var5 << 7) + (midiPcmStream.dataEntries[var3] & 127) + 16384;
                     }
 
                     if (var4 == 100) {
-                        midiPcmStream.field2942[var3] = (midiPcmStream.field2942[var3] & 16256) + var5 + 16384;
+                        midiPcmStream.dataEntries[var3] = (midiPcmStream.dataEntries[var3] & 16256) + var5 + 16384;
                     }
 
                     if (var4 == 120) {
@@ -132,14 +132,14 @@ public class MidiReceiver implements Receiver {
 
                     int var6;
                     if (var4 == 6) {
-                        var6 = midiPcmStream.field2942[var3];
+                        var6 = midiPcmStream.dataEntries[var3];
                         if (var6 == 16384) {
                             midiPcmStream.field2943[var3] = (var5 << 7) + (midiPcmStream.field2943[var3] & -16257);
                         }
                     }
 
                     if (var4 == 38) {
-                        var6 = midiPcmStream.field2942[var3];
+                        var6 = midiPcmStream.dataEntries[var3];
                         if (var6 == 16384) {
                             midiPcmStream.field2943[var3] = var5 + (midiPcmStream.field2943[var3] & -128);
                         }

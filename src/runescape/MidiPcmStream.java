@@ -18,7 +18,7 @@ public class MidiPcmStream extends PcmStream {
 	int[] field2939;
 	int[] field2940;
 	int[] field2944;
-	int[] field2942;
+	int[] dataEntries;
 	int[] field2943;
 	int[] field2932;
 	int[] field2945;
@@ -46,7 +46,7 @@ public class MidiPcmStream extends PcmStream {
 		this.field2939 = new int[16];
 		this.field2940 = new int[16];
 		this.field2944 = new int[16];
-		this.field2942 = new int[16];
+		this.dataEntries = new int[16];
 		this.field2943 = new int[16];
 		this.field2932 = new int[16];
 		this.field2945 = new int[16];
@@ -371,7 +371,7 @@ public class MidiPcmStream extends PcmStream {
 			this.method4774(var1);
 			this.method4775(var1);
 			this.field2944[var1] = 0;
-			this.field2942[var1] = 32767;
+			this.dataEntries[var1] = 32767;
 			this.field2943[var1] = 256;
 			this.field2932[var1] = 0;
 			this.method4777(var1, 8192);
@@ -530,19 +530,19 @@ public class MidiPcmStream extends PcmStream {
 			}
 
 			if (var4 == 99) {
-				this.field2942[var3] = (var5 << 7) + (this.field2942[var3] & 127);
+				this.dataEntries[var3] = (var5 << 7) + (this.dataEntries[var3] & 127);
 			}
 
 			if (var4 == 98) {
-				this.field2942[var3] = (this.field2942[var3] & 16256) + var5;
+				this.dataEntries[var3] = (this.dataEntries[var3] & 16256) + var5;
 			}
 
 			if (var4 == 101) {
-				this.field2942[var3] = (var5 << 7) + (this.field2942[var3] & 127) + 16384;
+				this.dataEntries[var3] = (var5 << 7) + (this.dataEntries[var3] & 127) + 16384;
 			}
 
 			if (var4 == 100) {
-				this.field2942[var3] = (this.field2942[var3] & 16256) + var5 + 16384;
+				this.dataEntries[var3] = (this.dataEntries[var3] & 16256) + var5 + 16384;
 			}
 
 			if (var4 == 120) {
@@ -559,14 +559,14 @@ public class MidiPcmStream extends PcmStream {
 
 			int var6;
 			if (var4 == 6) {
-				var6 = this.field2942[var3];
+				var6 = this.dataEntries[var3];
 				if (var6 == 16384) {
 					this.field2943[var3] = (var5 << 7) + (this.field2943[var3] & -16257);
 				}
 			}
 
 			if (var4 == 38) {
-				var6 = this.field2942[var3];
+				var6 = this.dataEntries[var3];
 				if (var6 == 16384) {
 					this.field2943[var3] = var5 + (this.field2943[var3] & -128);
 				}

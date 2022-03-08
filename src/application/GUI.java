@@ -13,10 +13,7 @@ import runescape.*;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -26,7 +23,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Objects;
 
 public class GUI extends JFrame {
 
@@ -195,6 +191,10 @@ public class GUI extends JFrame {
         stereoSoundSetter.setSelected(SoundConstants.stereo);
         stereoSoundSetter.addActionListener(e -> updateStereoMode(stereoSoundSetter));
 
+        JCheckBox shuffleModeSetter = new JCheckBox("Shuffle Music");
+        shuffleModeSetter.setSelected(SoundConstants.shuffle);
+        shuffleModeSetter.addActionListener(e -> updateShuffleMode(shuffleModeSetter));
+
         settingsPanel.add(musicIndexLabel);
         settingsPanel.add(musicIndexComboBox);
         settingsPanel.add(sampleRateLabel);
@@ -202,6 +202,7 @@ public class GUI extends JFrame {
         settingsPanel.add(volumeLevelLabel);
         settingsPanel.add(volumeLevelSetter);
         settingsPanel.add(stereoSoundSetter);
+        settingsPanel.add(shuffleModeSetter);
 
         musicPlayerMasterPanel.setLeftComponent(settingsPanel);
         musicPlayerMasterPanel.setRightComponent(musicPlayerPanel);
@@ -408,6 +409,12 @@ public class GUI extends JFrame {
                         while (midiPcmStream != null && midiPcmStream.isReady()) {
                             devicePcmPlayer.fill(devicePcmPlayer.samples, 256);
                             devicePcmPlayer.write();
+                            if (SoundConstants.shuffle && !midiPcmStream.isReady()) {
+                                stopSong();
+                                SoundConstants.currentSongName = String.valueOf((int) (Math.random() * cacheLibrary.getIndex(SoundConstants.currentMusicIndex).getArchives().length));
+                                playSong();
+                                System.out.println("Playing " + SoundConstants.currentSongName);
+                            }
                         }
                     }
                 }
@@ -434,6 +441,10 @@ public class GUI extends JFrame {
 
     private void updateStereoMode(JCheckBox stereoSoundSetter) {
         SoundConstants.stereo = stereoSoundSetter.isSelected();
+    }
+
+    private void updateShuffleMode(JCheckBox shuffleModeSetter) {
+        SoundConstants.shuffle = shuffleModeSetter.isSelected();
     }
 
     private void chooseCacheFolder() {
@@ -831,7 +842,16 @@ public class GUI extends JFrame {
     }
 
     private void printValues() {
-
+        /*
+        File compareOS = new File(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "Comparing" + File.separator + "OSRS");
+        File compareHD = new File(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "Comparing" + File.separator + "RSHD");
+        for (int index = 0; index < 718; index++) {
+            File fileOSRS = new File(compareOS.getAbsolutePath() + File.separator + index + ".dat");
+            File fileRSHD = new File(compareHD.getAbsolutePath() + File.separator + index + ".dat");
+            if (fileOSRS.length() != fileRSHD.length()) {
+                System.out.println("ID " + index + " has changes!");
+            }
+        }
         File textFile = new File(cacheLibrary.getPath() + File.separator + "Text.txt");
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(textFile);
@@ -848,7 +868,6 @@ public class GUI extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        /*
         EnumComposition enumComposition = new EnumComposition();
         enumComposition.decode(new Buffer(cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile).getData()));
         System.out.println(Arrays.toString(enumComposition.strVals));
@@ -884,7 +903,7 @@ public class GUI extends JFrame {
     private void quickTestSound() {
         new Thread(() -> {
             try {
-                MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(new SF2Soundbank(new File(System.getProperty("user.home") + File.separator + "Downloads" + File.separator + "Custom.sf2")));
+                MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(new SF2Soundbank(new File(System.getProperty("user.home") + File.separator + "Downloads" + File.separator + "DPPt.sf2")));
                 DevicePcmPlayer[] devicePcmPlayers = initDevicePcmPlayers(midiPcmStreams);
                 while (true) {
                     playDevicePcmPlayers(devicePcmPlayers);
