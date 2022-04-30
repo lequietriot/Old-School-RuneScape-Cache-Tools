@@ -1,5 +1,7 @@
 package runescape;
 
+import application.constants.AppConstants;
+
 public class RawPcmStream extends PcmStream {
 
 	int field318;
@@ -597,12 +599,12 @@ public class RawPcmStream extends PcmStream {
 
 				this.field316 += var2; // L: 477
 				if (this.field309 == 256 && (this.field318 & 255) == 0) { // L: 478
-					if (SoundConstants.stereo) { // L: 479
+					if (AppConstants.stereo) { // L: 479
 						var2 = method852(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this);
 					} else {
 						var2 = method960(((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this); // L: 480
 					}
-				} else if (SoundConstants.stereo) { // L: 483
+				} else if (AppConstants.stereo) { // L: 483
 					var2 = method856(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this, this.field309, var5);
 				} else {
 					var2 = method855(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this, this.field309, var5); // L: 484
@@ -621,14 +623,14 @@ public class RawPcmStream extends PcmStream {
 			}
 
 			if (this.field309 == 256 && (this.field318 & 255) == 0) { // L: 490
-				if (SoundConstants.stereo) { // L: 491
+				if (AppConstants.stereo) { // L: 491
 					return method962(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this);
 				}
 
 				return method843(((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, 0, var4, var3, this); // L: 492
 			}
 
-			if (SoundConstants.stereo) { // L: 495
+			if (AppConstants.stereo) { // L: 495
 				return method848(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this, this.field309, var5);
 			}
 
@@ -646,12 +648,12 @@ public class RawPcmStream extends PcmStream {
 
 				this.field316 += var2; // L: 504
 				if (this.field309 == -256 && (this.field318 & 255) == 0) { // L: 505
-					if (SoundConstants.stereo) { // L: 506
+					if (AppConstants.stereo) { // L: 506
 						var2 = method854(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this);
 					} else {
 						var2 = method831(((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this); // L: 507
 					}
-				} else if (SoundConstants.stereo) { // L: 510
+				} else if (AppConstants.stereo) { // L: 510
 					var2 = method858(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this, this.field309, var5);
 				} else {
 					var2 = method899(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this, this.field309, var5); // L: 511
@@ -670,14 +672,14 @@ public class RawPcmStream extends PcmStream {
 			}
 
 			if (this.field309 == -256 && (this.field318 & 255) == 0) { // L: 517
-				if (SoundConstants.stereo) { // L: 518
+				if (AppConstants.stereo) { // L: 518
 					return method846(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this);
 				}
 
 				return method845(((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, 0, var4, var3, this); // L: 519
 			}
 
-			if (SoundConstants.stereo) { // L: 522
+			if (AppConstants.stereo) { // L: 522
 				return method850(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this, this.field309, var5);
 			}
 
@@ -774,7 +776,7 @@ public class RawPcmStream extends PcmStream {
 	}
 
 	public static RawPcmStream createRawPcmStream(RawSound sound, int pitchFactor, int volumeFactor) {
-		return sound.samples != null && sound.samples.length != 0 ? new RawPcmStream(sound, (int)((long)sound.sampleRate * 256L * (long)pitchFactor / (SoundConstants.sampleRate * 100L)), volumeFactor << 6) : null; // L: 63 64
+		return sound.samples != null && sound.samples.length != 0 ? new RawPcmStream(sound, (int)((long)sound.sampleRate * 256L * (long)pitchFactor / (AppConstants.sampleRate * 100L)), volumeFactor << 6) : null; // L: 63 64
 	}
 
 	public static RawPcmStream method817(RawSound sound, int pitchFactor, int volumeFactor, int panFactor) {

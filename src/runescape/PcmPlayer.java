@@ -1,10 +1,12 @@
 package runescape;
 
+import application.constants.AppConstants;
+
 public class PcmPlayer {
 
 	public int field272;
 	public int[] samples;
-	PcmStream stream;
+	public PcmStream stream;
 	int field254;
 	long timeMs;
 	public int capacity;
@@ -135,7 +137,7 @@ public class PcmPlayer {
 
 				while (var1 > this.timeMs + 5000L) {
 					this.skip(256);
-					this.timeMs += 256000 / SoundConstants.sampleRate;
+					this.timeMs += 256000 / AppConstants.sampleRate;
 				}
 			} catch (Exception var6) {
 				this.timeMs = var1;
@@ -174,14 +176,14 @@ public class PcmPlayer {
 
 	public final void fill(int[] var1, int var2) {
 		int var3 = var2;
-		if (SoundConstants.stereo) {
+		if (AppConstants.stereo) {
 			var3 = var2 << 1;
 		}
 
 		ByteBufferUtils.clearIntArray(var1, 0, var3);
 		this.field267 -= var2; // L: 181
 		if (this.stream != null && this.field267 <= 0) { // L: 182
-			this.field267 += SoundConstants.sampleRate >> 4; // L: 183
+			this.field267 += AppConstants.sampleRate >> 4; // L: 183
 			PcmStream.PcmStream_disable(this.stream); // L: 184
 			this.method719(this.stream, this.stream.vmethod974()); // L: 185
 			int var4 = 0; // L: 186

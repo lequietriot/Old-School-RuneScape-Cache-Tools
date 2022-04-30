@@ -27,8 +27,8 @@ public class SoundTone {
 	int delayDecay;
 	SoundFilter filter;
 	SoundEnvelope filterEnvelope;
-	int duration;
-	int offset;
+	public int duration;
+	public int offset;
 
 	static {
 		toneNoise = new int[32768];
@@ -53,7 +53,7 @@ public class SoundTone {
 		tonePitchBaseSteps = new int[5];
 	}
 
-	SoundTone() {
+	public SoundTone() {
 		this.oscillatorVolume = new int[]{0, 0, 0, 0, 0};
 		this.oscillatorPitch = new int[]{0, 0, 0, 0, 0};
 		this.oscillatorDelays = new int[]{0, 0, 0, 0, 0};
@@ -63,7 +63,7 @@ public class SoundTone {
 		this.offset = 0;
 	}
 
-	final int[] synthesize(int steps, int tones) {
+	public final int[] synthesize(int steps, int tones) {
 		ByteBufferUtils.clearIntArray(toneSamples, 0, steps);
 		if (tones >= 10) {
 			double duration = (double) steps / ((double) tones + 0.0D);
@@ -273,7 +273,7 @@ public class SoundTone {
 		}
 	}
 
-	final void decode(Buffer var1) {
+	public final void decode(Buffer var1) {
 		this.pitch = new SoundEnvelope();
 		this.pitch.decode(var1);
 		this.volume = new SoundEnvelope();

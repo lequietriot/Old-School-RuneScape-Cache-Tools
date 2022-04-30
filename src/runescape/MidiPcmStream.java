@@ -1,13 +1,17 @@
 package runescape;
 
+import application.constants.AppConstants;
 import com.sun.media.sound.SF2Soundbank;
 import org.displee.cache.index.Index;
+
+import java.io.File;
+import java.io.IOException;
 
 public class MidiPcmStream extends PcmStream {
 
 	NodeHashTable musicPatches;
 	int volume;
-	int field2931;
+	public int field2931;
 	int[] field2956;
 	int[] field2933;
 	int[] field2934;
@@ -29,8 +33,8 @@ public class MidiPcmStream extends PcmStream {
 	boolean field2950;
 	int track;
 	int trackLength;
-	long field2953;
-	long field2954;
+	public long field2953;
+	public long field2954;
 	MusicPatchPcmStream patchStream;
 
 	public MidiPcmStream() {
@@ -63,7 +67,7 @@ public class MidiPcmStream extends PcmStream {
 		this.volume = volumeLevel;
 	}
 
-	int getPcmStreamVolume() {
+	public int getPcmStreamVolume() {
 		return this.volume;
 	}
 
@@ -79,25 +83,27 @@ public class MidiPcmStream extends PcmStream {
 			int var8 = (int)var7.key;
 			MusicPatch var9 = (MusicPatch)this.musicPatches.get((long)var8);
 			if (var9 == null) {
-				byte[] var11 = var2.getArchive(var8).getFile(0).getData();
-				MusicPatch var10;
-				if (var11 == null) {
-					var10 = null;
-				} else {
-					var10 = new MusicPatch(var11);
+				if (var2.getArchive(var8) != null) {
+					byte[] var11 = var2.getArchive(var8).getFile(0).getData();
+					MusicPatch var10;
+					if (var11 == null) {
+						var10 = null;
+					} else {
+						var10 = new MusicPatch(var11);
+					}
+
+					var9 = var10;
+					if (var10 == null) {
+						var5 = false;
+						continue;
+					}
+
+					this.musicPatches.put(var10, (long) var8);
+
+					if (!var9.method4945(var3, var7.byteArray, var6)) {
+						var5 = false;
+					}
 				}
-
-				var9 = var10;
-				if (var10 == null) {
-					var5 = false;
-					continue;
-				}
-
-				this.musicPatches.put(var10, (long)var8);
-			}
-
-			if (!var9.method4945(var3, var7.byteArray, var6)) {
-				var5 = false;
 			}
 		}
 
@@ -136,7 +142,7 @@ public class MidiPcmStream extends PcmStream {
 
 	protected synchronized void fill(int[] var1, int var2, int var3) {
 		if (this.midiFile.isReady()) {
-			int tempo = this.midiFile.division * this.field2931 / SoundConstants.sampleRate;
+			int tempo = this.midiFile.division * this.field2931 / AppConstants.sampleRate;
 
 			do {
 				long var5 = this.field2953 + (long) tempo * (long)var3;
@@ -175,9 +181,9 @@ public class MidiPcmStream extends PcmStream {
 		this.field2954 = this.midiFile.method4934(this.trackLength);
 	}
 
-	protected synchronized void skip(int var1) {
+	public synchronized void skip(int var1) {
 		if (this.midiFile.isReady()) {
-			int var2 = this.midiFile.division * this.field2931 / SoundConstants.sampleRate;
+			int var2 = this.midiFile.division * this.field2931 / AppConstants.sampleRate;
 
 			do {
 				long var3 = (long)var1 * (long)var2 + this.field2953;
@@ -252,11 +258,11 @@ public class MidiPcmStream extends PcmStream {
 				var6.midiChannel = var1;
 				var6.patch = var9;
 				var6.rawSound = var5;
-				var6.field2988 = var9.field2976[var2];
+				var6.field2988 = var9.musicPatchParameters[var2];
 				var6.field2989 = var9.field2977[var2];
 				var6.midiNote = var2;
-				var6.midiNoteVolume = var3 * var3 * var9.field2974[var2] * var9.field2973 + 1024 >> 11;
-				var6.field2992 = var9.field2971[var2] & 255;
+				var6.midiNoteVolume = var3 * var3 * var9.volumeOffset[var2] * var9.field2973 + 1024 >> 11;
+				var6.field2992 = var9.panOffset[var2] & 255;
 				var6.soundTransposition = (var2 << 8) - (var9.pitchOffset[var2] & 32767);
 				var6.field2986 = 0;
 				var6.field3004 = 0;
@@ -342,7 +348,7 @@ public class MidiPcmStream extends PcmStream {
 		for (MusicPatchNode var2 = (MusicPatchNode)this.patchStream.queue.last(); var2 != null; var2 = (MusicPatchNode)this.patchStream.queue.previous()) {
 			if (var1 < 0 || var2.midiChannel == var1) {
 				if (var2.stream != null) {
-					var2.stream.method830(SoundConstants.sampleRate / 100);
+					var2.stream.method830(AppConstants.sampleRate / 100);
 					if (var2.stream.method834()) {
 						this.patchStream.mixer.addSubStream(var2.stream);
 					}
@@ -641,7 +647,7 @@ public class MidiPcmStream extends PcmStream {
 			var2 += (int)(var6 * (double)var4);
 		}
 
-		var4 = (int)((double)(var1.rawSound.sampleRate * 256) * Math.pow(2.0D, (double)var2 * 3.255208333333333E-4D) / (double)SoundConstants.sampleRate + 0.5D);
+		var4 = (int)((double)(var1.rawSound.sampleRate * 256) * Math.pow(2.0D, (double)var2 * 3.255208333333333E-4D) / (double) AppConstants.sampleRate + 0.5D);
 		return var4 < 1 ? 1 : var4;
 	}
 
@@ -748,7 +754,7 @@ public class MidiPcmStream extends PcmStream {
 	}
 
 	boolean method4788(MusicPatchNode var1, int[] var2, int var3, int var4) {
-		var1.field2995 = SoundConstants.sampleRate / 100;
+		var1.field2995 = AppConstants.sampleRate / 100;
 		if (var1.field2999 < 0 || var1.stream != null && !var1.stream.method833()) {
 			int var5 = var1.field2998;
 			if (var5 > 0) {
@@ -839,6 +845,20 @@ public class MidiPcmStream extends PcmStream {
 			}
 
 			return true;
+		}
+	}
+
+	public void loadSoundFonts(String soundFontPath, int channel) {
+		if (musicPatches != null) {
+			for (MusicPatch musicPatch = (MusicPatch) musicPatches.first(); musicPatch != null; musicPatch = (MusicPatch) musicPatches.next()) {
+				try {
+					if (new File(soundFontPath + File.separator + musicPatch.key + ".sf2").exists()) {
+						musicPatch.mapSoundFontSamples((int) musicPatch.key, channel, new SF2Soundbank(new File(soundFontPath + File.separator + musicPatch.key + ".sf2")));
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 

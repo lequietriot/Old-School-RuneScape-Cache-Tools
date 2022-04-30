@@ -10,5 +10,24 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="vorbis-java-core-0.8" level="project" />
     <orderEntry type="library" name="rs-cache-library-5.2" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/lombok-1.18.20.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/lombok-1.18.20.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="lombok-1.18.20" level="project" />
   </component>
 </module>

@@ -13,7 +13,7 @@ public class MusicTrack extends Node {
 
 	}
 
-    MusicTrack(ByteBuffer buf) {
+    public MusicTrack(ByteBuffer buf) {
 		buf.position(buf.limit() - 3);
 		int tracks = buf.get() & 0xFF;
 		int division = buf.getShort() & 0xFFFF;
@@ -359,7 +359,7 @@ public class MusicTrack extends Node {
 		this.midi = midiBuff.array();
 	}
 
-	void method4981() {
+	public void method4981() {
 		if (this.table == null) { // L: 274
 			this.table = new NodeHashTable(16); // L: 275
 			int[] var1 = new int[16]; // L: 276
@@ -439,7 +439,7 @@ public class MusicTrack extends Node {
 		}
 	} // L: 331
 
-	void clear() {
+	public void clear() {
 		this.table = null; // L: 334
 	} // L: 335
 

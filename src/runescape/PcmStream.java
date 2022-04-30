@@ -19,7 +19,7 @@ public abstract class PcmStream extends Node {
 
 	protected abstract void fill(int[] var1, int var2, int var3);
 
-	protected abstract void skip(int var1);
+	public abstract void skip(int var1);
 
 	int vmethod974() {
 		return 255;

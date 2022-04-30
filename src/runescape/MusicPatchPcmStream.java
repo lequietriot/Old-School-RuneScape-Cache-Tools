@@ -1,5 +1,7 @@
 package runescape;
 
+import application.constants.AppConstants;
+
 public class MusicPatchPcmStream extends PcmStream {
 	
 	MidiPcmStream superStream;
@@ -14,7 +16,7 @@ public class MusicPatchPcmStream extends PcmStream {
 
 	void method4974(MusicPatchNode var1, int[] var2, int var3, int var4, int var5) {
 		if ((this.superStream.field2944[var1.midiChannel] & 4) != 0 && var1.field2999 < 0) { // L: 73
-			int var6 = this.superStream.field2946[var1.midiChannel] / SoundConstants.sampleRate; // L: 74
+			int var6 = this.superStream.field2946[var1.midiChannel] / AppConstants.sampleRate; // L: 74
 
 			while (true) {
 				int var7 = (var6 + 1048575 - var1.field3003) / var6; // L: 76
@@ -27,7 +29,7 @@ public class MusicPatchPcmStream extends PcmStream {
 				var3 += var7; // L: 79
 				var4 -= var7; // L: 80
 				var1.field3003 += var6 * var7 - 1048576; // L: 81
-				int var8 = SoundConstants.sampleRate / 100; // L: 82
+				int var8 = AppConstants.sampleRate / 100; // L: 82
 				int var9 = 262144 / var6; // L: 83
 				if (var9 < var8) { // L: 84
 					var8 = var9;
@@ -59,7 +61,7 @@ public class MusicPatchPcmStream extends PcmStream {
 
 	void method4959(MusicPatchNode var1, int var2) {
 		if ((this.superStream.field2944[var1.midiChannel] & 4) != 0 && var1.field2999 < 0) { // L: 105
-			int var3 = this.superStream.field2946[var1.midiChannel] / SoundConstants.sampleRate; // L: 106
+			int var3 = this.superStream.field2946[var1.midiChannel] / AppConstants.sampleRate; // L: 106
 			int var4 = (var3 + 1048575 - var1.field3003) / var3; // L: 107
 			var1.field3003 = var3 * var2 + var1.field3003 & 1048575; // L: 108
 			if (var4 <= var2) { // L: 109
@@ -130,7 +132,7 @@ public class MusicPatchPcmStream extends PcmStream {
 
 	} // L: 54
 
-	protected void skip(int var1) {
+	public void skip(int var1) {
 		this.mixer.skip(var1); // L: 58
 
 		for (MusicPatchNode var3 = (MusicPatchNode)this.queue.last(); var3 != null; var3 = (MusicPatchNode)this.queue.previous()) { // L: 59

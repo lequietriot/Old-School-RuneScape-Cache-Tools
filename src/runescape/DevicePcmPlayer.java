@@ -1,11 +1,14 @@
 package runescape;
 
+import application.constants.AppConstants;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine.Info;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class DevicePcmPlayer extends PcmPlayer {
 
@@ -16,14 +19,14 @@ public class DevicePcmPlayer extends PcmPlayer {
 	public ByteArrayOutputStream byteArrayOutputStream;
 
 	public void init() {
-		this.format = new AudioFormat((float) SoundConstants.sampleRate, 16, SoundConstants.stereo ? 2 : 1, true, false);
-		this.byteSamples = new byte[256 << (SoundConstants.stereo ? 2 : 1)];
+		this.format = new AudioFormat((float) AppConstants.sampleRate, 16, AppConstants.stereo ? 2 : 1, true, false);
+		this.byteSamples = new byte[256 << (AppConstants.stereo ? 2 : 1)];
 		this.byteArrayOutputStream = new ByteArrayOutputStream();
 	}
 
 	public void open(int var1) throws LineUnavailableException {
 		try {
-			Info var2 = new Info(SourceDataLine.class, this.format, var1 << (SoundConstants.stereo ? 2 : 1));
+			Info var2 = new Info(SourceDataLine.class, this.format, var1 << (AppConstants.stereo ? 2 : 1));
 			this.line = (SourceDataLine)AudioSystem.getLine(var2);
 			this.line.open();
 			this.line.start();
@@ -55,12 +58,12 @@ public class DevicePcmPlayer extends PcmPlayer {
 	}
 
 	protected int position() {
-		return this.capacity2 - (this.line.available() >> (SoundConstants.stereo ? 2 : 1));
+		return this.capacity2 - (this.line.available() >> (AppConstants.stereo ? 2 : 1));
 	}
 
 	public void write() {
 		int var1 = 256;
-		if (SoundConstants.stereo) {
+		if (AppConstants.stereo) {
 			var1 <<= 1;
 		}
 
@@ -78,7 +81,7 @@ public class DevicePcmPlayer extends PcmPlayer {
 
 	public void writeToBuffer() {
 		int var1 = 256;
-		if (SoundConstants.stereo) {
+		if (AppConstants.stereo) {
 			var1 <<= 1;
 		}
 
@@ -88,10 +91,14 @@ public class DevicePcmPlayer extends PcmPlayer {
 				var3 = 8388607 ^ var3 >> 31;
 			}
 
-			this.byteSamples[var2 * 2] = (byte)(var3 >> 8);
-			this.byteSamples[var2 * 2 + 1] = (byte)(var3 >> 16);
+			this.byteSamples[var2 * 2] = (byte)(var3 >> 8 >> 1);
+			this.byteSamples[var2 * 2 + 1] = (byte)(var3 >> 16 >> 1);
 		}
-		this.byteArrayOutputStream.write(this.byteSamples, 0, var1 << 1);
+		try {
+			this.byteArrayOutputStream.write(this.byteSamples);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected void close() {

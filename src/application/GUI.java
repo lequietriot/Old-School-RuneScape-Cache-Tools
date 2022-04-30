@@ -1,8 +1,8 @@
 package application;
 
+import application.constants.AppConstants;
 import com.sun.media.sound.SF2Soundbank;
-import decoders.MidiDecoder;
-import decoders.VorbisDecoder;
+import decoders.*;
 import encoders.MidiEncoder;
 import encoders.VorbisEncoder;
 import org.displee.CacheLibrary;
@@ -13,28 +13,31 @@ import runescape.*;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class GUI extends JFrame {
 
-    public CacheLibrary cacheLibrary;
+    public static CacheLibrary cacheLibrary;
 
     static DevicePcmPlayer devicePcmPlayer;
 
-    static DevicePcmPlayer[] devicePcmPlayers;
-
     static MidiPcmStream midiPcmStream;
 
-    JPanel contentPanel;
+    static JPanel contentPanel;
 
     JTextField songNameInput;
 
@@ -91,7 +94,6 @@ public class GUI extends JFrame {
         vorbisEncoder.addActionListener(e -> new VorbisEncoder(this));
         encoderMenu.add(vorbisEncoder);
 
-
         JMenu decoderMenu = new JMenu("Data Decoders");
         jMenuBar.add(decoderMenu);
 
@@ -99,9 +101,21 @@ public class GUI extends JFrame {
         midiDecoder.addActionListener(e -> new MidiDecoder(this));
         decoderMenu.add(midiDecoder);
 
+        JMenuItem modelDecoderOS = new JMenuItem("OSRS Model Decoder");
+        modelDecoderOS.addActionListener(e -> new ModelDecoderOS(this));
+        decoderMenu.add(modelDecoderOS);
+
+        JMenuItem modelDecoderHD = new JMenuItem("RSHD Model Decoder");
+        modelDecoderHD.addActionListener(e -> new ModelDecoderHD(this));
+        decoderMenu.add(modelDecoderHD);
+
         JMenuItem vorbisDecoder = new JMenuItem("Vorbis Decoder");
         vorbisDecoder.addActionListener(e -> new VorbisDecoder(this));
         decoderMenu.add(vorbisDecoder);
+
+        JMenuItem soundBankDecoder = new JMenuItem("Sound Bank Decoder");
+        soundBankDecoder.addActionListener(e -> new SoundBankDecoder(this));
+        decoderMenu.add(soundBankDecoder);
 
         JMenu toolsMenu = new JMenu("Tools");
         jMenuBar.add(toolsMenu);
@@ -114,13 +128,13 @@ public class GUI extends JFrame {
         musicPort.addActionListener(e -> useMusicPort());
         toolsMenu.add(musicPort);
 
-        JMenuItem print = new JMenuItem("Print Enum Values");
-        print.addActionListener(e -> printValues());
-        toolsMenu.add(print);
-
-        JMenuItem quickTest = new JMenuItem("Quick Test");
+        JMenuItem quickTest = new JMenuItem("Quick Sound Test");
         quickTest.addActionListener(e -> quickTestSound());
-        toolsMenu.add(quickTest);
+        //toolsMenu.add(quickTest);
+
+        JMenuItem test = new JMenuItem("Test new tool");
+        test.addActionListener(e -> testTool());
+        //toolsMenu.add(test);
 
         JLabel loadCacheLabel = new JLabel("Please load your cache from the File menu to begin!");
         loadCacheLabel.setVerticalAlignment(SwingConstants.CENTER);
@@ -143,7 +157,7 @@ public class GUI extends JFrame {
         JLabel songInfoLabel = new JLabel("Current Loaded Song:");
 
         songNameInput = new JTextField("", 30);
-        songNameInput.setText(SoundConstants.currentSongName);
+        songNameInput.setText(AppConstants.currentSongName);
         songNameInput.addActionListener(e -> updateCurrentSong(songNameInput));
 
         JButton loadMusicButton = new JButton("Load MIDI");
@@ -179,21 +193,30 @@ public class GUI extends JFrame {
 
         JLabel sampleRateLabel = new JLabel("Sample Rate");
 
-        JTextField sampleRateSetter = new JTextField("" + SoundConstants.sampleRate, 8);
+        JTextField sampleRateSetter = new JTextField("" + AppConstants.sampleRate, 8);
         sampleRateSetter.addActionListener(e -> updateSampleRate(sampleRateSetter));
 
         JLabel volumeLevelLabel = new JLabel("Volume Level");
 
-        JTextField volumeLevelSetter = new JTextField("" + SoundConstants.volumeLevel, 8);
+        JTextField volumeLevelSetter = new JTextField("" + AppConstants.volumeLevel, 8);
         volumeLevelSetter.addActionListener(e -> updateVolumeLevel(volumeLevelSetter));
 
         JCheckBox stereoSoundSetter = new JCheckBox("Use Stereo Sound");
-        stereoSoundSetter.setSelected(SoundConstants.stereo);
+        stereoSoundSetter.setSelected(AppConstants.stereo);
         stereoSoundSetter.addActionListener(e -> updateStereoMode(stereoSoundSetter));
 
         JCheckBox shuffleModeSetter = new JCheckBox("Shuffle Music");
-        shuffleModeSetter.setSelected(SoundConstants.shuffle);
+        shuffleModeSetter.setSelected(AppConstants.shuffle);
         shuffleModeSetter.addActionListener(e -> updateShuffleMode(shuffleModeSetter));
+
+        JLabel customSoundFontLabel = new JLabel("SoundFont Path");
+
+        JTextField customSoundFontSetter = new JTextField("" + AppConstants.customSoundFontPath, 16);
+        customSoundFontSetter.addActionListener(e -> updateCurrentSoundFont(customSoundFontSetter));
+
+        JCheckBox customSoundFontCheckBox = new JCheckBox("Use Custom SoundFont");
+        customSoundFontCheckBox.setSelected(AppConstants.usingSoundFont);
+        customSoundFontCheckBox.addActionListener(e -> updateCustomSoundFontMode(customSoundFontCheckBox));
 
         settingsPanel.add(musicIndexLabel);
         settingsPanel.add(musicIndexComboBox);
@@ -203,6 +226,9 @@ public class GUI extends JFrame {
         settingsPanel.add(volumeLevelSetter);
         settingsPanel.add(stereoSoundSetter);
         settingsPanel.add(shuffleModeSetter);
+        settingsPanel.add(customSoundFontCheckBox);
+        settingsPanel.add(customSoundFontLabel);
+        settingsPanel.add(customSoundFontSetter);
 
         musicPlayerMasterPanel.setLeftComponent(settingsPanel);
         musicPlayerMasterPanel.setRightComponent(musicPlayerPanel);
@@ -235,8 +261,8 @@ public class GUI extends JFrame {
             MidiReceiver midiReceiver = new MidiReceiver(midiPcmStream);
             MidiDevice.Info[] infoArray = MidiSystem.getMidiDeviceInfo();
 
-            SoundConstants.pcmPlayerProvider = new DevicePcmPlayerProvider();
-            devicePcmPlayer = (DevicePcmPlayer) SoundConstants.pcmPlayerProvider.player();
+            AppConstants.pcmPlayerProvider = new DevicePcmPlayerProvider();
+            devicePcmPlayer = (DevicePcmPlayer) AppConstants.pcmPlayerProvider.player();
 
             try {
                 for (MidiDevice.Info info : infoArray) {
@@ -268,16 +294,16 @@ public class GUI extends JFrame {
 
     private void changeIndex(JComboBox<String> musicIndexComboBox) {
         if (musicIndexComboBox.getSelectedItem() == "Music Tracks (6)") {
-            SoundConstants.currentMusicIndex = 6;
+            AppConstants.currentMusicIndex = 6;
         }
         if (musicIndexComboBox.getSelectedItem() == "Music Jingles (11)") {
-            SoundConstants.currentMusicIndex = 11;
+            AppConstants.currentMusicIndex = 11;
         }
     }
 
     private void updateCurrentSong(JTextField songName) {
         if (songName.getText() != null) {
-            SoundConstants.currentSongName = songName.getText();
+            AppConstants.currentSongName = songName.getText();
         }
     }
 
@@ -288,9 +314,10 @@ public class GUI extends JFrame {
             File selected = chooseMidi.getSelectedFile();
             if (selected.getName().endsWith(".mid")) {
                 try {
-                    SoundConstants.midiMusicFileBytes = Files.readAllBytes(Paths.get(selected.toURI()));
-                    SoundConstants.currentSongName = selected.getName().replace(".mid", "").trim() + " (Custom)";
-                    songNameInput.setText(SoundConstants.currentSongName);
+                    AppConstants.currentMusicFolder = selected.getParentFile().listFiles();
+                    AppConstants.midiMusicFileBytes = Files.readAllBytes(Paths.get(selected.toURI()));
+                    AppConstants.currentSongName = selected.getName().replace(".mid", "").trim() + " (Custom)";
+                    songNameInput.setText(AppConstants.currentSongName);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -300,70 +327,103 @@ public class GUI extends JFrame {
 
     private void playSong() {
         try {
+            FileOutputStream fileOutputStream = new FileOutputStream(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "Current Song.txt");
+            if (AppConstants.currentSongName.contains(" - ")) {
+                int index = AppConstants.currentSongName.lastIndexOf(" - ");
+                String name = AppConstants.currentSongName.substring(index).replace(".mid", "").replace(" - ", "").trim();
+                if (name.contains("(Custom)")) {
+                    name = name.replace("(Custom)", "").trim();
+                }
+                fileOutputStream.write(name.getBytes(StandardCharsets.UTF_8));
+            }
+            else {
+                String name = AppConstants.currentSongName.replace(".mid","").trim();
+                if (name.contains("(Custom)")) {
+                    name = name.replace("(Custom)", "").trim();
+                }
+                fileOutputStream.write(name.getBytes(StandardCharsets.UTF_8));
+            }
             initSoundEngine();
-        } catch (LineUnavailableException e) {
+        } catch (IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
     }
 
     private void stopSong() {
         if (midiPcmStream != null) {
+            while (midiPcmStream.getPcmStreamVolume() != 0) {
+                if (midiPcmStream.getPcmStreamVolume() == 0) {
+                    break;
+                } else {
+                    midiPcmStream.setPcmStreamVolume(midiPcmStream.getPcmStreamVolume() - 1);
+                    try {
+                        Thread.sleep((long) (0.025 * AppConstants.volumeLevel));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
             midiPcmStream = null;
             devicePcmPlayer.setStream(null);
         }
     }
 
     private void renderSong() {
-        if (midiPcmStream == null) {
-            midiPcmStream = new MidiPcmStream();
-            midiPcmStream.method4761(9, 128);
+        try {
+            if (midiPcmStream == null) {
+                midiPcmStream = new MidiPcmStream();
+                midiPcmStream.method4761(9, 128);
 
-            SoundConstants.pcmPlayerProvider = new DevicePcmPlayerProvider();
-            devicePcmPlayer = (DevicePcmPlayer) SoundConstants.pcmPlayerProvider.player();
+                AppConstants.pcmPlayerProvider = new DevicePcmPlayerProvider();
+                devicePcmPlayer = (DevicePcmPlayer) AppConstants.pcmPlayerProvider.player();
 
-            MusicTrack musicTrack = new MusicTrack();
-            if (SoundConstants.currentSongName.contains("(Custom)")) {
-                musicTrack = MusicTrack.setTrack(SoundConstants.midiMusicFileBytes);
-            }
-            else {
-                try {
-                    if (Integer.parseInt(SoundConstants.currentSongName) != -1) {
-                        musicTrack = MusicTrack.readTrack(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), Integer.parseInt(SoundConstants.currentSongName), 0);
+                MusicTrack musicTrack = new MusicTrack();
+                if (AppConstants.currentSongName.contains("(Custom)")) {
+                    musicTrack = MusicTrack.setTrack(AppConstants.midiMusicFileBytes);
+                } else {
+                    try {
+                        if (Integer.parseInt(AppConstants.currentSongName) != -1) {
+                            musicTrack = MusicTrack.readTrack(cacheLibrary.getIndex(AppConstants.currentMusicIndex), Integer.parseInt(AppConstants.currentSongName), 0);
+                        }
+                    } catch (NumberFormatException e) {
+                        musicTrack = MusicTrack.readTrackFromString(cacheLibrary.getIndex(AppConstants.currentMusicIndex), AppConstants.currentSongName);
                     }
-                } catch (NumberFormatException e) {
-                    musicTrack = MusicTrack.readTrackFromString(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), SoundConstants.currentSongName);
+                }
+
+                SoundCache soundCache = new SoundCache(cacheLibrary.getIndex(4), cacheLibrary.getIndex(14));
+
+                if (musicTrack != null && midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.getIndex(15), soundCache, 0)) {
+                    midiPcmStream.setPcmStreamVolume(AppConstants.volumeLevel);
+                    midiPcmStream.setMusicTrack(musicTrack, false);
+                    if (AppConstants.usingSoundFont) {
+                        midiPcmStream.loadSoundFont(new SF2Soundbank(new File(AppConstants.customSoundFontPath)), -1);
+                    }
+                    devicePcmPlayer.init();
+                    devicePcmPlayer.setStream(midiPcmStream);
+                    devicePcmPlayer.samples = new int[512];
+                    while (midiPcmStream != null && midiPcmStream.isReady()) {
+                        devicePcmPlayer.fill(devicePcmPlayer.samples, 256);
+                        devicePcmPlayer.writeToBuffer();
+                    }
+                    byte[] rendered = devicePcmPlayer.byteArrayOutputStream.toByteArray();
+                    AudioInputStream audioInputStream = new AudioInputStream(new ByteArrayInputStream(rendered), devicePcmPlayer.format, rendered.length);
+                    try {
+                        File outputFilePath = new File(cacheLibrary.getPath() + File.separator + "Output");
+                        boolean madeDirectory = outputFilePath.mkdirs();
+                        AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(outputFilePath + File.separator + AppConstants.currentSongName + ".wav"));
+                        if (madeDirectory) {
+                            JOptionPane.showMessageDialog(getContentPane(), "An output directory in your current cache folder was created!\n" + AppConstants.currentSongName + " was then rendered successfully to your output folder!");
+                        } else {
+                            JOptionPane.showMessageDialog(getContentPane(), AppConstants.currentSongName + " was rendered successfully to your output folder!");
+                        }
+                        stopSong();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-
-            SoundCache soundCache = new SoundCache(cacheLibrary.getIndex(4), cacheLibrary.getIndex(14));
-
-            if (musicTrack != null && midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.getIndex(15), soundCache, 0)) {
-                midiPcmStream.setPcmStreamVolume(SoundConstants.volumeLevel);
-                midiPcmStream.setMusicTrack(musicTrack, false);
-                devicePcmPlayer.init();
-                devicePcmPlayer.setStream(midiPcmStream);
-                devicePcmPlayer.samples = new int[512];
-                while (midiPcmStream != null && midiPcmStream.isReady()) {
-                    devicePcmPlayer.fill(devicePcmPlayer.samples, 256);
-                    devicePcmPlayer.writeToBuffer();
-                }
-                byte[] rendered = devicePcmPlayer.byteArrayOutputStream.toByteArray();
-                AudioInputStream audioInputStream = new AudioInputStream(new ByteArrayInputStream(rendered), devicePcmPlayer.format, rendered.length);
-                try {
-                    File outputFilePath = new File(cacheLibrary.getPath() + File.separator + "Output");
-                    boolean madeDirectory = outputFilePath.mkdirs();
-                    AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(outputFilePath + File.separator + SoundConstants.currentSongName + ".wav"));
-                    if (madeDirectory) {
-                        JOptionPane.showMessageDialog(getContentPane(), "An output directory in your current cache folder was created!\n" + SoundConstants.currentSongName + " was then rendered successfully to your output folder!");
-                    }
-                    else {
-                        JOptionPane.showMessageDialog(getContentPane(), SoundConstants.currentSongName + " was rendered successfully to your output folder!");
-                    }
-                    stopSong();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -380,28 +440,31 @@ public class GUI extends JFrame {
                     midiPcmStream = new MidiPcmStream();
                     midiPcmStream.method4761(9, 128);
 
-                    SoundConstants.pcmPlayerProvider = new DevicePcmPlayerProvider();
-                    devicePcmPlayer = (DevicePcmPlayer) SoundConstants.pcmPlayerProvider.player();
+                    AppConstants.pcmPlayerProvider = new DevicePcmPlayerProvider();
+                    devicePcmPlayer = (DevicePcmPlayer) AppConstants.pcmPlayerProvider.player();
 
                     MusicTrack musicTrack = null;
-                    if (SoundConstants.currentSongName.contains("(Custom)")) {
-                        musicTrack = MusicTrack.setTrack(SoundConstants.midiMusicFileBytes);
+                    if (AppConstants.currentSongName.contains("(Custom)")) {
+                        musicTrack = MusicTrack.setTrack(AppConstants.midiMusicFileBytes);
                     }
                     else {
                         try {
-                            if (Integer.parseInt(SoundConstants.currentSongName) > -1) {
-                                musicTrack = MusicTrack.readTrack(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), Integer.parseInt(SoundConstants.currentSongName), 0);
+                            if (Integer.parseInt(AppConstants.currentSongName) > -1) {
+                                musicTrack = MusicTrack.readTrack(cacheLibrary.getIndex(AppConstants.currentMusicIndex), Integer.parseInt(AppConstants.currentSongName), 0);
                             }
                         } catch (NumberFormatException e) {
-                            musicTrack = MusicTrack.readTrackFromString(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), SoundConstants.currentSongName);
+                            musicTrack = MusicTrack.readTrackFromString(cacheLibrary.getIndex(AppConstants.currentMusicIndex), AppConstants.currentSongName);
                         }
                     }
 
                     SoundCache soundCache = new SoundCache(cacheLibrary.getIndex(4), cacheLibrary.getIndex(14));
 
                     if (musicTrack != null && midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.getIndex(15), soundCache, 0)) {
-                        midiPcmStream.setPcmStreamVolume(SoundConstants.volumeLevel);
+                        midiPcmStream.setPcmStreamVolume(AppConstants.volumeLevel);
                         midiPcmStream.setMusicTrack(musicTrack, false);
+                        if (AppConstants.usingSoundFont) {
+                            midiPcmStream.loadSoundFont(new SF2Soundbank(new File(AppConstants.customSoundFontPath)), -1);
+                        }
                         devicePcmPlayer.init();
                         devicePcmPlayer.setStream(midiPcmStream);
                         devicePcmPlayer.open(16384);
@@ -409,16 +472,26 @@ public class GUI extends JFrame {
                         while (midiPcmStream != null && midiPcmStream.isReady()) {
                             devicePcmPlayer.fill(devicePcmPlayer.samples, 256);
                             devicePcmPlayer.write();
-                            if (SoundConstants.shuffle && !midiPcmStream.isReady()) {
+                            if (AppConstants.shuffle && !midiPcmStream.isReady()) {
                                 stopSong();
-                                SoundConstants.currentSongName = String.valueOf((int) (Math.random() * cacheLibrary.getIndex(SoundConstants.currentMusicIndex).getArchives().length));
+                                if (AppConstants.currentSongName.contains("(Custom)")) {
+                                    File selected = AppConstants.currentMusicFolder[(int) (Math.random() * AppConstants.currentMusicFolder.length)];
+                                    if (selected.getName().endsWith(".mid")) {
+                                        AppConstants.midiMusicFileBytes = Files.readAllBytes(Paths.get(selected.toURI()));
+                                        AppConstants.currentSongName = selected.getName().replace(".mid", "").trim() + " (Custom)";
+                                        songNameInput.setText(AppConstants.currentSongName);
+                                    }
+                                }
+                                else {
+                                    AppConstants.currentSongName = String.valueOf((int) (Math.random() * cacheLibrary.getIndex(AppConstants.currentMusicIndex).getArchives().length));
+                                }
                                 playSong();
-                                System.out.println("Playing " + SoundConstants.currentSongName);
+                                System.out.println("Playing " + AppConstants.currentSongName);
                             }
                         }
                     }
                 }
-            } catch (LineUnavailableException e) {
+            } catch (LineUnavailableException | IOException e) {
                 e.printStackTrace();
             }
         }).start();
@@ -426,25 +499,35 @@ public class GUI extends JFrame {
 
     private void updateSampleRate(JTextField sampleRateSetter) {
         if (sampleRateSetter.getText() != null) {
-            SoundConstants.sampleRate = Integer.parseInt(sampleRateSetter.getText());
+            AppConstants.sampleRate = Integer.parseInt(sampleRateSetter.getText());
         }
     }
 
     private void updateVolumeLevel(JTextField volumeLevelSetter) {
         if (volumeLevelSetter.getText() != null) {
-            SoundConstants.volumeLevel = Integer.parseInt(volumeLevelSetter.getText());
+            AppConstants.volumeLevel = Integer.parseInt(volumeLevelSetter.getText());
             if (midiPcmStream != null) {
-                midiPcmStream.setPcmStreamVolume(SoundConstants.volumeLevel);
+                midiPcmStream.setPcmStreamVolume(AppConstants.volumeLevel);
             }
         }
     }
 
     private void updateStereoMode(JCheckBox stereoSoundSetter) {
-        SoundConstants.stereo = stereoSoundSetter.isSelected();
+        AppConstants.stereo = stereoSoundSetter.isSelected();
     }
 
     private void updateShuffleMode(JCheckBox shuffleModeSetter) {
-        SoundConstants.shuffle = shuffleModeSetter.isSelected();
+        AppConstants.shuffle = shuffleModeSetter.isSelected();
+    }
+
+    private void updateCurrentSoundFont(JTextField soundFontSetter) {
+        if (soundFontSetter.getText() != null) {
+            AppConstants.customSoundFontPath = soundFontSetter.getText();
+        }
+    }
+
+    private void updateCustomSoundFontMode(JCheckBox soundFontSetter) {
+        AppConstants.usingSoundFont = soundFontSetter.isSelected();
     }
 
     private void chooseCacheFolder() {
@@ -510,7 +593,7 @@ public class GUI extends JFrame {
         setArchiveNameButton.addActionListener(e -> setCacheArchiveName());
 
         JButton exportAllDataButton = new JButton("Export all Index data");
-        exportAllDataButton.addActionListener(e -> dumpAllData());
+        exportAllDataButton.addActionListener(e -> dumpAllDataFolders());
 
         cacheOperationsButtonPanel.add(addFilesButton);
         cacheOperationsButtonPanel.add(replaceFilesButton);
@@ -525,9 +608,10 @@ public class GUI extends JFrame {
 
         cacheTree.addTreeSelectionListener(e -> {
 
-            if (cacheTree.getLastSelectedPathComponent().toString().contains("Index")) {
+            if (cacheTree.getSelectionPath().toString().contains("Index")) {
 
-                selectedIndex = Integer.parseInt(cacheTree.getLastSelectedPathComponent().toString().replace("Index ", "").trim());
+                String[] indexStrings = cacheTree.getSelectionPath().toString().split(",");
+                selectedIndex = Integer.parseInt(indexStrings[1].replace("Index ", "").replace("]", "").trim());
 
                 Object[][] indexFields = new Object[][] {
 
@@ -557,9 +641,11 @@ public class GUI extends JFrame {
                 infoTable.revalidate();
             }
 
-            if (cacheTree.getLastSelectedPathComponent().toString().contains("Archive")) {
+            if (cacheTree.getSelectionPath().toString().contains("Archive")) {
 
-                selectedArchive = Integer.parseInt(cacheTree.getLastSelectedPathComponent().toString().replace("Archive ", "").trim());
+                String[] indexStrings = cacheTree.getSelectionPath().toString().split(",");
+                selectedIndex = Integer.parseInt(indexStrings[1].replace("Index ", "").replace("]", "").trim());
+                selectedArchive = Integer.parseInt(indexStrings[2].replace("Archive ", "").replace("]", "").trim());
 
                 Object[][] archiveFields = new Object[][] {
 
@@ -598,9 +684,12 @@ public class GUI extends JFrame {
 
             }
 
-            if (cacheTree.getLastSelectedPathComponent().toString().contains("File")) {
+            if (cacheTree.getSelectionPath().toString().contains("File")) {
 
-                selectedFile = Integer.parseInt(cacheTree.getLastSelectedPathComponent().toString().replace("File ", "").trim());
+                String[] indexStrings = cacheTree.getSelectionPath().toString().split(",");
+                selectedIndex = Integer.parseInt(indexStrings[1].replace("Index ", "").replace("]", "").trim());
+                selectedArchive = Integer.parseInt(indexStrings[2].replace("Archive ", "").replace("]", "").trim());
+                selectedFile = Integer.parseInt(indexStrings[3].replace("File ", "").replace("]", "").trim());
 
                 Object[][] fileFields = new Object[][] {
 
@@ -784,6 +873,80 @@ public class GUI extends JFrame {
         }
     }
 
+    private void dumpAllDataFolders() {
+        JFileChooser folderChooser = new JFileChooser();
+        folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if (folderChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selected = folderChooser.getSelectedFile();
+            File indexDirectory = new File(selected + File.separator + selectedIndex);
+            if (indexDirectory.mkdirs()) {
+                JOptionPane.showMessageDialog(this, "Created an Index " + selectedIndex + " folder.");
+            }
+            for (Archive archive : cacheLibrary.getIndex(selectedIndex).getArchives()) {
+                try {
+                    for (org.displee.cache.index.archive.file.File archiveFileData : cacheLibrary.getIndex(selectedIndex).getArchive(archive.getId()).getFiles()) {
+                        if (archiveFileData.getData() != null) {
+                            File fileData = new File(indexDirectory + File.separator + archive.getId() + File.separator + archiveFileData.getId() + ".dat");
+                            if (new File(indexDirectory + File.separator + archive.getId()).mkdirs()) {
+                                System.out.println("made directory for file");
+                            }
+                            FileOutputStream fileOutputStream = new FileOutputStream(fileData);
+                            DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
+                            byte[] convertedData = new byte[archiveFileData.getData().length - 23];
+                            for (int i = 0; i < convertedData.length; i++) {
+                                dataOutputStream.write(archiveFileData.getData()[i]);
+                            }
+                            int size = archiveFileData.getData().length;
+                            ByteBuffer buffer = ByteBuffer.wrap(archiveFileData.getData());
+                            short vertices = buffer.getShort(size - 23);
+                            short faces = buffer.getShort( size - 21);
+                            byte numTexTris = buffer.get(size - 20);
+                            byte footerFlag = buffer.get(size - 19);
+                            byte privateValues = buffer.get(size - 18);
+                            byte alphaFlags = buffer.get(size - 17);
+                            byte tSKINS = buffer.get(size - 16);
+                            byte tFlags = buffer.get(size - 15);
+                            byte vSkins = buffer.get(size - 14);
+                            short xData = buffer.getShort(size - 12);
+                            short yData = buffer.getShort(size - 10);
+                            short zData = buffer.getShort(size - 8);
+                            short triData = buffer.getShort(size - 6);
+                            short numFacesText = buffer.getShort(size - 4);
+                            short footer = buffer.getShort(size - 2);
+                            byte footer1 = buffer.get(size - 2);
+                            byte footer2 = buffer.get(size - 1);
+
+                            if (footer1 == -1 && footer2 == -1) {
+                                dataOutputStream.writeShort(vertices);
+                                dataOutputStream.writeShort(faces);
+                                dataOutputStream.write(numTexTris);
+                                dataOutputStream.write(1);
+                                dataOutputStream.write(0);
+                                dataOutputStream.write(1);
+                                dataOutputStream.write(1);
+                                dataOutputStream.write(1);
+                                dataOutputStream.writeShort(xData);
+                                dataOutputStream.writeShort(yData);
+                                dataOutputStream.writeShort(zData);
+                                dataOutputStream.writeShort(triData);
+                                dataOutputStream.write(-1);
+                                dataOutputStream.write(-2);
+                            }
+                            else {
+                                dataOutputStream.write(archiveFileData.getData());
+                            }
+
+                            dataOutputStream.flush();
+                            dataOutputStream.close();
+                        }
+                        }
+                    } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     private void dumpAllData() {
         JFileChooser folderChooser = new JFileChooser();
         folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -804,7 +967,7 @@ public class GUI extends JFrame {
                                 fileOutputStream.flush();
                                 fileOutputStream.close();
                             } else {
-                                File archiveData = new File(indexDirectory + File.separator + archive.getId() + ".dat");
+                                File archiveData = new File(indexDirectory + File.separator + archive.getId() + "-0" + ".dat");
                                 FileOutputStream archiveOutputStream = new FileOutputStream(archiveData);
                                 archiveOutputStream.write(archiveFileData.getData());
                                 archiveOutputStream.flush();
@@ -841,80 +1004,21 @@ public class GUI extends JFrame {
         }
     }
 
-    private void printValues() {
-        /*
-        File compareOS = new File(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "Comparing" + File.separator + "OSRS");
-        File compareHD = new File(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "Comparing" + File.separator + "RSHD");
-        for (int index = 0; index < 718; index++) {
-            File fileOSRS = new File(compareOS.getAbsolutePath() + File.separator + index + ".dat");
-            File fileRSHD = new File(compareHD.getAbsolutePath() + File.separator + index + ".dat");
-            if (fileOSRS.length() != fileRSHD.length()) {
-                System.out.println("ID " + index + " has changes!");
-            }
-        }
-        File textFile = new File(cacheLibrary.getPath() + File.separator + "Text.txt");
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(textFile);
-            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
-            for (File midi : Objects.requireNonNull(new File(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "MIDI Files").listFiles())) {
-                int index = midi.getName().lastIndexOf(" - ");
-                String midiName = midi.getName().substring(index).replace(".mid", "").replace(" - ", "").trim();
-                String replacement = midi.getName().substring(index).trim();
-                int midiID = Integer.parseInt(midi.getName().replace(replacement, "").trim());
-                bufferedWriter.write("musicTracks.put(\"" + midiName + "\"" + ", " + midiID + ");");
-                bufferedWriter.newLine();
-                bufferedWriter.flush();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        EnumComposition enumComposition = new EnumComposition();
-        enumComposition.decode(new Buffer(cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile).getData()));
-        System.out.println(Arrays.toString(enumComposition.strVals));
-         */
-        /*
-        File textFile = new File(cacheLibrary.getPath() + File.separator + "Text.txt");
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(textFile);
-            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
-            for (Archive archive : cacheLibrary.getIndex(15).getArchives()) {
-                bufferedWriter.write(archive.getId() + " = " + archive.getId());
-                bufferedWriter.newLine();
-                bufferedWriter.flush();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-         */
-        /*
-        try {
-            CacheLibrary oldSchoolCache = new CacheLibrary(defaultCachePath.getPath());
-            for (Archive archive : cacheLibrary.getIndex(6).getArchives()) {
-                int name = oldSchoolCache.getIndex(6).getArchive(archive.getId()).getName();
-                archive.setName(name);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-         */
+    private void testTool() {
+        this.revalidate();
     }
 
     private void quickTestSound() {
         new Thread(() -> {
-            try {
-                MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(new SF2Soundbank(new File(System.getProperty("user.home") + File.separator + "Downloads" + File.separator + "DPPt.sf2")));
-                DevicePcmPlayer[] devicePcmPlayers = initDevicePcmPlayers(midiPcmStreams);
-                while (true) {
-                    playDevicePcmPlayers(devicePcmPlayers);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(AppConstants.customSoundFontsPath);
+            DevicePcmPlayer[] devicePcmPlayers = initDevicePcmPlayers(midiPcmStreams);
+            while (true) {
+                playDevicePcmPlayers(devicePcmPlayers);
             }
         }).start();
     }
 
-    private MidiPcmStream[] initMidiPcmStreams(SF2Soundbank sf2Soundbank) {
+    private MidiPcmStream[] initMidiPcmStreams(String soundFontsPath) {
 
         MidiPcmStream[] midiPcmStreams = new MidiPcmStream[2];
 
@@ -922,25 +1026,25 @@ public class GUI extends JFrame {
             midiPcmStreams[index] = new MidiPcmStream();
             midiPcmStreams[index].method4761(9, 128);
             MusicTrack musicTrack = null;
-            if (SoundConstants.currentSongName.contains("(Custom)")) {
-                musicTrack = MusicTrack.setTrack(SoundConstants.midiMusicFileBytes);
+            if (AppConstants.currentSongName.contains("(Custom)")) {
+                musicTrack = MusicTrack.setTrack(AppConstants.midiMusicFileBytes);
             }
             else {
                 try {
-                    if (Integer.parseInt(SoundConstants.currentSongName) > -1) {
-                        musicTrack = MusicTrack.readTrack(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), Integer.parseInt(SoundConstants.currentSongName), 0);
+                    if (Integer.parseInt(AppConstants.currentSongName) > -1) {
+                        musicTrack = MusicTrack.readTrack(cacheLibrary.getIndex(AppConstants.currentMusicIndex), Integer.parseInt(AppConstants.currentSongName), 0);
                     }
                 } catch (NumberFormatException e) {
-                    musicTrack = MusicTrack.readTrackFromString(cacheLibrary.getIndex(SoundConstants.currentMusicIndex), SoundConstants.currentSongName);
+                    musicTrack = MusicTrack.readTrackFromString(cacheLibrary.getIndex(AppConstants.currentMusicIndex), AppConstants.currentSongName);
                 }
             }
 
             SoundCache soundCache = new SoundCache(cacheLibrary.getIndex(4), cacheLibrary.getIndex(14));
 
             if (musicTrack != null && midiPcmStreams[index].loadMusicTrack(musicTrack, cacheLibrary.getIndex(15), soundCache, 0)) {
-                midiPcmStreams[index].setPcmStreamVolume(SoundConstants.volumeLevel);
+                midiPcmStreams[index].setPcmStreamVolume(AppConstants.volumeLevel);
                 midiPcmStreams[index].setMusicTrack(musicTrack, false);
-                midiPcmStreams[index].loadSoundFont(sf2Soundbank, index);
+                midiPcmStreams[index].loadSoundFonts(soundFontsPath, index);
             }
         }
         return midiPcmStreams;

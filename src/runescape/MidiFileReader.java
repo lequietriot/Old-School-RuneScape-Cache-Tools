@@ -4,10 +4,10 @@ public class MidiFileReader {
 
 	static final byte[] field2963;
 	Buffer buffer;
-	int division;
+	public int division;
 	int[] trackStarts;
 	int[] trackPositions;
-	int[] trackLengths;
+	public int[] trackLengths;
 	int[] field2964;
 	int field2967;
 	long field2965;
@@ -21,11 +21,11 @@ public class MidiFileReader {
 		this.parse(var1);
 	}
 
-	MidiFileReader() {
+	public MidiFileReader() {
 		this.buffer = new Buffer(null);
 	}
 
-	void parse(byte[] data) {
+	public void parse(byte[] data) {
 		this.buffer.array = data;
 		this.buffer.offset = 10;
 		int var2 = this.buffer.readUnsignedShort();
@@ -58,7 +58,7 @@ public class MidiFileReader {
 		this.field2964 = new int[var2]; // L: 52
 	} // L: 53
 
-	void clear() {
+	public void clear() {
 		this.buffer.array = null; // L: 56
 		this.trackStarts = null; // L: 57
 		this.trackPositions = null; // L: 58
@@ -66,19 +66,19 @@ public class MidiFileReader {
 		this.field2964 = null; // L: 60
 	} // L: 61
 
-	boolean isReady() {
+	public boolean isReady() {
 		return this.buffer.array != null; // L: 64
 	}
 
-	int trackCount() {
+	public int trackCount() {
 		return this.trackPositions.length; // L: 68
 	}
 
-	void gotoTrack(int var1) {
+	public void gotoTrack(int var1) {
 		this.buffer.offset = this.trackPositions[var1]; // L: 72
 	} // L: 73
 
-	void markTrackPosition(int var1) {
+	public void markTrackPosition(int var1) {
 		this.trackPositions[var1] = this.buffer.offset; // L: 76
 	} // L: 77
 
@@ -86,13 +86,13 @@ public class MidiFileReader {
 		this.buffer.offset = -1; // L: 80
 	} // L: 81
 
-	void readTrackLength(int var1) {
+	public void readTrackLength(int var1) {
 		int var2 = this.buffer.readVarInt(); // L: 84
 		int[] var10000 = this.trackLengths;
 		var10000[var1] += var2; // L: 85
 	} // L: 86
 
-	int readMessage(int var1) {
+	public int readMessage(int var1) {
 		int var2 = this.readMessage0(var1); // L: 89
 		return var2; // L: 90
 	}
@@ -166,11 +166,11 @@ public class MidiFileReader {
 		}
 	}
 
-	long method4934(int var1) {
+	public long method4934(int var1) {
 		return this.field2965 + (long)var1 * (long)this.field2967; // L: 147
 	}
 
-	int getPrioritizedTrack() {
+	public int getPrioritizedTrack() {
 		int var1 = this.trackPositions.length; // L: 151
 		int var2 = -1; // L: 152
 		int var3 = Integer.MAX_VALUE; // L: 153
