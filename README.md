@@ -4,8 +4,7 @@
 ### Cache Functions
 * Cache explorer with functions for manipulating raw data
   * Add Files
-  * Replace Files
-  * Export File
+  * Export Files
   * Remove File
   * Remove Archive
   * Set Archive name hash (Numerical)

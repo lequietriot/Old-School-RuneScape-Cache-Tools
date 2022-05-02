@@ -3,9 +3,7 @@ package decoders;
 import application.GUI;
 import org.displee.CacheLibrary;
 import runelite.definitions.ModelDefinition;
-import runelite.loaders.ModelLoader;
-import runelite.managers.TextureManager;
-import runelite.models.ObjExporter;
+import runelite.loaders.ModelLoaderHD;
 
 import javax.swing.*;
 import java.io.File;
@@ -14,7 +12,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class ModelDecoderHD {
-
 
     GUI gui;
     CacheLibrary cacheLibrary;
@@ -35,17 +32,17 @@ public class ModelDecoderHD {
                     JOptionPane.showMessageDialog(gui.getContentPane(), "Archive " + archive + " was decoded successfully.\nIt can be found in the following path: " + outputFilePath.getPath());
                 }
 
-                TextureManager tm = new TextureManager(cacheLibrary);
-                tm.load();
+                //TextureManagerHD tm = new TextureManagerHD(cacheLibrary);
+                //tm.load();
 
-                ModelLoader loader = new ModelLoader();
+                ModelLoaderHD loader = new ModelLoaderHD();
                 ModelDefinition model = loader.load(archive, cacheLibrary.getIndex(index).getArchive(archive).getFile(file).getData());
 
-                ObjExporter exporter = new ObjExporter(tm, model);
-                try (PrintWriter objWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + archive + ".obj"));
-                     PrintWriter mtlWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + archive + ".mtl")))
+                //ObjExporterHD exporter = new ObjExporterHD(null, model);
+                try (PrintWriter objWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + archive + ".obj")))
+                     //PrintWriter mtlWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + archive + ".mtl")))
                 {
-                    exporter.export(objWriter, mtlWriter);
+                    //exporter.export(objWriter, null);
                 }
             }
         } catch (IOException e) {

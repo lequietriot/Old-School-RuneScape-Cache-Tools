@@ -23,11 +23,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class GUI extends JFrame {
 
@@ -41,6 +41,8 @@ public class GUI extends JFrame {
 
     JTextField songNameInput;
 
+    JLabel cacheOperationInfo;
+
     DefaultMutableTreeNode cacheNode;
 
     DefaultMutableTreeNode indexNode;
@@ -50,8 +52,11 @@ public class GUI extends JFrame {
     DefaultMutableTreeNode fileNode;
 
     public int selectedIndex;
+    public int[] selectedIndices;
     public int selectedArchive;
+    public int[] selectedArchives;
     public int selectedFile;
+    public int[] selectedFiles;
 
     private static final File defaultCachePath;
 
@@ -548,11 +553,15 @@ public class GUI extends JFrame {
                 e.printStackTrace();
             }
         }
+        this.revalidate();
     }
 
     private void initFileViewer() {
 
         contentPanel.removeAll();
+
+        cacheOperationInfo = new JLabel("Loaded cache from path - " + cacheLibrary.getPath());
+        cacheOperationInfo.setFont(cacheOperationInfo.getFont().deriveFont(Font.BOLD, 12));
 
         JSplitPane splitCacheViewPane = new JSplitPane();
 
@@ -570,15 +579,13 @@ public class GUI extends JFrame {
         cacheInfoPanel.setLayout(new GridLayout());
 
         JPanel cacheOperationsButtonPanel = new JPanel();
+        cacheOperationsButtonPanel.setLayout(new FlowLayout());
 
         JButton addFilesButton = new JButton("Add Files");
         addFilesButton.addActionListener(e -> addCacheFiles());
 
-        JButton replaceFilesButton = new JButton("Replace Files");
-        replaceFilesButton.addActionListener(e -> replaceCacheFiles());
-
-        JButton exportFileButton = new JButton("Export File");
-        exportFileButton.addActionListener(e -> exportFileData());
+        JButton exportFilesButton = new JButton("Export Files");
+        exportFilesButton.addActionListener(e -> exportFilesData());
 
         JButton removeArchiveButton = new JButton("Remove Archive");
         removeArchiveButton.addActionListener(e -> removeArchiveFile());
@@ -596,8 +603,7 @@ public class GUI extends JFrame {
         exportAllDataButton.addActionListener(e -> dumpAllDataFolders());
 
         cacheOperationsButtonPanel.add(addFilesButton);
-        cacheOperationsButtonPanel.add(replaceFilesButton);
-        cacheOperationsButtonPanel.add(exportFileButton);
+        cacheOperationsButtonPanel.add(exportFilesButton);
         cacheOperationsButtonPanel.add(removeArchiveButton);
         cacheOperationsButtonPanel.add(removeFileButton);
         cacheOperationsButtonPanel.add(setArchiveNameHashButton);
@@ -608,115 +614,154 @@ public class GUI extends JFrame {
 
         cacheTree.addTreeSelectionListener(e -> {
 
-            if (cacheTree.getSelectionPath().toString().contains("Index")) {
+            if (cacheTree.getSelectionPaths() != null && cacheTree.getSelectionPaths().length > 1) {
 
-                String[] indexStrings = cacheTree.getSelectionPath().toString().split(",");
-                selectedIndex = Integer.parseInt(indexStrings[1].replace("Index ", "").replace("]", "").trim());
+                selectedIndices = new int[cacheTree.getSelectionPaths().length];
+                selectedArchives = new int[cacheTree.getSelectionPaths().length];
+                selectedFiles = new int[cacheTree.getSelectionPaths().length];
 
-                Object[][] indexFields = new Object[][] {
+                for (int treePathIndex = 0; treePathIndex < cacheTree.getSelectionPaths().length; treePathIndex++) {
 
-                    new Object[] {
-                        "Cache Index ID", selectedIndex
-                    },
+                    String[] indexStrings = cacheTree.getSelectionPaths()[treePathIndex].toString().split(",");
 
-                    new Object[] {
-                        "Amount of Archives", cacheLibrary.getIndex(selectedIndex).getArchives().length
-                    },
-
-                    new Object[] {
-                        "Index CRC Value", cacheLibrary.getIndex(selectedIndex).getCRC()
-                    },
-
-                    new Object[] {
-                        "Index Version", cacheLibrary.getIndex(selectedIndex).getVersion()
+                    if (cacheTree.getSelectionPaths()[treePathIndex].toString().contains("Index")) {
+                        selectedIndices[treePathIndex] = Integer.parseInt(indexStrings[1].replace("Index ", "").replace("]", "").trim());
                     }
-                };
+                    if (cacheTree.getSelectionPaths()[treePathIndex].toString().contains("Archive")) {
+                        selectedArchives[treePathIndex] = Integer.parseInt(indexStrings[2].replace("Archive ", "").replace("]", "").trim());
+                    }
+                    if (cacheTree.getSelectionPaths()[treePathIndex].toString().contains("File")) {
+                        selectedFiles[treePathIndex] = Integer.parseInt(indexStrings[3].replace("File ", "").replace("]", "").trim());
+                    }
 
-                String[] indexFieldValues = new String[] {
-                        "", ""
-                };
+                    Object[][] fileFields = new Object[][]{
 
-                infoTable.setModel(new DefaultTableModel(indexFields, indexFieldValues));
-                infoTable.setRowHeight(20);
-                infoTable.revalidate();
+                            new Object[]{
+                                    "Multiple Selection", "N/A"
+                            },
+
+                    };
+
+                    String[] fileFieldValues = new String[]{
+                            "", ""
+                    };
+
+                    infoTable.setModel(new DefaultTableModel(fileFields, fileFieldValues));
+                    infoTable.setRowHeight(20);
+                    infoTable.revalidate();
+                }
             }
+            else {
+                if (Objects.requireNonNull(cacheTree.getSelectionPath()).toString().contains("Index")) {
 
-            if (cacheTree.getSelectionPath().toString().contains("Archive")) {
+                    String[] indexStrings = cacheTree.getSelectionPath().toString().split(",");
+                    selectedIndex = Integer.parseInt(indexStrings[1].replace("Index ", "").replace("]", "").trim());
 
-                String[] indexStrings = cacheTree.getSelectionPath().toString().split(",");
-                selectedIndex = Integer.parseInt(indexStrings[1].replace("Index ", "").replace("]", "").trim());
-                selectedArchive = Integer.parseInt(indexStrings[2].replace("Archive ", "").replace("]", "").trim());
+                    Object[][] indexFields = new Object[][]{
 
-                Object[][] archiveFields = new Object[][] {
+                            new Object[]{
+                                    "Cache Index ID", selectedIndex
+                            },
 
-                    new Object[] {
-                        "Cache Index ID", selectedIndex
-                    },
+                            new Object[]{
+                                    "Amount of Archives", cacheLibrary.getIndex(selectedIndex).getArchives().length
+                            },
 
-                    new Object[] {
-                        "Archive ID", selectedArchive
-                    },
+                            new Object[]{
+                                    "Index CRC Value", cacheLibrary.getIndex(selectedIndex).getCRC()
+                            },
 
-                    new Object[] {
-                        "Archive Name Hash", cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getName()
-                    },
+                            new Object[]{
+                                    "Index Version", cacheLibrary.getIndex(selectedIndex).getVersion()
+                            }
+                    };
 
-                    new Object[] {
-                        "Amount of Files", cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFiles().length
-                    },
+                    String[] indexFieldValues = new String[]{
+                            "", ""
+                    };
 
-                    new Object[] {
-                        "Archive CRC Value", cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getCRC()
-                    },
+                    infoTable.setModel(new DefaultTableModel(indexFields, indexFieldValues));
+                    infoTable.setRowHeight(20);
+                    infoTable.revalidate();
+                }
 
-                    new Object[] {
-                        "Archive Revision", cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getRevision()
-                    }
-                };
+                if (cacheTree.getSelectionPath().toString().contains("Archive")) {
 
-                String[] archiveFieldValues = new String[] {
-                    "", ""
-                };
+                    String[] indexStrings = cacheTree.getSelectionPath().toString().split(",");
+                    selectedIndex = Integer.parseInt(indexStrings[1].replace("Index ", "").replace("]", "").trim());
+                    selectedArchive = Integer.parseInt(indexStrings[2].replace("Archive ", "").replace("]", "").trim());
 
-                infoTable.setModel(new DefaultTableModel(archiveFields, archiveFieldValues));
-                infoTable.setRowHeight(20);
-                infoTable.revalidate();
+                    Object[][] archiveFields = new Object[][]{
 
-            }
+                            new Object[]{
+                                    "Cache Index ID", selectedIndex
+                            },
 
-            if (cacheTree.getSelectionPath().toString().contains("File")) {
+                            new Object[]{
+                                    "Archive ID", selectedArchive
+                            },
 
-                String[] indexStrings = cacheTree.getSelectionPath().toString().split(",");
-                selectedIndex = Integer.parseInt(indexStrings[1].replace("Index ", "").replace("]", "").trim());
-                selectedArchive = Integer.parseInt(indexStrings[2].replace("Archive ", "").replace("]", "").trim());
-                selectedFile = Integer.parseInt(indexStrings[3].replace("File ", "").replace("]", "").trim());
+                            new Object[]{
+                                    "Archive Name Hash", cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getName()
+                            },
 
-                Object[][] fileFields = new Object[][] {
+                            new Object[]{
+                                    "Amount of Files", cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFiles().length
+                            },
 
-                    new Object[] {
-                            "Cache Index ID", selectedIndex
-                    },
+                            new Object[]{
+                                    "Archive CRC Value", cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getCRC()
+                            },
 
-                    new Object[] {
-                            "Archive ID", selectedArchive
-                    },
+                            new Object[]{
+                                    "Archive Revision", cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getRevision()
+                            }
+                    };
 
-                    new Object[] {
-                            "File ID", selectedFile
-                    },
+                    String[] archiveFieldValues = new String[]{
+                            "", ""
+                    };
 
-                    new Object[] {
-                            "File Name Hash", cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile).getName()
-                    }
-                };
+                    infoTable.setModel(new DefaultTableModel(archiveFields, archiveFieldValues));
+                    infoTable.setRowHeight(20);
+                    infoTable.revalidate();
 
-                String[] fileFieldValues = new String[] {
-                        "", ""
-                };
+                }
 
-                infoTable.setModel(new DefaultTableModel(fileFields, fileFieldValues));
-                infoTable.setRowHeight(20);
-                infoTable.revalidate();
+                if (cacheTree.getSelectionPath().toString().contains("File")) {
+
+                    String[] indexStrings = cacheTree.getSelectionPath().toString().split(",");
+                    selectedIndex = Integer.parseInt(indexStrings[1].replace("Index ", "").replace("]", "").trim());
+                    selectedArchive = Integer.parseInt(indexStrings[2].replace("Archive ", "").replace("]", "").trim());
+                    selectedFile = Integer.parseInt(indexStrings[3].replace("File ", "").replace("]", "").trim());
+
+                    Object[][] fileFields = new Object[][]{
+
+                            new Object[]{
+                                    "Cache Index ID", selectedIndex
+                            },
+
+                            new Object[]{
+                                    "Archive ID", selectedArchive
+                            },
+
+                            new Object[]{
+                                    "File ID", selectedFile
+                            },
+
+                            new Object[]{
+                                    "File Name Hash", cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile).getName()
+                            }
+                    };
+
+                    String[] fileFieldValues = new String[]{
+                            "", ""
+                    };
+
+                    infoTable.setModel(new DefaultTableModel(fileFields, fileFieldValues));
+                    infoTable.setRowHeight(20);
+                    infoTable.revalidate();
+                }
             }
         });
 
@@ -734,74 +779,100 @@ public class GUI extends JFrame {
 
         contentPanel.add(splitCacheViewPane, BorderLayout.CENTER);
         contentPanel.revalidate();
+        contentPanel.add(cacheOperationInfo, BorderLayout.SOUTH);
+        contentPanel.revalidate();
     }
 
     private void addCacheFiles() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setMultiSelectionEnabled(true);
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File[] files = fileChooser.getSelectedFiles();
-            for (File file : files) {
-                if (cacheLibrary.getIndex(selectedIndex) != null) {
-                    try {
-                        String trimmedName = file.getName().substring(0, file.getName().indexOf(".")).trim();
-                        if (trimmedName.contains("-")) {
-                            selectedFile = Integer.parseInt(trimmedName.substring(trimmedName.indexOf("-")).trim().replace("-", "").trim());
-                            trimmedName = trimmedName.substring(0, trimmedName.indexOf("-")).trim();
+        int currentIndex = selectedIndex;
+        new Thread(() -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setMultiSelectionEnabled(true);
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                File[] files = fileChooser.getSelectedFiles();
+                for (File file : files) {
+                    if (cacheLibrary.getIndex(currentIndex) != null) {
+                        try {
+                            int fileToAdd = 0;
+                            String trimmedName = file.getName().substring(0, file.getName().indexOf(".")).trim();
+                            if (trimmedName.contains("-")) {
+                                fileToAdd = Integer.parseInt(trimmedName.substring(trimmedName.indexOf("-")).trim().replace("-", "").trim());
+                                trimmedName = trimmedName.substring(0, trimmedName.indexOf("-")).trim();
+                            }
+                            if (cacheLibrary.getIndex(currentIndex).getArchive(Integer.parseInt(trimmedName)) != null) {
+                                cacheLibrary.getIndex(currentIndex).getArchive(Integer.parseInt(trimmedName)).addFile(fileToAdd, Files.readAllBytes(file.toPath()));
+                            }
+                            else {
+                                cacheLibrary.getIndex(currentIndex).addArchive(Integer.parseInt(trimmedName)).addFile(fileToAdd, Files.readAllBytes(file.toPath()));
+                            }
+                            if (cacheLibrary.getIndex(currentIndex).update()) {
+                                loadCache(new File(cacheLibrary.getPath()));
+                            }
+                            cacheOperationInfo.setText("Successfully added Archive " + Integer.parseInt(trimmedName) + ", File " + fileToAdd + " to Index " + currentIndex + "!");
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                        else {
-                            selectedFile = 0;
-                        }
-                        if (cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)) != null) {
-                            cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
-                        }
-                        else {
-                            cacheLibrary.getIndex(selectedIndex).addArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
-                        }
-                        if (cacheLibrary.getIndex(selectedIndex).update()) {
-                            loadCache(new File(cacheLibrary.getPath()));
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
             }
-        }
+            cacheOperationInfo.setText("Operation completed successfully.");
+            this.revalidate();
+        }).start();
     }
 
-    private void replaceCacheFiles() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setMultiSelectionEnabled(true);
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File[] files = fileChooser.getSelectedFiles();
-            for (File file : files) {
-                if (cacheLibrary.getIndex(selectedIndex) != null) {
-                    try {
-                        String trimmedName = file.getName().substring(0, file.getName().indexOf(".")).trim();
-                        if (trimmedName.contains("-")) {
-                            selectedFile = Integer.parseInt(trimmedName.substring(trimmedName.indexOf("-")).trim().replace("-", "").trim());
-                            trimmedName = trimmedName.substring(0, trimmedName.indexOf("-")).trim();
+    private void exportFilesData() {
+        new Thread(() -> {
+            JFileChooser folderChooser = new JFileChooser();
+            folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            if (folderChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                File selected = folderChooser.getSelectedFile();
+                try {
+                    if (selectedArchives != null) {
+                        for (int archive = selectedArchives[0]; archive < selectedArchives[selectedArchives.length - 1]; archive++) {
+                            if (selectedFiles != null) {
+                                for (int file = selectedFiles[0]; file < selectedFiles[selectedFiles.length - 1]; file++) {
+                                    File fileData = new File(selected.getPath() + File.separator + selectedArchives[archive] + "-" + selectedFiles[file] + ".dat");
+                                    FileOutputStream fileOutputStream = new FileOutputStream(fileData);
+                                    if (cacheLibrary.getIndex(selectedIndex) != null) {
+                                        if (cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchives[archive]) != null) {
+                                            if (cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchives[archive]).getFile(selectedFiles[file]) != null) {
+                                                if (cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchives[archive]).getFile(selectedFiles[file]).getData() != null) {
+                                                    fileOutputStream.write(cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchives[archive]).getFile(selectedFiles[file]).getData());
+                                                    fileOutputStream.flush();
+                                                    fileOutputStream.close();
+                                                    cacheOperationInfo.setText("Successfully exported Index " + selectedIndex + ", Archive " + selectedArchives[archive] + ", File " + selectedFiles[file] + " to " + selected.getPath() + "!");
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        else {
-                            selectedFile = 0;
-                        }
-                        if (cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)) != null) {
-                            cacheLibrary.getIndex(selectedIndex).getArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
-                        }
-                        else {
-                            cacheLibrary.getIndex(selectedIndex).addArchive(Integer.parseInt(trimmedName)).addFile(selectedFile, Files.readAllBytes(file.toPath()));
-                        }
-                        if (cacheLibrary.getIndex(selectedIndex).update()) {
-                            loadCache(new File(cacheLibrary.getPath()));
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
+                    else {
+                        File fileData = new File(selected.getPath() + File.separator + selectedArchive + "-" + selectedFile + ".dat");
+                        FileOutputStream fileOutputStream = new FileOutputStream(fileData);
+                        if (cacheLibrary.getIndex(selectedIndex) != null) {
+                            if (cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive) != null) {
+                                if (cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile) != null) {
+                                    if (cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile).getData() != null) {
+                                        fileOutputStream.write(cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile).getData());
+                                        fileOutputStream.flush();
+                                        fileOutputStream.close();
+                                        cacheOperationInfo.setText("Successfully exported Index " + selectedIndex + ", Archive " + selectedArchive + ", File " + selectedFile + " to " + selected.getPath() + "!");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-        }
+            cacheOperationInfo.setText("Operation completed successfully.");
+            this.revalidate();
+        }).start();
     }
 
     private void setCacheArchiveNameHash() {
@@ -816,7 +887,10 @@ public class GUI extends JFrame {
                 }
             }
         }
+        cacheOperationInfo.setText("Operation completed successfully.");
+        this.revalidate();
     }
+
     private void setCacheArchiveName() {
         String fileNameToSet = JOptionPane.showInputDialog("Set Archive Name", "");
         if (fileNameToSet != null) {
@@ -829,6 +903,8 @@ public class GUI extends JFrame {
                 }
             }
         }
+        cacheOperationInfo.setText("Operation completed successfully.");
+        this.revalidate();
     }
 
     private void removeArchiveFile() {
@@ -837,6 +913,8 @@ public class GUI extends JFrame {
             loadCache(new File(cacheLibrary.getPath()));
             JOptionPane.showMessageDialog(this, "Cache Archive " + selectedArchive + " has been removed.");
         }
+        cacheOperationInfo.setText("Operation completed successfully.");
+        this.revalidate();
     }
 
     private void removeCacheFile() {
@@ -845,32 +923,8 @@ public class GUI extends JFrame {
             loadCache(new File(cacheLibrary.getPath()));
             JOptionPane.showMessageDialog(this, "Cache File " + selectedFile + " has been removed.");
         }
-    }
-
-    private void exportFileData() {
-        JFileChooser folderChooser = new JFileChooser();
-        folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        if (folderChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File selected = folderChooser.getSelectedFile();
-            try {
-                if (selectedFile == 0) {
-                    File archiveData = new File(selected.getPath() + File.separator + selectedArchive + ".dat");
-                    FileOutputStream archiveOutputStream = new FileOutputStream(archiveData);
-                    archiveOutputStream.write(cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(0).getData());
-                    archiveOutputStream.flush();
-                    archiveOutputStream.close();
-                }
-                else {
-                    File fileData = new File(selected.getPath() + File.separator + selectedArchive + "-" + selectedFile + ".dat");
-                    FileOutputStream fileOutputStream = new FileOutputStream(fileData);
-                    fileOutputStream.write(cacheLibrary.getIndex(selectedIndex).getArchive(selectedArchive).getFile(selectedFile).getData());
-                    fileOutputStream.flush();
-                    fileOutputStream.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        cacheOperationInfo.setText("Operation completed successfully.");
+        this.revalidate();
     }
 
     private void dumpAllDataFolders() {
@@ -892,53 +946,10 @@ public class GUI extends JFrame {
                             }
                             FileOutputStream fileOutputStream = new FileOutputStream(fileData);
                             DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
-                            byte[] convertedData = new byte[archiveFileData.getData().length - 23];
-                            for (int i = 0; i < convertedData.length; i++) {
-                                dataOutputStream.write(archiveFileData.getData()[i]);
-                            }
-                            int size = archiveFileData.getData().length;
-                            ByteBuffer buffer = ByteBuffer.wrap(archiveFileData.getData());
-                            short vertices = buffer.getShort(size - 23);
-                            short faces = buffer.getShort( size - 21);
-                            byte numTexTris = buffer.get(size - 20);
-                            byte footerFlag = buffer.get(size - 19);
-                            byte privateValues = buffer.get(size - 18);
-                            byte alphaFlags = buffer.get(size - 17);
-                            byte tSKINS = buffer.get(size - 16);
-                            byte tFlags = buffer.get(size - 15);
-                            byte vSkins = buffer.get(size - 14);
-                            short xData = buffer.getShort(size - 12);
-                            short yData = buffer.getShort(size - 10);
-                            short zData = buffer.getShort(size - 8);
-                            short triData = buffer.getShort(size - 6);
-                            short numFacesText = buffer.getShort(size - 4);
-                            short footer = buffer.getShort(size - 2);
-                            byte footer1 = buffer.get(size - 2);
-                            byte footer2 = buffer.get(size - 1);
-
-                            if (footer1 == -1 && footer2 == -1) {
-                                dataOutputStream.writeShort(vertices);
-                                dataOutputStream.writeShort(faces);
-                                dataOutputStream.write(numTexTris);
-                                dataOutputStream.write(1);
-                                dataOutputStream.write(0);
-                                dataOutputStream.write(1);
-                                dataOutputStream.write(1);
-                                dataOutputStream.write(1);
-                                dataOutputStream.writeShort(xData);
-                                dataOutputStream.writeShort(yData);
-                                dataOutputStream.writeShort(zData);
-                                dataOutputStream.writeShort(triData);
-                                dataOutputStream.write(-1);
-                                dataOutputStream.write(-2);
-                            }
-                            else {
-                                dataOutputStream.write(archiveFileData.getData());
-                            }
-
+                            dataOutputStream.write(archiveFileData.getData());
                             dataOutputStream.flush();
                             dataOutputStream.close();
-                        }
+                            }
                         }
                     } catch (IOException e) {
                     e.printStackTrace();
@@ -1002,6 +1013,7 @@ public class GUI extends JFrame {
                 }
             }
         }
+        this.revalidate();
     }
 
     private void testTool() {
