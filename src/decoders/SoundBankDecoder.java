@@ -33,7 +33,7 @@ public class SoundBankDecoder {
             }
         }
         try {
-            sf2Soundbank.save("./SoundFont/RuneScape.sf2");
+            sf2Soundbank.save("./RuneScape.sf2");
         } catch (IOException e) {
             e.printStackTrace();
         }
