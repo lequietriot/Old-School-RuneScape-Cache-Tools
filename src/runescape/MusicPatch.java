@@ -13,13 +13,13 @@ import java.util.List;
 
 public class MusicPatch extends Node {
 
-	public int field2973;
+	public int volume;
 	public RawSound[] rawSounds;
 	public short[] pitchOffset;
 	public byte[] volumeOffset;
 	public byte[] panOffset;
 	public MusicPatchNode2[] musicPatchParameters;
-	public byte[] field2977;
+	public byte[] loopOffset;
 	public int[] sampleOffset;
 
 	private static final int DEFAULT_BUFFER_SIZE = 8192;
@@ -32,7 +32,7 @@ public class MusicPatch extends Node {
 		this.volumeOffset = new byte[128];
 		this.panOffset = new byte[128];
 		this.musicPatchParameters = new MusicPatchNode2[128];
-		this.field2977 = new byte[128];
+		this.loopOffset = new byte[128];
 		this.sampleOffset = new int[128];
 		ByteBuffer buffer = ByteBuffer.wrap(var1);
 
@@ -111,15 +111,15 @@ public class MusicPatch extends Node {
 		MusicPatchNode2 var15;
 		for (var14 = 0; var14 < musicPatchParamsFinal.length; ++var14) {
 			var15 = musicPatchParamsFinal[var14] = new MusicPatchNode2();
-			int var42 = buffer.get() & 0xFF;
-			if (var42 > 0) {
-				var15.field2916 = new byte[var42 * 2];
+			int envelopeArrayLength = buffer.get() & 0xFF;
+			if (envelopeArrayLength > 0) {
+				var15.attackEnvelope = new byte[envelopeArrayLength * 2];
 			}
 
-			var42 = buffer.get() & 0xFF;
-			if (var42 > 0) {
-				var15.field2914 = new byte[var42 * 2 + 2];
-				var15.field2914[1] = 64;
+			envelopeArrayLength = buffer.get() & 0xFF;
+			if (envelopeArrayLength > 0) {
+				var15.decayEnvelope = new byte[envelopeArrayLength * 2 + 2];
+				var15.decayEnvelope[1] = 64;
 			}
 		}
 
@@ -197,7 +197,7 @@ public class MusicPatch extends Node {
 					var23 = buffer.array()[var5++] - 1;
 				}
 
-				this.field2977[var24] = (byte) var23;
+				this.loopOffset[var24] = (byte) var23;
 				--var20;
 			}
 		}
@@ -266,21 +266,21 @@ public class MusicPatch extends Node {
 			--var20;
 		}
 
-		this.field2973 = (buffer.get() & 0xFF) + 1;
+		this.volume = (buffer.get() & 0xFF) + 1;
 
 		int var29;
 		MusicPatchNode2 var41;
 		for (var27 = 0; var27 < var12; ++var27) {
 			var41 = musicPatchParamsFinal[var27];
-			if (var41.field2916 != null) {
-				for (var29 = 1; var29 < var41.field2916.length; var29 += 2) {
-					var41.field2916[var29] = buffer.get();
+			if (var41.attackEnvelope != null) {
+				for (var29 = 1; var29 < var41.attackEnvelope.length; var29 += 2) {
+					var41.attackEnvelope[var29] = buffer.get();
 				}
 			}
 
-			if (var41.field2914 != null) {
-				for (var29 = 3; var29 < var41.field2914.length - 2; var29 += 2) {
-					var41.field2914[var29] = buffer.get();
+			if (var41.decayEnvelope != null) {
+				for (var29 = 3; var29 < var41.decayEnvelope.length - 2; var29 += 2) {
+					var41.decayEnvelope[var29] = buffer.get();
 				}
 			}
 		}
@@ -299,24 +299,24 @@ public class MusicPatch extends Node {
 
 		for (var27 = 0; var27 < var12; ++var27) {
 			var41 = musicPatchParamsFinal[var27];
-			if (var41.field2914 != null) {
+			if (var41.decayEnvelope != null) {
 				var19 = 0;
 
-				for (var29 = 2; var29 < var41.field2914.length; var29 += 2) {
+				for (var29 = 2; var29 < var41.decayEnvelope.length; var29 += 2) {
 					var19 = var19 + 1 + buffer.get() & 0xFF;
-					var41.field2914[var29] = (byte) var19;
+					var41.decayEnvelope[var29] = (byte) var19;
 				}
 			}
 		}
 
 		for (var27 = 0; var27 < var12; ++var27) {
 			var41 = musicPatchParamsFinal[var27];
-			if (var41.field2916 != null) {
+			if (var41.attackEnvelope != null) {
 				var19 = 0;
 
-				for (var29 = 2; var29 < var41.field2916.length; var29 += 2) {
+				for (var29 = 2; var29 < var41.attackEnvelope.length; var29 += 2) {
 					var19 = 1 + var19 + buffer.get() & 0xFF;
-					var41.field2916[var29] = (byte) var19;
+					var41.attackEnvelope[var29] = (byte) var19;
 				}
 			}
 		}
@@ -437,39 +437,39 @@ public class MusicPatch extends Node {
 		}
 
 		for (var27 = 0; var27 < var12; ++var27) {
-			musicPatchParamsFinal[var27].field2913 = buffer.get() & 0xFF;
+			musicPatchParamsFinal[var27].sustain = buffer.get() & 0xFF;
 		}
 
 		for (var27 = 0; var27 < var12; ++var27) {
 			var41 = musicPatchParamsFinal[var27];
-			if (var41.field2916 != null) {
+			if (var41.attackEnvelope != null) {
 				var41.field2918 = buffer.get() & 0xFF;
 			}
 
-			if (var41.field2914 != null) {
-				var41.field2915 = buffer.get() & 0xFF;
+			if (var41.decayEnvelope != null) {
+				var41.release = buffer.get() & 0xFF;
 			}
 
-			if (var41.field2913 > 0) {
+			if (var41.sustain > 0) {
 				var41.field2912 = buffer.get() & 0xFF;
 			}
 		}
 
 		for (var27 = 0; var27 < var12; ++var27) {
-			musicPatchParamsFinal[var27].field2911 = buffer.get() & 0xFF;
+			musicPatchParamsFinal[var27].vibratoFrequencyHertz = buffer.get() & 0xFF;
 		}
 
 		for (var27 = 0; var27 < var12; ++var27) {
 			var41 = musicPatchParamsFinal[var27];
-			if (var41.field2911 > 0) {
-				var41.field2917 = buffer.get() & 0xFF;
+			if (var41.vibratoFrequencyHertz > 0) {
+				var41.vibratoPitchModulatorCents = buffer.get() & 0xFF;
 			}
 		}
 
 		for (var27 = 0; var27 < var12; ++var27) {
 			var41 = musicPatchParamsFinal[var27];
-			if (var41.field2917 > 0) {
-				var41.field2919 = buffer.get() & 0xFF;
+			if (var41.vibratoPitchModulatorCents > 0) {
+				var41.vibratoDelayMilliseconds = buffer.get() & 0xFF;
 			}
 		}
 
@@ -514,6 +514,7 @@ public class MusicPatch extends Node {
 
 	public SF2Soundbank decodeMusicPatch(SoundCache soundCache, SF2Soundbank sf2Soundbank, int id) {
 		int var5 = 0;
+		int lowNote = 0;
 		RawSound var6 = null;
 		SF2Sample sf2Sample = null;
 		SF2Layer sf2Layer = null;
@@ -531,13 +532,11 @@ public class MusicPatch extends Node {
 					} else {
 						var6 = soundCache.getMusicSample(var8 >> 2, null);
 					}
-
 					if (var6 != null) {
 						byte[] sample = new byte[var6.samples.length * 2];
 						for (int index = 0; index < sample.length; index++) {
 							sample[index] = var6.samples[index / 2];
 						}
-
 						sf2Sample = new SF2Sample(sf2Soundbank);
 						sf2Sample.setName(String.valueOf(var8 >> 2));
 						sf2Sample.setData(sample);
@@ -547,42 +546,100 @@ public class MusicPatch extends Node {
 						sf2Sample.setSampleType(1);
 						sf2Sample.setSampleLink(-1);
 
-						addSamplesToBank(sf2Soundbank, sf2Sample, id, (byte) var7);
-
-						sampleOffset[var7] = 0;
+						sf2Soundbank.addResource(sf2Sample);
+						lowNote = var7;
 					}
 				}
-				//addSamplesToBank(sf2Soundbank, sf2Sample, id, (byte) var7);
+
+				if (var6 != null) {
+
+					if (sf2Layer == null) {
+						sf2Layer = new SF2Layer();
+						sf2Layer.setName("Patch " + id);
+					}
+
+					sf2LayerRegion = new SF2LayerRegion();
+
+					if (sf2Instrument == null) {
+						sf2Instrument = new SF2Instrument();
+						sf2Instrument.setName("Patch " + id);
+						int bank = 0;
+						while (id > 127) {
+							id = id - 128;
+							bank++;
+							if (id < 128) {
+								bank = bank * 128;
+							}
+						}
+						sf2Instrument.setPatch(new Patch(bank, id));
+					}
+
+					if (sf2InstrumentRegion == null) {
+						sf2InstrumentRegion = new SF2InstrumentRegion();
+					}
+
+					byte[] noteRanges;
+					if (var7 >= lowNote) {
+						noteRanges = new byte[]{(byte) lowNote, (byte) var7};
+					}
+					else {
+						noteRanges = new byte[]{(byte) var7, (byte) var7};
+					}
+
+					assert musicPatchParameters[var7] != null;
+					if (!sf2Sample.getName().equals(String.valueOf(var8 >> 2))) {
+						if ((var7 + 1) != 128) {
+							if (pitchOffset[var7] != pitchOffset[var7 + 1]) {
+								addSamplesToBank(sf2Soundbank, sf2Instrument, sf2InstrumentRegion, sf2Layer, sf2LayerRegion, sf2Sample, noteRanges, var7, true);
+							}
+						}
+						if (var7 == 127) {
+							addSamplesToBank(sf2Soundbank, sf2Instrument, sf2InstrumentRegion, sf2Layer, sf2LayerRegion, sf2Sample, noteRanges, var7, true);
+						}
+					}
+					else {
+						if ((var7 + 1) != 128) {
+							if (pitchOffset[var7] != pitchOffset[var7 + 1]) {
+								addSamplesToBank(sf2Soundbank, sf2Instrument, sf2InstrumentRegion, sf2Layer, sf2LayerRegion, sf2Sample, noteRanges, var7, false);
+							}
+						}
+						if (var7 == 127) {
+							addSamplesToBank(sf2Soundbank, sf2Instrument, sf2InstrumentRegion, sf2Layer, sf2LayerRegion, sf2Sample, noteRanges, var7, false);
+						}
+					}
+
+					sampleOffset[var7] = 0;
+				}
 			}
 		}
 		return sf2Soundbank;
 	}
 
-	public void addSamplesToBank(SF2Soundbank sf2Soundbank, SF2Sample sf2Sample, int patchID, byte note) {
+	public void addSamplesToBank(SF2Soundbank sf2Soundbank, SF2Instrument sf2Instrument, SF2InstrumentRegion sf2InstrumentRegion, SF2Layer sf2Layer, SF2LayerRegion sf2LayerRegion, SF2Sample sf2Sample, byte[] noteRanges, int currentNote, boolean addRange) {
 
-		if (sf2Sample != null) {
-			sf2Soundbank.addResource(sf2Sample);
+		byte lowNote = noteRanges[0];
+		byte highNote = noteRanges[1];
+
+		if (addRange) {
+			noteRanges = new byte[] {lowNote, highNote};
 		}
 
-		SF2Instrument sf2Instrument = new SF2Instrument();
-		sf2Instrument.setName("Patch " + patchID);
-		sf2Instrument.setPatch(new Patch(0, patchID));
+		else {
+			noteRanges = new byte[] {(byte) currentNote, (byte) currentNote};
+		}
 
-		byte[] noteRanges = new byte[]{note, note};
-
-		SF2Layer sf2Layer = new SF2Layer();
-		sf2Layer.setName("Patch " + patchID);
-
-		SF2LayerRegion sf2LayerRegion = new SF2LayerRegion();
-
-		for (SF2Sample sample : sf2Soundbank.getSamples()) {
-			if (sample.getName().equals(sf2Sample.getName())) {
-				sf2LayerRegion.setSample(sample);
+		if (sf2Soundbank.getSamples() != null) {
+			for (SF2Sample sampleSf2 : sf2Soundbank.getSamples()) {
+				if (sampleSf2 == sf2Sample) {
+					sf2Soundbank.addResource(sf2Sample);
+					sf2Soundbank.removeResource(sampleSf2);
+				}
 			}
 		}
-		sf2LayerRegion.putBytes(SF2Region.GENERATOR_KEYRANGE, noteRanges);
-		short pitchOffset = (short) ((this.pitchOffset[note] / 256) + 128);
-		short pitchCorrection = this.pitchOffset[note];
+
+		sf2LayerRegion.setSample(sf2Sample);
+		short pitchOffset = (short) ((this.pitchOffset[currentNote] / 256) + 128);
+		short pitchCorrection = this.pitchOffset[currentNote];
 
 		while (pitchOffset >= 128) {
 			pitchOffset = (short) (pitchOffset - 128);
@@ -596,43 +653,55 @@ public class MusicPatch extends Node {
 			pitchCorrection = (short) (pitchCorrection - 256);
 		}
 
+		pitchCorrection = (short) ((pitchCorrection) / -2.56);
+
 		int loopMode = 0;
 		if (sf2Sample != null && sf2Sample.getStartLoop() != 0) {
 			loopMode = 1;
 		}
 
-		int volume = volumeOffset[note] + field2973;
+		int volume = volumeOffset[currentNote] + this.volume;
 		double attenuation = (volume / 128.0) * 48.16;
 		double maxEightBits = -48.16;
 
 		sf2LayerRegion.putInteger(SF2Region.GENERATOR_SAMPLEMODES, loopMode);
-
-		sf2LayerRegion.putShort(SF2Region.GENERATOR_OVERRIDINGROOTKEY, pitchOffset);
+		if (sf2Sample != null) {
+			sf2Sample.setOriginalPitch(pitchOffset);
+		}
+		sf2LayerRegion.putBytes(SF2Region.GENERATOR_KEYRANGE, noteRanges);
+		if (pitchOffset != (this.pitchOffset[currentNote] / 256) + 128) {
+			sf2LayerRegion.putShort(SF2Region.GENERATOR_OVERRIDINGROOTKEY, pitchOffset);
+		}
+		sf2LayerRegion.putShort(SF2Region.GENERATOR_FINETUNE, pitchCorrection);
 		sf2LayerRegion.putShort(SF2Region.GENERATOR_INITIALATTENUATION, (short) ((maxEightBits + attenuation) * -4));
-		sf2LayerRegion.putShort(SF2Region.GENERATOR_PAN, (short) (((panOffset[note] / 1.28) - 50) * 10));
-		if (musicPatchParameters[note] != null) {
-			//sf2LayerRegion.putInteger(SF2Region.GENERATOR_ATTACKVOLENV, 0);
-			//sf2LayerRegion.putInteger(SF2Region.GENERATOR_SUSTAINVOLENV, (int) (48.16 * 10));
-			//sf2LayerRegion.putInteger(SF2Region.GENERATOR_DECAYVOLENV, musicPatchParameters[note].field2913 << 8);
-			//sf2LayerRegion.putInteger(SF2Region.GENERATOR_RELEASEVOLENV, 0);//musicPatchParameters[note].field2911 * 10);
+		sf2LayerRegion.putShort(SF2Region.GENERATOR_PAN, (short) (((panOffset[currentNote] / 1.28) - 50) * 10));
+		if (musicPatchParameters[currentNote] != null) {
+			if (musicPatchParameters[currentNote].attackEnvelope != null) {
+				int attackValue = 0;
+				for (int attackIndex = 0; attackIndex < musicPatchParameters[currentNote].attackEnvelope.length; attackIndex++) {
+					attackValue = attackValue + musicPatchParameters[currentNote].attackEnvelope[attackIndex];
+				}
+				//sf2LayerRegion.putInteger(SF2Region.GENERATOR_ATTACKVOLENV, SF2Region.getDefaultValue(SF2Region.GENERATOR_ATTACKVOLENV) + musicPatchParameters[currentNote].field2915 * 100);
+			}
+			//sf2LayerRegion.putInteger(SF2Region.GENERATOR_SUSTAINVOLENV, (int) (144.0 * 10));
+			if (musicPatchParameters[currentNote].decayEnvelope != null) {
+				int decayValue = 0;
+				for (int decayIndex = 0; decayIndex < musicPatchParameters[currentNote].decayEnvelope.length; decayIndex++) {
+					decayValue = decayValue + musicPatchParameters[currentNote].decayEnvelope[decayIndex];
+				}
+				//sf2LayerRegion.putInteger(SF2Region.GENERATOR_DECAYVOLENV, decayValue);
+			}
+			//sf2LayerRegion.putInteger(SF2Region.GENERATOR_RELEASEVOLENV, 0);
 		}
 
 		sf2Layer.getRegions().add(sf2LayerRegion);
 
-		SF2InstrumentRegion sf2InstrumentRegion = new SF2InstrumentRegion();
 		sf2InstrumentRegion.setLayer(sf2Layer);
 
-		sf2Soundbank.addResource(sf2Layer);
-
-		sf2Instrument.getRegions().add(sf2InstrumentRegion);
-
 		if (sf2Soundbank.getInstrument(sf2Instrument.getPatch()) == null) {
+			sf2Soundbank.addResource(sf2Layer);
+			sf2Instrument.getRegions().add(sf2InstrumentRegion);
 			sf2Soundbank.addInstrument(sf2Instrument);
-		}
-
-		else {
-			SF2Instrument instrument = (SF2Instrument) sf2Soundbank.getInstrument(sf2Instrument.getPatch());
-			instrument.getRegions().add(sf2InstrumentRegion);
 		}
 	}
 

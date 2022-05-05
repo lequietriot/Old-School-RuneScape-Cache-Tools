@@ -11,56 +11,56 @@ public class MidiPcmStream extends PcmStream {
 
 	NodeHashTable musicPatches;
 	int volume;
-	public int field2931;
-	int[] field2956;
-	int[] field2933;
-	int[] field2934;
-	int[] field2941;
-	int[] field2936;
-	int[] field2937;
-	int[] field2938;
-	int[] field2939;
-	int[] field2940;
-	int[] field2944;
-	int[] dataEntries;
-	int[] field2943;
-	int[] field2932;
-	int[] field2945;
-	int[] field2946;
-	MusicPatchNode[][] field2952;
-	MusicPatchNode[][] field2949;
+	public int tempo;
+	int[] volumeControls;
+	int[] panControls;
+	int[] expressionControls;
+	int[] programConstants;
+	int[] patch;
+	int[] bankControls;
+	int[] pitchBendControls;
+	int[] modulationControls;
+	int[] portamentoTimeControls;
+	int[] switchControls;
+	int[] dataEntriesMSB;
+	int[] dataEntriesLSB;
+	int[] sampleLoopControls;
+	int[] retriggerControls;
+	int[] retriggerEffects;
+	MusicPatchNode[][] loopedVoices;
+	MusicPatchNode[][] oneShotVoices;
 	public MidiFileReader midiFile;
-	boolean field2950;
+	boolean isLooping;
 	int track;
 	int trackLength;
-	public long field2953;
-	public long field2954;
+	public long microsecondLength;
+	public long microsecondPosition;
 	MusicPatchPcmStream patchStream;
 
 	public MidiPcmStream() {
 		this.volume = 256;
-		this.field2931 = 1000000;
-		this.field2956 = new int[16];
-		this.field2933 = new int[16];
-		this.field2934 = new int[16];
-		this.field2941 = new int[16];
-		this.field2936 = new int[16];
-		this.field2937 = new int[16];
-		this.field2938 = new int[16];
-		this.field2939 = new int[16];
-		this.field2940 = new int[16];
-		this.field2944 = new int[16];
-		this.dataEntries = new int[16];
-		this.field2943 = new int[16];
-		this.field2932 = new int[16];
-		this.field2945 = new int[16];
-		this.field2946 = new int[16];
-		this.field2952 = new MusicPatchNode[16][128];
-		this.field2949 = new MusicPatchNode[16][128];
+		this.tempo = 1000000;
+		this.volumeControls = new int[16];
+		this.panControls = new int[16];
+		this.expressionControls = new int[16];
+		this.programConstants = new int[16];
+		this.patch = new int[16];
+		this.bankControls = new int[16];
+		this.pitchBendControls = new int[16];
+		this.modulationControls = new int[16];
+		this.portamentoTimeControls = new int[16];
+		this.switchControls = new int[16];
+		this.dataEntriesMSB = new int[16];
+		this.dataEntriesLSB = new int[16];
+		this.sampleLoopControls = new int[16];
+		this.retriggerControls = new int[16];
+		this.retriggerEffects = new int[16];
+		this.loopedVoices = new MusicPatchNode[16][128];
+		this.oneShotVoices = new MusicPatchNode[16][128];
 		this.midiFile = new MidiFileReader();
 		this.patchStream = new MusicPatchPcmStream(this);
 		this.musicPatches = new NodeHashTable(128);
-		this.method4773();
+		this.systemReset();
 	}
 
 	public synchronized void setPcmStreamVolume(int volumeLevel) {
@@ -71,20 +71,20 @@ public class MidiPcmStream extends PcmStream {
 		return this.volume;
 	}
 
-	public synchronized boolean loadMusicTrack(MusicTrack var1, Index var2, SoundCache var3, int var4) {
-		var1.method4981();
-		boolean var5 = true;
-		int[] var6 = null;
-		if (var4 > 0) {
-			var6 = new int[]{var4};
+	public synchronized boolean loadMusicTrack(MusicTrack musicTrack, Index patchIndex, SoundCache soundCache, int sampleRate) {
+		musicTrack.readMidiTrack();
+		boolean reset = true;
+		int[] sampleRates = null;
+		if (sampleRate > 0) {
+			sampleRates = new int[]{sampleRate};
 		}
 
-		for (ByteArrayNode var7 = (ByteArrayNode)var1.table.first(); var7 != null; var7 = (ByteArrayNode)var1.table.next()) {
+		for (ByteArrayNode var7 = (ByteArrayNode)musicTrack.table.first(); var7 != null; var7 = (ByteArrayNode)musicTrack.table.next()) {
 			int var8 = (int)var7.key;
-			MusicPatch var9 = (MusicPatch)this.musicPatches.get((long)var8);
-			if (var9 == null) {
-				if (var2.getArchive(var8) != null) {
-					byte[] var11 = var2.getArchive(var8).getFile(0).getData();
+			MusicPatch musicPatch = (MusicPatch)this.musicPatches.get(var8);
+			if (musicPatch == null) {
+				if (patchIndex.getArchive(var8) != null) {
+					byte[] var11 = patchIndex.getArchive(var8).getFile(0).getData();
 					MusicPatch var10;
 					if (var11 == null) {
 						var10 = null;
@@ -92,26 +92,26 @@ public class MidiPcmStream extends PcmStream {
 						var10 = new MusicPatch(var11);
 					}
 
-					var9 = var10;
+					musicPatch = var10;
 					if (var10 == null) {
-						var5 = false;
+						reset = false;
 						continue;
 					}
 
-					this.musicPatches.put(var10, (long) var8);
+					this.musicPatches.put(var10, var8);
 
-					if (!var9.method4945(var3, var7.byteArray, var6)) {
-						var5 = false;
+					if (!musicPatch.method4945(soundCache, var7.byteArray, sampleRates)) {
+						reset = false;
 					}
 				}
 			}
 		}
 
-		if (var5) {
-			var1.clear();
+		if (reset) {
+			musicTrack.clear();
 		}
 
-		return var5;
+		return reset;
 	}
 
 	public synchronized void clearAll() {
@@ -142,17 +142,17 @@ public class MidiPcmStream extends PcmStream {
 
 	protected synchronized void fill(int[] var1, int var2, int var3) {
 		if (this.midiFile.isReady()) {
-			int tempo = this.midiFile.division * this.field2931 / AppConstants.sampleRate;
+			int beatsPerMinute = this.midiFile.resolution * this.tempo / AppConstants.sampleRate;
 
 			do {
-				long var5 = this.field2953 + (long) tempo * (long)var3;
-				if (this.field2954 - var5 >= 0L) {
-					this.field2953 = var5;
+				long var5 = this.microsecondLength + (long) beatsPerMinute * (long)var3;
+				if (this.microsecondPosition - var5 >= 0L) {
+					this.microsecondLength = var5;
 					break;
 				}
 
-				int var7 = (int)((this.field2954 - this.field2953 + (long) tempo - 1L) / (long) tempo);
-				this.field2953 += (long)var7 * (long)tempo;
+				int var7 = (int)((this.microsecondPosition - this.microsecondLength + (long) beatsPerMinute - 1L) / (long) beatsPerMinute);
+				this.microsecondLength += (long)var7 * (long) beatsPerMinute;
 				this.patchStream.fill(var1, var2, var7);
 				var2 += var7;
 				var3 -= var7;
@@ -163,11 +163,11 @@ public class MidiPcmStream extends PcmStream {
 		this.patchStream.fill(var1, var2, var3);
 	}
 
-	public synchronized void setMusicTrack(MusicTrack var1, boolean var2) {
+	public synchronized void setMusicTrack(MusicTrack musicTrack, boolean musicLoop) {
 		this.clear();
-		this.midiFile.parse(var1.midi);
-		this.field2950 = var2;
-		this.field2953 = 0L;
+		this.midiFile.parse(musicTrack.midi);
+		this.isLooping = musicLoop;
+		this.microsecondLength = 0L;
 		int var3 = this.midiFile.trackCount();
 
 		for (int var4 = 0; var4 < var3; ++var4) {
@@ -178,22 +178,22 @@ public class MidiPcmStream extends PcmStream {
 
 		this.track = this.midiFile.getPrioritizedTrack();
 		this.trackLength = this.midiFile.trackLengths[this.track];
-		this.field2954 = this.midiFile.method4934(this.trackLength);
+		this.microsecondPosition = this.midiFile.method4934(this.trackLength);
 	}
 
 	public synchronized void skip(int var1) {
 		if (this.midiFile.isReady()) {
-			int var2 = this.midiFile.division * this.field2931 / AppConstants.sampleRate;
+			int var2 = this.midiFile.resolution * this.tempo / AppConstants.sampleRate;
 
 			do {
-				long var3 = (long)var1 * (long)var2 + this.field2953;
-				if (this.field2954 - var3 >= 0L) {
-					this.field2953 = var3;
+				long var3 = (long)var1 * (long)var2 + this.microsecondLength;
+				if (this.microsecondPosition - var3 >= 0L) {
+					this.microsecondLength = var3;
 					break;
 				}
 
-				int var5 = (int)(((long)var2 + (this.field2954 - this.field2953) - 1L) / (long)var2);
-				this.field2953 += (long)var5 * (long)var2;
+				int var5 = (int)(((long)var2 + (this.microsecondPosition - this.microsecondLength) - 1L) / (long)var2);
+				this.microsecondLength += (long)var5 * (long)var2;
 				this.patchStream.skip(var5);
 				var1 -= var5;
 				this.method4758();
@@ -205,146 +205,146 @@ public class MidiPcmStream extends PcmStream {
 
 	public synchronized void clear() {
 		this.midiFile.clear();
-		this.method4773();
+		this.systemReset();
 	}
 
 	public synchronized boolean isReady() {
 		return this.midiFile.isReady();
 	}
 
-	public synchronized void method4761(int var1, int var2) {
-		this.method4826(var1, var2);
+	public synchronized void setInitialPatch(int channel, int patch) {
+		this.setPatch(channel, patch);
 	}
 
-	void method4826(int var1, int var2) {
-		this.field2941[var1] = var2;
-		this.field2937[var1] = var2 & -128;
-		this.method4863(var1, var2);
+	void setPatch(int channel, int patch) {
+		this.programConstants[channel] = patch;
+		this.bankControls[channel] = patch & -128;
+		this.programChange(channel, patch);
 	}
 
-	void method4863(int var1, int var2) {
-		if (var2 != this.field2936[var1]) {
-			this.field2936[var1] = var2;
+	void programChange(int channel, int program) {
+		if (program != this.patch[channel]) {
+			this.patch[channel] = program;
 
-			for (int var3 = 0; var3 < 128; ++var3) {
-				this.field2949[var1][var3] = null;
+			for (int note = 0; note < 128; ++note) {
+				this.oneShotVoices[channel][note] = null;
 			}
 		}
 
 	}
 
-	void method4764(int var1, int var2, int var3) {
-		this.method4847(var1, var2, 64);
-		if ((this.field2944[var1] & 2) != 0) {
+	void noteOn(int channel, int data1, int data2) {
+		this.noteOff(channel, data1, 64);
+		if ((this.switchControls[channel] & 2) != 0) {
 			for (MusicPatchNode var4 = (MusicPatchNode)this.patchStream.queue.first(); var4 != null; var4 = (MusicPatchNode)this.patchStream.queue.next()) {
-				if (var4.midiChannel == var1 && var4.field2999 < 0) {
-					this.field2952[var1][var4.midiNote] = null;
-					this.field2952[var1][var2] = var4;
+				if (var4.midiChannel == channel && var4.releasePosition < 0) {
+					this.loopedVoices[channel][var4.midiNote] = null;
+					this.loopedVoices[channel][data1] = var4;
 					int var8 = (var4.field2998 * var4.field2997 >> 12) + var4.soundTransposition;
-					var4.soundTransposition += var2 - var4.midiNote << 8;
+					var4.soundTransposition += data1 - var4.midiNote << 8;
 					var4.field2997 = var8 - var4.soundTransposition;
 					var4.field2998 = 4096;
-					var4.midiNote = var2;
+					var4.midiNote = data1;
 					return;
 				}
 			}
 		}
 
-		MusicPatch var9 = (MusicPatch)this.musicPatches.get(this.field2936[var1]);
+		MusicPatch var9 = (MusicPatch)this.musicPatches.get(this.patch[channel]);
 		if (var9 != null) {
-			RawSound var5 = var9.rawSounds[var2];
+			RawSound var5 = var9.rawSounds[data1];
 			if (var5 != null) {
 				MusicPatchNode var6 = new MusicPatchNode();
-				var6.midiChannel = var1;
+				var6.midiChannel = channel;
 				var6.patch = var9;
 				var6.rawSound = var5;
-				var6.field2988 = var9.musicPatchParameters[var2];
-				var6.field2989 = var9.field2977[var2];
-				var6.midiNote = var2;
-				var6.midiNoteVolume = var3 * var3 * var9.volumeOffset[var2] * var9.field2973 + 1024 >> 11;
-				var6.field2992 = var9.panOffset[var2] & 255;
-				var6.soundTransposition = (var2 << 8) - (var9.pitchOffset[var2] & 32767);
+				var6.musicPatchNode2 = var9.musicPatchParameters[data1];
+				var6.loopType = var9.loopOffset[data1];
+				var6.midiNote = data1;
+				var6.midiNoteVolume = data2 * data2 * var9.volumeOffset[data1] * var9.volume + 1024 >> 11;
+				var6.field2992 = var9.panOffset[data1] & 255;
+				var6.soundTransposition = (data1 << 8) - (var9.pitchOffset[data1] & 32767);
 				var6.field2986 = 0;
-				var6.field3004 = 0;
-				var6.field2994 = 0;
-				var6.field2999 = -1;
-				var6.field3000 = 0;
-				if (this.field2932[var1] == 0) {
-					var6.stream = RawPcmStream.method817(var5, this.calculatePitch(var6), this.calculateVolume(var6), this.calculatePanning(var6));
+				var6.volumeEnvelopePosition = 0;
+				var6.positionOffset = 0;
+				var6.releasePosition = -1;
+				var6.releaseOffset = 0;
+				if (this.sampleLoopControls[channel] == 0) {
+					var6.stream = RawPcmStream.createSampledRawPcmStream(var5, this.calculatePitch(var6), this.calculateVolume(var6), this.calculatePanning(var6));
 				} else {
-					var6.stream = RawPcmStream.method817(var5, this.calculatePitch(var6), 0, this.calculatePanning(var6));
-					this.method4765(var6, var9.pitchOffset[var2] < 0);
+					var6.stream = RawPcmStream.createSampledRawPcmStream(var5, this.calculatePitch(var6), 0, this.calculatePanning(var6));
+					this.method4765(var6, var9.pitchOffset[data1] < 0);
 				}
 
-				if (var9.pitchOffset[var2] < 0) {
+				if (var9.pitchOffset[data1] < 0) {
 					if (var6.stream != null) {
 						var6.stream.setNumLoops(-1);
 					}
 				}
 
-				if (var6.field2989 >= 0) {
-					MusicPatchNode var7 = this.field2949[var1][var6.field2989];
-					if (var7 != null && var7.field2999 < 0) {
-						this.field2952[var1][var7.midiNote] = null;
-						var7.field2999 = 0;
+				if (var6.loopType >= 0) {
+					MusicPatchNode var7 = this.oneShotVoices[channel][var6.loopType];
+					if (var7 != null && var7.releasePosition < 0) {
+						this.loopedVoices[channel][var7.midiNote] = null;
+						var7.releasePosition = 0;
 					}
 
-					this.field2949[var1][var6.field2989] = var6;
+					this.oneShotVoices[channel][var6.loopType] = var6;
 				}
 
 				this.patchStream.queue.addFirst(var6);
-				this.field2952[var1][var2] = var6;
+				this.loopedVoices[channel][data1] = var6;
 			}
 		}
 	}
 
-	void method4765(MusicPatchNode var1, boolean var2) {
-		int var3 = var1.rawSound.samples.length;
+	void method4765(MusicPatchNode musicPatchNode, boolean validPitch) {
+		int var3 = musicPatchNode.rawSound.samples.length;
 		int var4;
-		if (var2 && var1.rawSound.field238) {
-			int var5 = var3 + var3 - var1.rawSound.start;
-			var4 = (int)((long)this.field2932[var1.midiChannel] * (long)var5 >> 6);
+		if (validPitch && musicPatchNode.rawSound.loop) {
+			int var5 = var3 + var3 - musicPatchNode.rawSound.start;
+			var4 = (int)((long)this.sampleLoopControls[musicPatchNode.midiChannel] * (long)var5 >> 6);
 			var3 <<= 8;
 			if (var4 >= var3) {
 				var4 = var3 + var3 - 1 - var4;
-				var1.stream.method922();
+				musicPatchNode.stream.method922();
 			}
 		} else {
-			var4 = (int)((long)var3 * (long)this.field2932[var1.midiChannel] >> 6);
+			var4 = (int)((long)var3 * (long)this.sampleLoopControls[musicPatchNode.midiChannel] >> 6);
 		}
 
-		var1.stream.method825(var4);
+		musicPatchNode.stream.method825(var4);
 	}
 
-	void method4847(int var1, int var2, int var3) {
-		MusicPatchNode var4 = this.field2952[var1][var2];
+	void noteOff(int channel, int data1, int data2) {
+		MusicPatchNode var4 = this.loopedVoices[channel][data1];
 		if (var4 != null) {
-			this.field2952[var1][var2] = null;
-			if ((this.field2944[var1] & 2) != 0) {
+			this.loopedVoices[channel][data1] = null;
+			if ((this.switchControls[channel] & 2) != 0) {
 				for (MusicPatchNode var5 = (MusicPatchNode)this.patchStream.queue.last(); var5 != null; var5 = (MusicPatchNode)this.patchStream.queue.previous()) {
-					if (var4.midiChannel == var5.midiChannel && var5.field2999 < 0 && var4 != var5) {
-						var4.field2999 = 0;
+					if (var4.midiChannel == var5.midiChannel && var5.releasePosition < 0 && var4 != var5) {
+						var4.releasePosition = 0;
 						break;
 					}
 				}
 			} else {
-				var4.field2999 = 0;
+				var4.releasePosition = 0;
 			}
 
 		}
 	}
 
-	void method4853(int var1, int var2, int var3) {
+	void polyPressure(int var1, int var2, int var3) {
 	}
 
-	void method4768(int var1, int var2) {
+	void channelPressure(int var1, int var2) {
 	}
 
-	void method4769(int var1, int var2) {
-		this.field2938[var1] = var2;
+	void pitchBend(int var1, int var2) {
+		this.pitchBendControls[var1] = var2;
 	}
 
-	void method4770(int var1) {
+	void allSoundOff(int var1) {
 		for (MusicPatchNode var2 = (MusicPatchNode)this.patchStream.queue.last(); var2 != null; var2 = (MusicPatchNode)this.patchStream.queue.previous()) {
 			if (var1 < 0 || var2.midiChannel == var1) {
 				if (var2.stream != null) {
@@ -353,11 +353,11 @@ public class MidiPcmStream extends PcmStream {
 						this.patchStream.mixer.addSubStream(var2.stream);
 					}
 
-					var2.method4992();
+					var2.reset();
 				}
 
-				if (var2.field2999 < 0) {
-					this.field2952[var2.midiChannel][var2.midiNote] = null;
+				if (var2.releasePosition < 0) {
+					this.loopedVoices[var2.midiChannel][var2.midiNote] = null;
 				}
 
 				var2.remove();
@@ -366,59 +366,59 @@ public class MidiPcmStream extends PcmStream {
 
 	}
 
-	void method4771(int var1) {
-		if (var1 >= 0) {
-			this.field2956[var1] = 12800;
-			this.field2933[var1] = 8192;
-			this.field2934[var1] = 16383;
-			this.field2938[var1] = 8192;
-			this.field2939[var1] = 0;
-			this.field2940[var1] = 8192;
-			this.method4774(var1);
-			this.method4775(var1);
-			this.field2944[var1] = 0;
-			this.dataEntries[var1] = 32767;
-			this.field2943[var1] = 256;
-			this.field2932[var1] = 0;
-			this.method4777(var1, 8192);
+	void resetAllControllers(int channel) {
+		if (channel >= 0) {
+			this.volumeControls[channel] = 12800;
+			this.panControls[channel] = 8192;
+			this.expressionControls[channel] = 16383;
+			this.pitchBendControls[channel] = 8192;
+			this.modulationControls[channel] = 0;
+			this.portamentoTimeControls[channel] = 8192;
+			this.setReverb(channel);
+			this.method4775(channel);
+			this.switchControls[channel] = 0;
+			this.dataEntriesMSB[channel] = 32767;
+			this.dataEntriesLSB[channel] = 256;
+			this.sampleLoopControls[channel] = 0;
+			this.retrigger(channel, 8192);
 		} else {
-			for (var1 = 0; var1 < 16; ++var1) {
-				this.method4771(var1);
+			for (channel = 0; channel < 16; ++channel) {
+				this.resetAllControllers(channel);
 			}
 
 		}
 	}
 
-	void method4772(int var1) {
+	void allNotesOff(int var1) {
 		for (MusicPatchNode var2 = (MusicPatchNode)this.patchStream.queue.last(); var2 != null; var2 = (MusicPatchNode)this.patchStream.queue.previous()) {
-			if ((var1 < 0 || var2.midiChannel == var1) && var2.field2999 < 0) {
-				this.field2952[var2.midiChannel][var2.midiNote] = null;
-				var2.field2999 = 0;
+			if ((var1 < 0 || var2.midiChannel == var1) && var2.releasePosition < 0) {
+				this.loopedVoices[var2.midiChannel][var2.midiNote] = null;
+				var2.releasePosition = 0;
 			}
 		}
 
 	}
 
-	public void method4773() {
-		this.method4770(-1);
-		this.method4771(-1);
+	public void systemReset() {
+		this.allSoundOff(-1);
+		this.resetAllControllers(-1);
 
 		int var1;
 		for (var1 = 0; var1 < 16; ++var1) {
-			this.field2936[var1] = this.field2941[var1];
+			this.patch[var1] = this.programConstants[var1];
 		}
 
 		for (var1 = 0; var1 < 16; ++var1) {
-			this.field2937[var1] = this.field2941[var1] & -128;
+			this.bankControls[var1] = this.programConstants[var1] & -128;
 		}
 
 	}
 
-	void method4774(int var1) {
-		if ((this.field2944[var1] & 2) != 0) {
+	void setReverb(int var1) {
+		if ((this.switchControls[var1] & 2) != 0) {
 			for (MusicPatchNode var2 = (MusicPatchNode)this.patchStream.queue.last(); var2 != null; var2 = (MusicPatchNode)this.patchStream.queue.previous()) {
-				if (var2.midiChannel == var1 && this.field2952[var1][var2.midiNote] == null && var2.field2999 < 0) {
-					var2.field2999 = 0;
+				if (var2.midiChannel == var1 && this.loopedVoices[var1][var2.midiNote] == null && var2.releasePosition < 0) {
+					var2.releasePosition = 0;
 				}
 			}
 		}
@@ -426,7 +426,7 @@ public class MidiPcmStream extends PcmStream {
 	}
 
 	void method4775(int var1) {
-		if ((this.field2944[var1] & 4) != 0) {
+		if ((this.switchControls[var1] & 4) != 0) {
 			for (MusicPatchNode var2 = (MusicPatchNode) this.patchStream.queue.last(); var2 != null; var2 = (MusicPatchNode) this.patchStream.queue.previous()) {
 				if (var2.midiChannel == var1) {
 					var2.field3003 = 0;
@@ -436,254 +436,254 @@ public class MidiPcmStream extends PcmStream {
 
 	}
 
-	void method4776(int var1) {
-		int var2 = var1 & 240;
-		int var3;
-		int var4;
-		int var5;
-		if (var2 == 128) {
-			var3 = var1 & 15;
-			var4 = var1 >> 8 & 127;
-			var5 = var1 >> 16 & 127;
-			this.method4847(var3, var4, var5);
-		} else if (var2 == 144) {
-			var3 = var1 & 15;
-			var4 = var1 >> 8 & 127;
-			var5 = var1 >> 16 & 127;
-			if (var5 > 0) {
-				this.method4764(var3, var4, var5);
+	void send(int message) {
+		int command = message & 240;
+		int channel;
+		int data1;
+		int data2;
+		if (command == 128) {
+			channel = message & 15;
+			data1 = message >> 8 & 127;
+			data2 = message >> 16 & 127;
+			this.noteOff(channel, data1, data2);
+		} else if (command == 144) {
+			channel = message & 15;
+			data1 = message >> 8 & 127;
+			data2 = message >> 16 & 127;
+			if (data2 > 0) {
+				this.noteOn(channel, data1, data2);
 			} else {
-				this.method4847(var3, var4, 64);
+				this.noteOff(channel, data1, 64);
 			}
 
-		} else if (var2 == 160) {
-			var3 = var1 & 15;
-			var4 = var1 >> 8 & 127;
-			var5 = var1 >> 16 & 127;
-			this.method4853(var3, var4, var5);
-		} else if (var2 == 176) {
-			var3 = var1 & 15;
-			var4 = var1 >> 8 & 127;
-			var5 = var1 >> 16 & 127;
-			if (var4 == 0) {
-				this.field2937[var3] = (var5 << 14) + (this.field2937[var3] & -2080769);
+		} else if (command == 160) {
+			channel = message & 15;
+			data1 = message >> 8 & 127;
+			data2 = message >> 16 & 127;
+			this.polyPressure(channel, data1, data2);
+		} else if (command == 176) {
+			channel = message & 15;
+			data1 = message >> 8 & 127;
+			data2 = message >> 16 & 127;
+			if (data1 == 0) {
+				this.bankControls[channel] = (data2 << 14) + (this.bankControls[channel] & -2080769);
 			}
 
-			if (var4 == 32) {
-				this.field2937[var3] = (var5 << 7) + (this.field2937[var3] & -16257);
+			if (data1 == 32) {
+				this.bankControls[channel] = (data2 << 7) + (this.bankControls[channel] & -16257);
 			}
 
-			if (var4 == 1) {
-				this.field2939[var3] = (var5 << 7) + (this.field2939[var3] & -16257);
+			if (data1 == 1) {
+				this.modulationControls[channel] = (data2 << 7) + (this.modulationControls[channel] & -16257);
 			}
 
-			if (var4 == 33) {
-				this.field2939[var3] = var5 + (this.field2939[var3] & -128);
+			if (data1 == 33) {
+				this.modulationControls[channel] = data2 + (this.modulationControls[channel] & -128);
 			}
 
-			if (var4 == 5) {
-				this.field2940[var3] = (var5 << 7) + (this.field2940[var3] & -16257);
+			if (data1 == 5) {
+				this.portamentoTimeControls[channel] = (data2 << 7) + (this.portamentoTimeControls[channel] & -16257);
 			}
 
-			if (var4 == 37) {
-				this.field2940[var3] = var5 + (this.field2940[var3] & -128);
+			if (data1 == 37) {
+				this.portamentoTimeControls[channel] = data2 + (this.portamentoTimeControls[channel] & -128);
 			}
 
-			if (var4 == 7) {
-				this.field2956[var3] = (var5 << 7) + (this.field2956[var3] & -16257);
+			if (data1 == 7) {
+				this.volumeControls[channel] = (data2 << 7) + (this.volumeControls[channel] & -16257);
 			}
 
-			if (var4 == 39) {
-				this.field2956[var3] = var5 + (this.field2956[var3] & -128);
+			if (data1 == 39) {
+				this.volumeControls[channel] = data2 + (this.volumeControls[channel] & -128);
 			}
 
-			if (var4 == 10) {
-				this.field2933[var3] = (var5 << 7) + (this.field2933[var3] & -16257);
+			if (data1 == 10) {
+				this.panControls[channel] = (data2 << 7) + (this.panControls[channel] & -16257);
 			}
 
-			if (var4 == 42) {
-				this.field2933[var3] = var5 + (this.field2933[var3] & -128);
+			if (data1 == 42) {
+				this.panControls[channel] = data2 + (this.panControls[channel] & -128);
 			}
 
-			if (var4 == 11) {
-				this.field2934[var3] = (var5 << 7) + (this.field2934[var3] & -16257);
+			if (data1 == 11) {
+				this.expressionControls[channel] = (data2 << 7) + (this.expressionControls[channel] & -16257);
 			}
 
-			if (var4 == 43) {
-				this.field2934[var3] = var5 + (this.field2934[var3] & -128);
+			if (data1 == 43) {
+				this.expressionControls[channel] = data2 + (this.expressionControls[channel] & -128);
 			}
 
-			int[] var10000;
-			if (var4 == 64) {
-				if (var5 >= 64) {
-					var10000 = this.field2944;
-					var10000[var3] |= 1;
+			int[] values;
+			if (data1 == 64) {
+				if (data2 >= 64) {
+					values = this.switchControls;
+					values[channel] |= 1;
 				} else {
-					var10000 = this.field2944;
-					var10000[var3] &= -2;
+					values = this.switchControls;
+					values[channel] &= -2;
 				}
 			}
 
-			if (var4 == 65) {
-				if (var5 >= 64) {
-					var10000 = this.field2944;
-					var10000[var3] |= 2;
+			if (data1 == 65) {
+				if (data2 >= 64) {
+					values = this.switchControls;
+					values[channel] |= 2;
 				} else {
-					this.method4774(var3);
-					var10000 = this.field2944;
-					var10000[var3] &= -3;
+					this.setReverb(channel);
+					values = this.switchControls;
+					values[channel] &= -3;
 				}
 			}
 
-			if (var4 == 99) {
-				this.dataEntries[var3] = (var5 << 7) + (this.dataEntries[var3] & 127);
+			if (data1 == 99) {
+				this.dataEntriesMSB[channel] = (data2 << 7) + (this.dataEntriesMSB[channel] & 127);
 			}
 
-			if (var4 == 98) {
-				this.dataEntries[var3] = (this.dataEntries[var3] & 16256) + var5;
+			if (data1 == 98) {
+				this.dataEntriesMSB[channel] = (this.dataEntriesMSB[channel] & 16256) + data2;
 			}
 
-			if (var4 == 101) {
-				this.dataEntries[var3] = (var5 << 7) + (this.dataEntries[var3] & 127) + 16384;
+			if (data1 == 101) {
+				this.dataEntriesMSB[channel] = (data2 << 7) + (this.dataEntriesMSB[channel] & 127) + 16384;
 			}
 
-			if (var4 == 100) {
-				this.dataEntries[var3] = (this.dataEntries[var3] & 16256) + var5 + 16384;
+			if (data1 == 100) {
+				this.dataEntriesMSB[channel] = (this.dataEntriesMSB[channel] & 16256) + data2 + 16384;
 			}
 
-			if (var4 == 120) {
-				this.method4770(var3);
+			if (data1 == 120) {
+				this.allSoundOff(channel);
 			}
 
-			if (var4 == 121) {
-				this.method4771(var3);
+			if (data1 == 121) {
+				this.resetAllControllers(channel);
 			}
 
-			if (var4 == 123) {
-				this.method4772(var3);
+			if (data1 == 123) {
+				this.allNotesOff(channel);
 			}
 
-			int var6;
-			if (var4 == 6) {
-				var6 = this.dataEntries[var3];
-				if (var6 == 16384) {
-					this.field2943[var3] = (var5 << 7) + (this.field2943[var3] & -16257);
+			int dataEntry;
+			if (data1 == 6) {
+				dataEntry = this.dataEntriesMSB[channel];
+				if (dataEntry == 16384) {
+					this.dataEntriesLSB[channel] = (data2 << 7) + (this.dataEntriesLSB[channel] & -16257);
 				}
 			}
 
-			if (var4 == 38) {
-				var6 = this.dataEntries[var3];
-				if (var6 == 16384) {
-					this.field2943[var3] = var5 + (this.field2943[var3] & -128);
+			if (data1 == 38) {
+				dataEntry = this.dataEntriesMSB[channel];
+				if (dataEntry == 16384) {
+					this.dataEntriesLSB[channel] = data2 + (this.dataEntriesLSB[channel] & -128);
 				}
 			}
 
-			if (var4 == 16) {
-				this.field2932[var3] = (var5 << 7) + (this.field2932[var3] & -16257);
+			if (data1 == 16) {
+				this.sampleLoopControls[channel] = (data2 << 7) + (this.sampleLoopControls[channel] & -16257);
 			}
 
-			if (var4 == 48) {
-				this.field2932[var3] = var5 + (this.field2932[var3] & -128);
+			if (data1 == 48) {
+				this.sampleLoopControls[channel] = data2 + (this.sampleLoopControls[channel] & -128);
 			}
 
-			if (var4 == 81) {
-				if (var5 >= 64) {
-					var10000 = this.field2944;
-					var10000[var3] |= 4;
+			if (data1 == 81) {
+				if (data2 >= 64) {
+					values = this.switchControls;
+					values[channel] |= 4;
 				} else {
-					this.method4775(var3);
-					var10000 = this.field2944;
-					var10000[var3] &= -5;
+					this.method4775(channel);
+					values = this.switchControls;
+					values[channel] &= -5;
 				}
 			}
 
-			if (var4 == 17) {
-				this.method4777(var3, (var5 << 7) + (this.field2945[var3] & -16257));
+			if (data1 == 17) {
+				this.retrigger(channel, (data2 << 7) + (this.retriggerControls[channel] & -16257));
 			}
 
-			if (var4 == 49) {
-				this.method4777(var3, var5 + (this.field2945[var3] & -128));
+			if (data1 == 49) {
+				this.retrigger(channel, data2 + (this.retriggerControls[channel] & -128));
 			}
 
-		} else if (var2 == 192) {
-			var3 = var1 & 15;
-			var4 = var1 >> 8 & 127;
-			this.method4863(var3, var4 + this.field2937[var3]);
-		} else if (var2 == 208) {
-			var3 = var1 & 15;
-			var4 = var1 >> 8 & 127;
-			this.method4768(var3, var4);
-		} else if (var2 == 224) {
-			var3 = var1 & 15;
-			var4 = (var1 >> 8 & 127) + (var1 >> 9 & 16256);
-			this.method4769(var3, var4);
+		} else if (command == 192) {
+			channel = message & 15;
+			data1 = message >> 8 & 127;
+			this.programChange(channel, data1 + this.bankControls[channel]);
+		} else if (command == 208) {
+			channel = message & 15;
+			data1 = message >> 8 & 127;
+			this.channelPressure(channel, data1);
+		} else if (command == 224) {
+			channel = message & 15;
+			data1 = (message >> 8 & 127) + (message >> 9 & 16256);
+			this.pitchBend(channel, data1);
 		} else {
-			var2 = var1 & 255;
-			if (var2 == 255) {
-				this.method4773();
+			command = message & 255;
+			if (command == 255) {
+				this.systemReset();
 			}
 		}
 	}
 
-	void method4777(int var1, int var2) {
-		this.field2945[var1] = var2;
-		this.field2946[var1] = (int)(2097152.0D * Math.pow(2.0D, 5.4931640625E-4D * (double)var2) + 0.5D);
+	void retrigger(int channel, int data) {
+		this.retriggerControls[channel] = data;
+		this.retriggerEffects[channel] = (int) (2097152.0D * Math.pow(2.0D, 5.4931640625E-4D * (double) data) + 0.5D);
 	}
 
 	int calculatePitch(MusicPatchNode var1) {
 		int var2 = (var1.field2998 * var1.field2997 >> 12) + var1.soundTransposition;
-		var2 += (this.field2938[var1.midiChannel] - 8192) * this.field2943[var1.midiChannel] >> 12;
-		MusicPatchNode2 var3 = var1.field2988;
+		var2 += (this.pitchBendControls[var1.midiChannel] - 8192) * this.dataEntriesLSB[var1.midiChannel] >> 12;
+		MusicPatchNode2 var3 = var1.musicPatchNode2;
 		int var4;
-		if (var3.field2911 > 0 && (var3.field2917 > 0 || this.field2939[var1.midiChannel] > 0)) {
-			var4 = var3.field2917 << 2;
-			int var5 = var3.field2919 << 1;
+		if (var3.vibratoFrequencyHertz > 0 && (var3.vibratoPitchModulatorCents > 0 || this.modulationControls[var1.midiChannel] > 0)) {
+			var4 = var3.vibratoPitchModulatorCents << 2;
+			int var5 = var3.vibratoDelayMilliseconds << 1;
 			if (var1.field3001 < var5) {
 				var4 = var4 * var1.field3001 / var5;
 			}
 
-			var4 += this.field2939[var1.midiChannel] >> 7;
+			var4 += this.modulationControls[var1.midiChannel] >> 7;
 			double var6 = Math.sin(0.01227184630308513D * (double)(var1.field3002 & 511));
 			var2 += (int)(var6 * (double)var4);
 		}
 
 		var4 = (int)((double)(var1.rawSound.sampleRate * 256) * Math.pow(2.0D, (double)var2 * 3.255208333333333E-4D) / (double) AppConstants.sampleRate + 0.5D);
-		return var4 < 1 ? 1 : var4;
+		return Math.max(var4, 1);
 	}
 
 	int calculateVolume(MusicPatchNode var1) {
-		MusicPatchNode2 var2 = var1.field2988;
-		int var3 = this.field2934[var1.midiChannel] * this.field2956[var1.midiChannel] + 4096 >> 13;
+		MusicPatchNode2 var2 = var1.musicPatchNode2;
+		int var3 = this.expressionControls[var1.midiChannel] * this.volumeControls[var1.midiChannel] + 4096 >> 13;
 		var3 = var3 * var3 + 16384 >> 15;
 		var3 = var3 * var1.midiNoteVolume + 16384 >> 15;
 		var3 = var3 * this.volume + 128 >> 8;
-		if (var2.field2913 > 0) {
-			var3 = (int)((double)var3 * Math.pow(0.5D, (double)var2.field2913 * (double)var1.field2986 * 1.953125E-5D) + 0.5D);
+		if (var2.sustain > 0) {
+			var3 = (int)((double)var3 * Math.pow(0.5D, (double)var2.sustain * (double)var1.field2986 * 1.953125E-5D) + 0.5D);
 		}
 
 		int var4;
 		int var5;
 		int var6;
 		int var7;
-		if (var2.field2916 != null) {
-			var4 = var1.field3004;
-			var5 = var2.field2916[var1.field2994 + 1];
-			if (var1.field2994 < var2.field2916.length - 2) {
-				var6 = (var2.field2916[var1.field2994] & 255) << 8;
-				var7 = (var2.field2916[var1.field2994 + 2] & 255) << 8;
-				var5 += (var4 - var6) * (var2.field2916[var1.field2994 + 3] - var5) / (var7 - var6);
+		if (var2.attackEnvelope != null) {
+			var4 = var1.volumeEnvelopePosition;
+			var5 = var2.attackEnvelope[var1.positionOffset + 1];
+			if (var1.positionOffset < var2.attackEnvelope.length - 2) {
+				var6 = (var2.attackEnvelope[var1.positionOffset] & 255) << 8;
+				var7 = (var2.attackEnvelope[var1.positionOffset + 2] & 255) << 8;
+				var5 += (var4 - var6) * (var2.attackEnvelope[var1.positionOffset + 3] - var5) / (var7 - var6);
 			}
 
 			var3 = var3 * var5 + 32 >> 6;
 		}
 
-		if (var1.field2999 > 0 && var2.field2914 != null) {
-			var4 = var1.field2999;
-			var5 = var2.field2914[var1.field3000 + 1];
-			if (var1.field3000 < var2.field2914.length - 2) {
-				var6 = (var2.field2914[var1.field3000] & 255) << 8;
-				var7 = (var2.field2914[var1.field3000 + 2] & 255) << 8;
-				var5 += (var2.field2914[var1.field3000 + 3] - var5) * (var4 - var6) / (var7 - var6);
+		if (var1.releasePosition > 0 && var2.decayEnvelope != null) {
+			var4 = var1.releasePosition;
+			var5 = var2.decayEnvelope[var1.releaseOffset + 1];
+			if (var1.releaseOffset < var2.decayEnvelope.length - 2) {
+				var6 = (var2.decayEnvelope[var1.releaseOffset] & 255) << 8;
+				var7 = (var2.decayEnvelope[var1.releaseOffset + 2] & 255) << 8;
+				var5 += (var2.decayEnvelope[var1.releaseOffset + 3] - var5) * (var4 - var6) / (var7 - var6);
 			}
 
 			var3 = var5 * var3 + 32 >> 6;
@@ -693,57 +693,57 @@ public class MidiPcmStream extends PcmStream {
 	}
 
 	int calculatePanning(MusicPatchNode var1) {
-		int var2 = this.field2933[var1.midiChannel];
+		int var2 = this.panControls[var1.midiChannel];
 		return var2 < 8192 ? var2 * var1.field2992 + 32 >> 6 : 16384 - ((128 - var1.field2992) * (16384 - var2) + 32 >> 6);
 	}
 
 	void method4758() {
-		int var1 = this.track;
-		int var2 = this.trackLength;
+		int trackNumber = this.track;
+		int trackCount = this.trackLength;
 
-		long var3;
-		for (var3 = this.field2954; var2 == this.trackLength; var3 = this.midiFile.method4934(var2)) {
-			while (var2 == this.midiFile.trackLengths[var1]) {
-				this.midiFile.gotoTrack(var1);
-				int var5 = this.midiFile.readMessage(var1);
-				if (var5 == 1) {
+		long position;
+		for (position = this.microsecondPosition; trackCount == this.trackLength; position = this.midiFile.method4934(trackCount)) {
+			while (trackCount == this.midiFile.trackLengths[trackNumber]) {
+				this.midiFile.gotoTrack(trackNumber);
+				int midiMessage = this.midiFile.readMessage(trackNumber);
+				if (midiMessage == 1) {
 					this.midiFile.setTrackDone();
-					this.midiFile.markTrackPosition(var1);
+					this.midiFile.markTrackPosition(trackNumber);
 					if (this.midiFile.isDone()) {
-						if (!this.field2950 || var2 == 0) {
-							this.method4773();
+						if (!this.isLooping || trackCount == 0) {
+							this.systemReset();
 							this.midiFile.clear();
 							return;
 						}
 
-						this.midiFile.reset(var3);
+						this.midiFile.reset(position);
 					}
 					break;
 				}
 
-				if ((var5 & 128) != 0) {
-					this.method4776(var5);
+				if ((midiMessage & 128) != 0) {
+					this.send(midiMessage);
 				}
 
-				this.midiFile.readTrackLength(var1);
-				this.midiFile.markTrackPosition(var1);
+				this.midiFile.readTrackLength(trackNumber);
+				this.midiFile.markTrackPosition(trackNumber);
 			}
 
-			var1 = this.midiFile.getPrioritizedTrack();
-			var2 = this.midiFile.trackLengths[var1];
+			trackNumber = this.midiFile.getPrioritizedTrack();
+			trackCount = this.midiFile.trackLengths[trackNumber];
 		}
 
-		this.track = var1;
-		this.trackLength = var2;
-		this.field2954 = var3;
+		this.track = trackNumber;
+		this.trackLength = trackCount;
+		this.microsecondPosition = position;
 	}
 
 	boolean method4787(MusicPatchNode var1) {
 		if (var1.stream == null) {
-			if (var1.field2999 >= 0) {
+			if (var1.releasePosition >= 0) {
 				var1.remove();
-				if (var1.field2989 > 0 && var1 == this.field2949[var1.midiChannel][var1.field2989]) {
-					this.field2949[var1.midiChannel][var1.field2989] = null;
+				if (var1.loopType > 0 && var1 == this.oneShotVoices[var1.midiChannel][var1.loopType]) {
+					this.oneShotVoices[var1.midiChannel][var1.loopType] = null;
 				}
 			}
 
@@ -753,95 +753,95 @@ public class MidiPcmStream extends PcmStream {
 		}
 	}
 
-	boolean method4788(MusicPatchNode var1, int[] var2, int var3, int var4) {
-		var1.field2995 = AppConstants.sampleRate / 100;
-		if (var1.field2999 < 0 || var1.stream != null && !var1.stream.method833()) {
-			int var5 = var1.field2998;
+	boolean method4788(MusicPatchNode musicPatchNode, int[] var2, int var3, int var4) {
+		musicPatchNode.field2995 = AppConstants.sampleRate / 100;
+		if (musicPatchNode.releasePosition < 0 || musicPatchNode.stream != null && !musicPatchNode.stream.method833()) {
+			int var5 = musicPatchNode.field2998;
 			if (var5 > 0) {
-				var5 -= (int)(16.0D * Math.pow(2.0D, 4.921259842519685E-4D * (double)this.field2940[var1.midiChannel]) + 0.5D);
+				var5 -= (int)(16.0D * Math.pow(2.0D, 4.921259842519685E-4D * (double)this.portamentoTimeControls[musicPatchNode.midiChannel]) + 0.5D);
 				if (var5 < 0) {
 					var5 = 0;
 				}
 
-				var1.field2998 = var5;
+				musicPatchNode.field2998 = var5;
 			}
 
-			var1.stream.method912(this.calculatePitch(var1));
-			MusicPatchNode2 var6 = var1.field2988;
+			musicPatchNode.stream.method912(this.calculatePitch(musicPatchNode));
+			MusicPatchNode2 var6 = musicPatchNode.musicPatchNode2;
 			boolean var7 = false;
-			++var1.field3001;
-			var1.field3002 += var6.field2911;
-			double var8 = 5.086263020833333E-6D * (double)((var1.midiNote - 60 << 8) + (var1.field2997 * var1.field2998 >> 12));
-			if (var6.field2913 > 0) {
+			++musicPatchNode.field3001;
+			musicPatchNode.field3002 += var6.vibratoFrequencyHertz;
+			double var8 = 5.086263020833333E-6D * (double)((musicPatchNode.midiNote - 60 << 8) + (musicPatchNode.field2997 * musicPatchNode.field2998 >> 12));
+			if (var6.sustain > 0) {
 				if (var6.field2912 > 0) {
-					var1.field2986 += (int)(128.0D * Math.pow(2.0D, (double)var6.field2912 * var8) + 0.5D);
+					musicPatchNode.field2986 += (int)(128.0D * Math.pow(2.0D, (double)var6.field2912 * var8) + 0.5D);
 				} else {
-					var1.field2986 += 128;
+					musicPatchNode.field2986 += 128;
 				}
 			}
 
-			if (var6.field2916 != null) {
+			if (var6.attackEnvelope != null) {
 				if (var6.field2918 > 0) {
-					var1.field3004 += (int)(128.0D * Math.pow(2.0D, var8 * (double)var6.field2918) + 0.5D);
+					musicPatchNode.volumeEnvelopePosition += (int)(128.0D * Math.pow(2.0D, var8 * (double)var6.field2918) + 0.5D);
 				} else {
-					var1.field3004 += 128;
+					musicPatchNode.volumeEnvelopePosition += 128;
 				}
 
-				while (var1.field2994 < var6.field2916.length - 2 && var1.field3004 > (var6.field2916[var1.field2994 + 2] & 255) << 8) {
-					var1.field2994 += 2;
+				while (musicPatchNode.positionOffset < var6.attackEnvelope.length - 2 && musicPatchNode.volumeEnvelopePosition > (var6.attackEnvelope[musicPatchNode.positionOffset + 2] & 255) << 8) {
+					musicPatchNode.positionOffset += 2;
 				}
 
-				if (var6.field2916.length - 2 == var1.field2994 && var6.field2916[var1.field2994 + 1] == 0) {
+				if (var6.attackEnvelope.length - 2 == musicPatchNode.positionOffset && var6.attackEnvelope[musicPatchNode.positionOffset + 1] == 0) {
 					var7 = true;
 				}
 			}
 
-			if (var1.field2999 >= 0 && var6.field2914 != null && (this.field2944[var1.midiChannel] & 1) == 0 && (var1.field2989 < 0 || var1 != this.field2949[var1.midiChannel][var1.field2989])) {
-				if (var6.field2915 > 0) {
-					var1.field2999 += (int)(128.0D * Math.pow(2.0D, var8 * (double)var6.field2915) + 0.5D);
+			if (musicPatchNode.releasePosition >= 0 && var6.decayEnvelope != null && (this.switchControls[musicPatchNode.midiChannel] & 1) == 0 && (musicPatchNode.loopType < 0 || musicPatchNode != this.oneShotVoices[musicPatchNode.midiChannel][musicPatchNode.loopType])) {
+				if (var6.release > 0) {
+					musicPatchNode.releasePosition += (int)(128.0D * Math.pow(2.0D, var8 * (double)var6.release) + 0.5D);
 				} else {
-					var1.field2999 += 128;
+					musicPatchNode.releasePosition += 128;
 				}
 
-				while (var1.field3000 < var6.field2914.length - 2 && var1.field2999 > (var6.field2914[var1.field3000 + 2] & 255) << 8) {
-					var1.field3000 += 2;
+				while (musicPatchNode.releaseOffset < var6.decayEnvelope.length - 2 && musicPatchNode.releasePosition > (var6.decayEnvelope[musicPatchNode.releaseOffset + 2] & 255) << 8) {
+					musicPatchNode.releaseOffset += 2;
 				}
 
-				if (var6.field2914.length - 2 == var1.field3000) {
+				if (var6.decayEnvelope.length - 2 == musicPatchNode.releaseOffset) {
 					var7 = true;
 				}
 			}
 
 			if (var7) {
-				var1.stream.method830(var1.field2995);
+				musicPatchNode.stream.method830(musicPatchNode.field2995);
 				if (var2 != null) {
-					var1.stream.fill(var2, var3, var4);
+					musicPatchNode.stream.fill(var2, var3, var4);
 				} else {
-					var1.stream.skip(var4);
+					musicPatchNode.stream.skip(var4);
 				}
 
-				if (var1.stream.method834()) {
-					this.patchStream.mixer.addSubStream(var1.stream);
+				if (musicPatchNode.stream.method834()) {
+					this.patchStream.mixer.addSubStream(musicPatchNode.stream);
 				}
 
-				var1.method4992();
-				if (var1.field2999 >= 0) {
-					var1.remove();
-					if (var1.field2989 > 0 && var1 == this.field2949[var1.midiChannel][var1.field2989]) {
-						this.field2949[var1.midiChannel][var1.field2989] = null;
+				musicPatchNode.reset();
+				if (musicPatchNode.releasePosition >= 0) {
+					musicPatchNode.remove();
+					if (musicPatchNode.loopType > 0 && musicPatchNode == this.oneShotVoices[musicPatchNode.midiChannel][musicPatchNode.loopType]) {
+						this.oneShotVoices[musicPatchNode.midiChannel][musicPatchNode.loopType] = null;
 					}
 				}
 
 				return true;
 			} else {
-				var1.stream.method829(var1.field2995, this.calculateVolume(var1), this.calculatePanning(var1));
+				musicPatchNode.stream.method829(musicPatchNode.field2995, this.calculateVolume(musicPatchNode), this.calculatePanning(musicPatchNode));
 				return false;
 			}
 		} else {
-			var1.method4992();
-			var1.remove();
-			if (var1.field2989 > 0 && var1 == this.field2949[var1.midiChannel][var1.field2989]) {
-				this.field2949[var1.midiChannel][var1.field2989] = null;
+			musicPatchNode.reset();
+			musicPatchNode.remove();
+			if (musicPatchNode.loopType > 0 && musicPatchNode == this.oneShotVoices[musicPatchNode.midiChannel][musicPatchNode.loopType]) {
+				this.oneShotVoices[musicPatchNode.midiChannel][musicPatchNode.loopType] = null;
 			}
 
 			return true;

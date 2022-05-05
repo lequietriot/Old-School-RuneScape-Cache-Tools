@@ -168,6 +168,9 @@ public class GUI extends JFrame {
         JButton loadMusicButton = new JButton("Load MIDI");
         loadMusicButton.addActionListener(e -> loadSong());
 
+        JButton queueMidiButton = new JButton("Queue Next MIDI");
+        queueMidiButton.addActionListener(e -> queueNextSong());
+
         JButton musicPlayButton = new JButton("Play");
         musicPlayButton.addActionListener(e -> playSong());
 
@@ -183,6 +186,7 @@ public class GUI extends JFrame {
         musicPlayerPanel.add(songInfoLabel);
         musicPlayerPanel.add(songNameInput);
         musicPlayerPanel.add(loadMusicButton);
+        musicPlayerPanel.add(queueMidiButton);
         musicPlayerPanel.add(musicPlayButton);
         musicPlayerPanel.add(musicStopButton);
         musicPlayerPanel.add(musicRenderButton);
@@ -259,7 +263,7 @@ public class GUI extends JFrame {
             }
 
             midiPcmStream = new MidiPcmStream();
-            midiPcmStream.method4761(9, 128);
+            midiPcmStream.setInitialPatch(9, 128);
             midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.getIndex(15), new SoundCache(cacheLibrary.getIndex(4), cacheLibrary.getIndex(14)), 0);
             midiPcmStream.setPcmStreamVolume(255);
 
@@ -319,7 +323,7 @@ public class GUI extends JFrame {
             File selected = chooseMidi.getSelectedFile();
             if (selected.getName().endsWith(".mid")) {
                 try {
-                    AppConstants.currentMusicFolder = selected.getParentFile().listFiles();
+                    AppConstants.currentMusicFiles = selected.getParentFile().listFiles();
                     AppConstants.midiMusicFileBytes = Files.readAllBytes(Paths.get(selected.toURI()));
                     AppConstants.currentSongName = selected.getName().replace(".mid", "").trim() + " (Custom)";
                     songNameInput.setText(AppConstants.currentSongName);
@@ -330,23 +334,93 @@ public class GUI extends JFrame {
         }
     }
 
+    private void queueNextSong() {
+        JFileChooser chooseMidi = new JFileChooser();
+        chooseMidi.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        if (chooseMidi.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selected = chooseMidi.getSelectedFile();
+            if (selected.getName().endsWith(".mid")) {
+                try {
+                    FileOutputStream fileOutputStream = new FileOutputStream(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "Current Song.txt");
+                    DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
+                    AppConstants.currentMusicFiles = selected.getParentFile().listFiles();
+                    AppConstants.nextMidiFileBytes = Files.readAllBytes(Paths.get(selected.toURI()));
+                    AppConstants.nextSongName = selected.getName().replace(".mid", "").trim() + " (Custom)";
+                    if (AppConstants.currentSongName.contains(" - ")) {
+                        int index = AppConstants.currentSongName.lastIndexOf(" - ");
+                        String name = AppConstants.currentSongName.substring(index).replace(".mid", "").replace(" - ", "").trim();
+                        if (name.contains("(Custom)")) {
+                            name = name.replace("(Custom)", "").trim();
+                        }
+                        dataOutputStream.write(("Current Song: " + name).getBytes(StandardCharsets.UTF_8));
+                    }
+                    else {
+                        String name = AppConstants.currentSongName.replace(".mid","").trim();
+                        if (name.contains("(Custom)")) {
+                            name = name.replace("(Custom)", "").trim();
+                        }
+                        dataOutputStream.write(("Current Song: " + name).getBytes(StandardCharsets.UTF_8));
+                    }
+                    if (AppConstants.shuffle) {
+                        if (AppConstants.nextSongName.contains(" - ")) {
+                            int index = AppConstants.nextSongName.lastIndexOf(" - ");
+                            String name = AppConstants.nextSongName.substring(index).replace(" - ", "").trim();
+                            if (name.contains("(Custom)")) {
+                                name = name.replace("(Custom)", "").trim();
+                            }
+                            dataOutputStream.write(("\nNext Song: " + name).getBytes(StandardCharsets.UTF_8));
+                        } else {
+                            String name = AppConstants.nextSongName.replace(".mid", "").trim();
+                            if (name.contains("(Custom)")) {
+                                name = name.replace("(Custom)", "").trim();
+                            }
+                            dataOutputStream.write(("\nNext Song: " + name).getBytes(StandardCharsets.UTF_8));
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     private void playSong() {
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "Current Song.txt");
+            DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
             if (AppConstants.currentSongName.contains(" - ")) {
                 int index = AppConstants.currentSongName.lastIndexOf(" - ");
                 String name = AppConstants.currentSongName.substring(index).replace(".mid", "").replace(" - ", "").trim();
                 if (name.contains("(Custom)")) {
                     name = name.replace("(Custom)", "").trim();
                 }
-                fileOutputStream.write(name.getBytes(StandardCharsets.UTF_8));
+                dataOutputStream.write(("Current Song: " + name).getBytes(StandardCharsets.UTF_8));
             }
             else {
                 String name = AppConstants.currentSongName.replace(".mid","").trim();
                 if (name.contains("(Custom)")) {
                     name = name.replace("(Custom)", "").trim();
                 }
-                fileOutputStream.write(name.getBytes(StandardCharsets.UTF_8));
+                dataOutputStream.write(("Current Song: " + name).getBytes(StandardCharsets.UTF_8));
+            }
+            if (AppConstants.shuffle) {
+                if (AppConstants.currentSongName.contains("(Custom)")) {
+                    File selected = AppConstants.currentMusicFiles[(int) (Math.random() * AppConstants.currentMusicFiles.length)];
+                    if (selected.getName().endsWith(".mid")) {
+                        AppConstants.nextMidiFileBytes = Files.readAllBytes(Paths.get(selected.toURI()));
+                        AppConstants.nextSongName = selected.getName().replace(".mid", "").trim() + "(Custom)";
+                    }
+                } else {
+                    AppConstants.nextSongName = String.valueOf((int) (Math.random() * cacheLibrary.getIndex(AppConstants.currentMusicIndex).getArchives().length));
+                }
+                if (AppConstants.nextSongName.contains(" - ")) {
+                    int index = AppConstants.nextSongName.lastIndexOf(" - ");
+                    String name = AppConstants.nextSongName.substring(index).replace(" - ", "").trim();
+                    if (name.contains("(Custom)")) {
+                        name = name.replace("(Custom)", "").trim();
+                    }
+                    dataOutputStream.write(("\nNext Song: " + name).getBytes(StandardCharsets.UTF_8));
+                }
             }
             initSoundEngine();
         } catch (IOException | LineUnavailableException e) {
@@ -377,7 +451,7 @@ public class GUI extends JFrame {
         try {
             if (midiPcmStream == null) {
                 midiPcmStream = new MidiPcmStream();
-                midiPcmStream.method4761(9, 128);
+                midiPcmStream.setInitialPatch(9, 128);
 
                 AppConstants.pcmPlayerProvider = new DevicePcmPlayerProvider();
                 devicePcmPlayer = (DevicePcmPlayer) AppConstants.pcmPlayerProvider.player();
@@ -443,7 +517,7 @@ public class GUI extends JFrame {
             try {
                 if (midiPcmStream == null) {
                     midiPcmStream = new MidiPcmStream();
-                    midiPcmStream.method4761(9, 128);
+                    midiPcmStream.setInitialPatch(9, 128);
 
                     AppConstants.pcmPlayerProvider = new DevicePcmPlayerProvider();
                     devicePcmPlayer = (DevicePcmPlayer) AppConstants.pcmPlayerProvider.player();
@@ -479,17 +553,8 @@ public class GUI extends JFrame {
                             devicePcmPlayer.write();
                             if (AppConstants.shuffle && !midiPcmStream.isReady()) {
                                 stopSong();
-                                if (AppConstants.currentSongName.contains("(Custom)")) {
-                                    File selected = AppConstants.currentMusicFolder[(int) (Math.random() * AppConstants.currentMusicFolder.length)];
-                                    if (selected.getName().endsWith(".mid")) {
-                                        AppConstants.midiMusicFileBytes = Files.readAllBytes(Paths.get(selected.toURI()));
-                                        AppConstants.currentSongName = selected.getName().replace(".mid", "").trim() + " (Custom)";
-                                        songNameInput.setText(AppConstants.currentSongName);
-                                    }
-                                }
-                                else {
-                                    AppConstants.currentSongName = String.valueOf((int) (Math.random() * cacheLibrary.getIndex(AppConstants.currentMusicIndex).getArchives().length));
-                                }
+                                AppConstants.currentSongName = AppConstants.nextSongName;
+                                AppConstants.midiMusicFileBytes = AppConstants.nextMidiFileBytes;
                                 playSong();
                                 System.out.println("Playing " + AppConstants.currentSongName);
                             }
@@ -1017,7 +1082,6 @@ public class GUI extends JFrame {
     }
 
     private void testTool() {
-        this.revalidate();
     }
 
     private void quickTestSound() {
@@ -1036,7 +1100,7 @@ public class GUI extends JFrame {
 
         for (int index = 0; index < midiPcmStreams.length; index++) {
             midiPcmStreams[index] = new MidiPcmStream();
-            midiPcmStreams[index].method4761(9, 128);
+            midiPcmStreams[index].setInitialPatch(9, 128);
             MusicTrack musicTrack = null;
             if (AppConstants.currentSongName.contains("(Custom)")) {
                 musicTrack = MusicTrack.setTrack(AppConstants.midiMusicFileBytes);

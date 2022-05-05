@@ -28,10 +28,10 @@ public class MusicTrack extends Node {
 		int keyAfterTchOpcodes = 0;
 		int progmChangeOpcodes = 0;
 
-		int var13;
+		int track;
 		int opcode;
 		int var15;
-		for (var13 = 0; var13 < tracks; ++var13) {
+		for (track = 0; track < tracks; ++track) {
 			opcode = -1;
 
 			while (true) {
@@ -72,7 +72,7 @@ public class MusicTrack extends Node {
 		offset += 5 * tempoOpcodes;
 		offset += 2 * (noteOnOpcodes + noteOffOpcodes + ctrlChangeOpcodes + wheelChangeOpcodes + keyAfterTchOpcodes);
 		offset += chnnlAfterTchOpcodes + progmChangeOpcodes;
-		var13 = buf.position();
+		track = buf.position();
 		opcode = tracks + tempoOpcodes + ctrlChangeOpcodes + noteOnOpcodes + noteOffOpcodes + wheelChangeOpcodes
 				+ chnnlAfterTchOpcodes + keyAfterTchOpcodes + progmChangeOpcodes;
 
@@ -80,7 +80,7 @@ public class MusicTrack extends Node {
 			ByteBufferUtils.getVarInt(buf);
 		}
 
-		offset += buf.position() - var13;
+		offset += buf.position() - track;
 		var15 = buf.position();
 		int var16 = 0;
 		int var17 = 0;
@@ -203,7 +203,7 @@ public class MusicTrack extends Node {
 		midiBuff.putShort((short) tracks); // tracks
 		midiBuff.putShort((short) division); // division
 
-		buf.position(var13);
+		buf.position(track);
 
 		int var52 = 0;
 		int var53 = 0;
@@ -359,7 +359,7 @@ public class MusicTrack extends Node {
 		this.midi = midiBuff.array();
 	}
 
-	public void method4981() {
+	public void readMidiTrack() {
 		if (this.table == null) { // L: 274
 			this.table = new NodeHashTable(16); // L: 275
 			int[] var1 = new int[16]; // L: 276

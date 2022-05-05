@@ -6,7 +6,7 @@ public class RawSound extends AbstractSound {
 	public byte[] samples;
 	public int start;
 	int end;
-	public boolean field238;
+	public boolean loop;
 
 	RawSound(int var1, byte[] var2, int var3, int var4) {
 		this.sampleRate = var1;
@@ -20,7 +20,7 @@ public class RawSound extends AbstractSound {
 		this.samples = var2;
 		this.start = var3;
 		this.end = var4;
-		this.field238 = var5;
+		this.loop = var5;
 	}
 
 	public RawSound resample(Resampler var1) {

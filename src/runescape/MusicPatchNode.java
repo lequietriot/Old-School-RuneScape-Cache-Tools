@@ -3,10 +3,10 @@ package runescape;
 public class MusicPatchNode extends Node {
 
 	int midiChannel;
-	MusicPatchNode2 field2988;
+	MusicPatchNode2 musicPatchNode2;
 	MusicPatch patch;
 	RawSound rawSound;
-	int field2989;
+	int loopType;
 	int midiNote;
 	int midiNoteVolume;
 	int field2992;
@@ -14,10 +14,10 @@ public class MusicPatchNode extends Node {
 	int field2997;
 	int field2998;
 	int field2986;
-	int field3004;
-	int field2994;
-	int field2999;
-	int field3000;
+	int volumeEnvelopePosition;
+	int positionOffset;
+	int releasePosition;
+	int releaseOffset;
 	int field3001;
 	int field3002;
 	RawPcmStream stream;
@@ -28,10 +28,10 @@ public class MusicPatchNode extends Node {
 
 	}
 
-	void method4992() {
+	void reset() {
 		this.patch = null;
 		this.rawSound = null;
-		this.field2988 = null;
+		this.musicPatchNode2 = null;
 		this.stream = null;
 	}
 }

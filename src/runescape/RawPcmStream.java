@@ -5,49 +5,49 @@ import application.constants.AppConstants;
 public class RawPcmStream extends PcmStream {
 
 	int field318;
-	int field309;
-	int field307;
-	int field308;
+	int samplePitch;
+	int sampleVolume;
+	int samplePan;
 	int field311;
 	int field310;
 	int field305;
 	int numLoops;
 	int start;
 	int end;
-	boolean field315;
+	boolean isLooping;
 	int field316;
 	int field317;
 	int field306;
 	int field319;
 
-    RawPcmStream(RawSound var1, int var2, int var3, int var4) {
-		super.sound = var1; // L: 51
-		this.start = var1.start; // L: 52
-		this.end = var1.end; // L: 53
-		this.field315 = var1.field238; // L: 54
-		this.field309 = var2; // L: 55
-		this.field307 = var3; // L: 56
-		this.field308 = var4; // L: 57
+    RawPcmStream(RawSound rawSound, int pitch, int volume, int pan) {
+		super.sound = rawSound; // L: 51
+		this.start = rawSound.start; // L: 52
+		this.end = rawSound.end; // L: 53
+		this.isLooping = rawSound.loop; // L: 54
+		this.samplePitch = pitch; // L: 55
+		this.sampleVolume = volume; // L: 56
+		this.samplePan = pan; // L: 57
 		this.field318 = 0; // L: 58
 		this.method818(); // L: 59
 	} // L: 60
 
-    RawPcmStream(RawSound var1, int var2, int var3) {
-		super.sound = var1; // L: 39
-		this.start = var1.start; // L: 40
-		this.end = var1.end; // L: 41
-		this.field315 = var1.field238; // L: 42
-		this.field309 = var2; // L: 43
-		this.field307 = var3; // L: 44
-		this.field308 = 8192; // L: 45
+    RawPcmStream(RawSound rawSound, int pitch, int volume) {
+		super.sound = rawSound; // L: 39
+		this.start = rawSound.start; // L: 40
+		this.end = rawSound.end; // L: 41
+		this.isLooping = rawSound.loop; // L: 42
+		this.samplePitch = pitch; // L: 43
+		this.sampleVolume = volume; // L: 44
+		this.samplePan = 8192; // L: 45
 		this.field318 = 0; // L: 46
 		this.method818(); // L: 47
 	} // L: 48
 
 	void method818() {
-		this.field311 = this.field307; // L: 73
-		this.field310 = method826(this.field307, this.field308); // L: 74
-		this.field305 = method968(this.field307, this.field308); // L: 75
+		this.field311 = this.sampleVolume; // L: 73
+		this.field310 = method826(this.sampleVolume, this.samplePan); // L: 74
+		this.field305 = method968(this.sampleVolume, this.samplePan); // L: 75
 	} // L: 76
 
 	protected PcmStream firstSubStream() {
@@ -59,17 +59,17 @@ public class RawPcmStream extends PcmStream {
 	}
 
 	protected int vmethod4958() {
-		return this.field307 == 0 && this.field316 == 0 ? 0 : 1; // L: 208 209
+		return this.sampleVolume == 0 && this.field316 == 0 ? 0 : 1; // L: 208 209
 	}
 
-	public synchronized void fill(int[] var1, int var2, int var3) {
-		if (this.field307 == 0 && this.field316 == 0) { // L: 213
-			this.skip(var3); // L: 214
+	public synchronized void fill(int[] sampleBuffer, int var2, int var3) {
+		if (this.sampleVolume == 0 && this.field316 == 0) {
+			this.skip(var3);
 		} else {
-			RawSound var4 = (RawSound)super.sound; // L: 217
+			RawSound rawSound = (RawSound) super.sound;
 			int var5 = this.start << 8; // L: 218
 			int var6 = this.end << 8; // L: 219
-			int var7 = var4.samples.length << 8; // L: 220
+			int var7 = rawSound.samples.length << 8; // L: 220
 			int var8 = var6 - var5; // L: 221
 			if (var8 <= 0) { // L: 222
 				this.numLoops = 0;
@@ -78,7 +78,7 @@ public class RawPcmStream extends PcmStream {
 			int var9 = var2; // L: 223
 			var3 += var2; // L: 224
 			if (this.field318 < 0) { // L: 225
-				if (this.field309 <= 0) { // L: 226
+				if (this.samplePitch <= 0) { // L: 226
 					this.method915(); // L: 228
 					this.remove(); // L: 229
 					return; // L: 230
@@ -88,7 +88,7 @@ public class RawPcmStream extends PcmStream {
 			}
 
 			if (this.field318 >= var7) { // L: 233
-				if (this.field309 >= 0) { // L: 234
+				if (this.samplePitch >= 0) { // L: 234
 					this.method915(); // L: 236
 					this.remove(); // L: 237
 					return; // L: 238
@@ -98,36 +98,36 @@ public class RawPcmStream extends PcmStream {
 			}
 
 			if (this.numLoops < 0) { // L: 241
-				if (this.field315) { // L: 242
-					if (this.field309 < 0) { // L: 243
-						var9 = this.method841(var1, var2, var5, var3, var4.samples[this.start]); // L: 244
+				if (this.isLooping) { // L: 242
+					if (this.samplePitch < 0) { // L: 243
+						var9 = this.method841(sampleBuffer, var2, var5, var3, rawSound.samples[this.start]); // L: 244
 						if (this.field318 >= var5) { // L: 245
 							return;
 						}
 
 						this.field318 = var5 + var5 - 1 - this.field318; // L: 246
-						this.field309 = -this.field309; // L: 247
+						this.samplePitch = -this.samplePitch; // L: 247
 					}
 
 					while (true) {
-						var9 = this.method827(var1, var9, var6, var3, var4.samples[this.end - 1]); // L: 250
+						var9 = this.method827(sampleBuffer, var9, var6, var3, rawSound.samples[this.end - 1]); // L: 250
 						if (this.field318 < var6) { // L: 251
 							return;
 						}
 
 						this.field318 = var6 + var6 - 1 - this.field318; // L: 252
-						this.field309 = -this.field309; // L: 253
-						var9 = this.method841(var1, var9, var5, var3, var4.samples[this.start]); // L: 254
+						this.samplePitch = -this.samplePitch; // L: 253
+						var9 = this.method841(sampleBuffer, var9, var5, var3, rawSound.samples[this.start]); // L: 254
 						if (this.field318 >= var5) { // L: 255
 							return;
 						}
 
 						this.field318 = var5 + var5 - 1 - this.field318; // L: 256
-						this.field309 = -this.field309; // L: 257
+						this.samplePitch = -this.samplePitch; // L: 257
 					}
-				} else if (this.field309 < 0) { // L: 260
+				} else if (this.samplePitch < 0) { // L: 260
 					while (true) {
-						var9 = this.method841(var1, var9, var5, var3, var4.samples[this.end - 1]); // L: 262
+						var9 = this.method841(sampleBuffer, var9, var5, var3, rawSound.samples[this.end - 1]); // L: 262
 						if (this.field318 >= var5) { // L: 263
 							return;
 						}
@@ -136,7 +136,7 @@ public class RawPcmStream extends PcmStream {
 					}
 				} else {
 					while (true) {
-						var9 = this.method827(var1, var9, var6, var3, var4.samples[this.start]); // L: 269
+						var9 = this.method827(sampleBuffer, var9, var6, var3, rawSound.samples[this.start]); // L: 269
 						if (this.field318 < var6) { // L: 270
 							return;
 						}
@@ -146,47 +146,47 @@ public class RawPcmStream extends PcmStream {
 				}
 			} else {
 				if (this.numLoops > 0) { // L: 275
-					if (this.field315) { // L: 276
+					if (this.isLooping) { // L: 276
 						label127: {
-							if (this.field309 < 0) { // L: 277
-								var9 = this.method841(var1, var2, var5, var3, var4.samples[this.start]); // L: 278
+							if (this.samplePitch < 0) { // L: 277
+								var9 = this.method841(sampleBuffer, var2, var5, var3, rawSound.samples[this.start]); // L: 278
 								if (this.field318 >= var5) { // L: 279
 									return;
 								}
 
 								this.field318 = var5 + var5 - 1 - this.field318; // L: 280
-								this.field309 = -this.field309; // L: 281
+								this.samplePitch = -this.samplePitch; // L: 281
 								if (--this.numLoops == 0) { // L: 282
 									break label127;
 								}
 							}
 
 							do {
-								var9 = this.method827(var1, var9, var6, var3, var4.samples[this.end - 1]); // L: 285
+								var9 = this.method827(sampleBuffer, var9, var6, var3, rawSound.samples[this.end - 1]); // L: 285
 								if (this.field318 < var6) { // L: 286
 									return;
 								}
 
 								this.field318 = var6 + var6 - 1 - this.field318; // L: 287
-								this.field309 = -this.field309; // L: 288
+								this.samplePitch = -this.samplePitch; // L: 288
 								if (--this.numLoops == 0) { // L: 289
 									break;
 								}
 
-								var9 = this.method841(var1, var9, var5, var3, var4.samples[this.start]); // L: 290
+								var9 = this.method841(sampleBuffer, var9, var5, var3, rawSound.samples[this.start]); // L: 290
 								if (this.field318 >= var5) { // L: 291
 									return;
 								}
 
 								this.field318 = var5 + var5 - 1 - this.field318; // L: 292
-								this.field309 = -this.field309; // L: 293
+								this.samplePitch = -this.samplePitch; // L: 293
 							} while(--this.numLoops != 0); // L: 294
 						}
 					} else {
 						int var10;
-						if (this.field309 < 0) { // L: 297
+						if (this.samplePitch < 0) { // L: 297
 							while (true) {
-								var9 = this.method841(var1, var9, var5, var3, var4.samples[this.end - 1]); // L: 299
+								var9 = this.method841(sampleBuffer, var9, var5, var3, rawSound.samples[this.end - 1]); // L: 299
 								if (this.field318 >= var5) { // L: 300
 									return;
 								}
@@ -203,7 +203,7 @@ public class RawPcmStream extends PcmStream {
 							}
 						} else {
 							while (true) {
-								var9 = this.method827(var1, var9, var6, var3, var4.samples[this.start]); // L: 313
+								var9 = this.method827(sampleBuffer, var9, var6, var3, rawSound.samples[this.start]); // L: 313
 								if (this.field318 < var6) { // L: 314
 									return;
 								}
@@ -222,15 +222,15 @@ public class RawPcmStream extends PcmStream {
 					}
 				}
 
-				if (this.field309 < 0) { // L: 326
-					this.method841(var1, var9, 0, var3, 0); // L: 327
+				if (this.samplePitch < 0) { // L: 326
+					this.method841(sampleBuffer, var9, 0, var3, 0); // L: 327
 					if (this.field318 < 0) { // L: 328
 						this.field318 = -1; // L: 329
 						this.method915(); // L: 330
 						this.remove(); // L: 331
 					}
 				} else {
-					this.method827(var1, var9, var7, var3, 0); // L: 335
+					this.method827(sampleBuffer, var9, var7, var3, 0); // L: 335
 					if (this.field318 >= var7) { // L: 336
 						this.field318 = var7; // L: 337
 						this.method915(); // L: 338
@@ -249,8 +249,8 @@ public class RawPcmStream extends PcmStream {
 	public synchronized void skip(int var1) {
 		if (this.field316 > 0) { // L: 345
 			if (var1 >= this.field316) { // L: 346
-				if (this.field307 == Integer.MIN_VALUE) { // L: 347
-					this.field307 = 0; // L: 348
+				if (this.sampleVolume == Integer.MIN_VALUE) { // L: 347
+					this.sampleVolume = 0; // L: 348
 					this.field305 = 0; // L: 349
 					this.field310 = 0; // L: 350
 					this.field311 = 0; // L: 351
@@ -278,7 +278,7 @@ public class RawPcmStream extends PcmStream {
 		}
 
 		if (this.field318 < 0) { // L: 371
-			if (this.field309 <= 0) { // L: 372
+			if (this.samplePitch <= 0) { // L: 372
 				this.method915(); // L: 374
 				this.remove(); // L: 375
 				return; // L: 376
@@ -288,7 +288,7 @@ public class RawPcmStream extends PcmStream {
 		}
 
 		if (this.field318 >= var5) { // L: 379
-			if (this.field309 >= 0) { // L: 380
+			if (this.samplePitch >= 0) { // L: 380
 				this.method915(); // L: 382
 				this.remove(); // L: 383
 				return; // L: 384
@@ -297,10 +297,10 @@ public class RawPcmStream extends PcmStream {
 			this.field318 = var5 - 1;
 		}
 
-		this.field318 += this.field309 * var1; // L: 387
+		this.field318 += this.samplePitch * var1; // L: 387
 		if (this.numLoops < 0) { // L: 388
-			if (!this.field315) { // L: 389
-				if (this.field309 < 0) { // L: 404
+			if (!this.isLooping) { // L: 389
+				if (this.samplePitch < 0) { // L: 404
 					if (this.field318 >= var3) { // L: 405
 						return;
 					}
@@ -315,38 +315,38 @@ public class RawPcmStream extends PcmStream {
 				}
 
 			} else {
-				if (this.field309 < 0) { // L: 390
+				if (this.samplePitch < 0) { // L: 390
 					if (this.field318 >= var3) { // L: 391
 						return;
 					}
 
 					this.field318 = var3 + var3 - 1 - this.field318; // L: 392
-					this.field309 = -this.field309; // L: 393
+					this.samplePitch = -this.samplePitch; // L: 393
 				}
 
 				while (this.field318 >= var4) { // L: 396
 					this.field318 = var4 + var4 - 1 - this.field318; // L: 397
-					this.field309 = -this.field309; // L: 398
+					this.samplePitch = -this.samplePitch; // L: 398
 					if (this.field318 >= var3) { // L: 399
 						return;
 					}
 
 					this.field318 = var3 + var3 - 1 - this.field318; // L: 400
-					this.field309 = -this.field309; // L: 401
+					this.samplePitch = -this.samplePitch; // L: 401
 				}
 
 			}
 		} else {
 			if (this.numLoops > 0) { // L: 414
-				if (this.field315) { // L: 415
+				if (this.isLooping) { // L: 415
 					label129: {
-						if (this.field309 < 0) { // L: 416
+						if (this.samplePitch < 0) { // L: 416
 							if (this.field318 >= var3) { // L: 417
 								return;
 							}
 
 							this.field318 = var3 + var3 - 1 - this.field318; // L: 418
-							this.field309 = -this.field309; // L: 419
+							this.samplePitch = -this.samplePitch; // L: 419
 							if (--this.numLoops == 0) { // L: 420
 								break label129;
 							}
@@ -358,7 +358,7 @@ public class RawPcmStream extends PcmStream {
 							}
 
 							this.field318 = var4 + var4 - 1 - this.field318; // L: 424
-							this.field309 = -this.field309; // L: 425
+							this.samplePitch = -this.samplePitch; // L: 425
 							if (--this.numLoops == 0) { // L: 426
 								break;
 							}
@@ -368,13 +368,13 @@ public class RawPcmStream extends PcmStream {
 							}
 
 							this.field318 = var3 + var3 - 1 - this.field318; // L: 428
-							this.field309 = -this.field309; // L: 429
+							this.samplePitch = -this.samplePitch; // L: 429
 						} while(--this.numLoops != 0); // L: 430
 					}
 				} else {
 					label161: {
 						int var7;
-						if (this.field309 < 0) { // L: 433
+						if (this.samplePitch < 0) { // L: 433
 							if (this.field318 >= var3) { // L: 434
 								return;
 							}
@@ -409,7 +409,7 @@ public class RawPcmStream extends PcmStream {
 				}
 			}
 
-			if (this.field309 < 0) { // L: 457
+			if (this.samplePitch < 0) { // L: 457
 				if (this.field318 < 0) { // L: 458
 					this.field318 = -1; // L: 459
 					this.method915(); // L: 460
@@ -433,18 +433,18 @@ public class RawPcmStream extends PcmStream {
 	} // L: 88
 
 	synchronized void method822(int var1, int var2) {
-		this.field307 = var1; // L: 91
-		this.field308 = var2; // L: 92
+		this.sampleVolume = var1; // L: 91
+		this.samplePan = var2; // L: 92
 		this.field316 = 0; // L: 93
 		this.method818(); // L: 94
 	} // L: 95
 
 	public synchronized int method936() {
-		return this.field307 == Integer.MIN_VALUE ? 0 : this.field307; // L: 98
+		return this.sampleVolume == Integer.MIN_VALUE ? 0 : this.sampleVolume; // L: 98
 	}
 
 	public synchronized int method824() {
-		return this.field308 < 0 ? -1 : this.field308; // L: 102
+		return this.samplePan < 0 ? -1 : this.samplePan; // L: 102
 	}
 
 	public synchronized void method825(int var1) {
@@ -461,14 +461,14 @@ public class RawPcmStream extends PcmStream {
 	} // L: 110
 
 	public synchronized void method922() {
-		this.field309 = (this.field309 ^ this.field309 >> 31) + (this.field309 >>> 31); // L: 113
-		this.field309 = -this.field309; // L: 114
+		this.samplePitch = (this.samplePitch ^ this.samplePitch >> 31) + (this.samplePitch >>> 31); // L: 113
+		this.samplePitch = -this.samplePitch; // L: 114
 	} // L: 115
 
 	void method915() {
 		if (this.field316 != 0) { // L: 118
-			if (this.field307 == Integer.MIN_VALUE) {
-				this.field307 = 0; // L: 119
+			if (this.sampleVolume == Integer.MIN_VALUE) {
+				this.sampleVolume = 0; // L: 119
 			}
 
 			this.field316 = 0; // L: 120
@@ -516,8 +516,8 @@ public class RawPcmStream extends PcmStream {
 				}
 
 				this.field316 = var1; // L: 147
-				this.field307 = var2; // L: 148
-				this.field308 = var3; // L: 149
+				this.sampleVolume = var2; // L: 148
+				this.samplePan = var3; // L: 149
 				this.field317 = (var2 - this.field311) / var1; // L: 150
 				this.field306 = (var4 - this.field310) / var1; // L: 151
 				this.field319 = (var5 - this.field305) / var1; // L: 152
@@ -531,7 +531,7 @@ public class RawPcmStream extends PcmStream {
 			this.remove(); // L: 158
 		} else if (this.field310 == 0 && this.field305 == 0) { // L: 161
 			this.field316 = 0; // L: 162
-			this.field307 = 0; // L: 163
+			this.sampleVolume = 0; // L: 163
 			this.field311 = 0; // L: 164
 			this.remove(); // L: 165
 		} else {
@@ -561,7 +561,7 @@ public class RawPcmStream extends PcmStream {
 			}
 
 			this.field316 = var1; // L: 175
-			this.field307 = Integer.MIN_VALUE; // L: 176
+			this.sampleVolume = Integer.MIN_VALUE; // L: 176
 			this.field317 = -this.field311 / var1; // L: 177
 			this.field306 = -this.field310 / var1; // L: 178
 			this.field319 = -this.field305 / var1; // L: 179
@@ -569,16 +569,16 @@ public class RawPcmStream extends PcmStream {
 	} // L: 159 166 180
 
 	public synchronized void method912(int var1) {
-		if (this.field309 < 0) { // L: 183
-			this.field309 = -var1;
+		if (this.samplePitch < 0) { // L: 183
+			this.samplePitch = -var1;
 		} else {
-			this.field309 = var1; // L: 184
+			this.samplePitch = var1; // L: 184
 		}
 
 	} // L: 185
 
 	public synchronized int method832() {
-		return this.field309 < 0 ? -this.field309 : this.field309; // L: 188
+		return this.samplePitch < 0 ? -this.samplePitch : this.samplePitch; // L: 188
 	}
 
 	public boolean method833() {
@@ -598,16 +598,16 @@ public class RawPcmStream extends PcmStream {
 				}
 
 				this.field316 += var2; // L: 477
-				if (this.field309 == 256 && (this.field318 & 255) == 0) { // L: 478
+				if (this.samplePitch == 256 && (this.field318 & 255) == 0) { // L: 478
 					if (AppConstants.stereo) { // L: 479
 						var2 = method852(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this);
 					} else {
 						var2 = method960(((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this); // L: 480
 					}
 				} else if (AppConstants.stereo) { // L: 483
-					var2 = method856(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this, this.field309, var5);
+					var2 = method856(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this, this.samplePitch, var5);
 				} else {
-					var2 = method855(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this, this.field309, var5); // L: 484
+					var2 = method855(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this, this.samplePitch, var5); // L: 484
 				}
 
 				this.field316 -= var2; // L: 486
@@ -622,7 +622,7 @@ public class RawPcmStream extends PcmStream {
 				return var4;
 			}
 
-			if (this.field309 == 256 && (this.field318 & 255) == 0) { // L: 490
+			if (this.samplePitch == 256 && (this.field318 & 255) == 0) { // L: 490
 				if (AppConstants.stereo) { // L: 491
 					return method962(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this);
 				}
@@ -631,10 +631,10 @@ public class RawPcmStream extends PcmStream {
 			}
 
 			if (AppConstants.stereo) { // L: 495
-				return method848(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this, this.field309, var5);
+				return method848(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this, this.samplePitch, var5);
 			}
 
-			return method847(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, 0, var4, var3, this, this.field309, var5); // L: 496
+			return method847(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, 0, var4, var3, this, this.samplePitch, var5); // L: 496
 		}
 	}
 
@@ -647,16 +647,16 @@ public class RawPcmStream extends PcmStream {
 				}
 
 				this.field316 += var2; // L: 504
-				if (this.field309 == -256 && (this.field318 & 255) == 0) { // L: 505
+				if (this.samplePitch == -256 && (this.field318 & 255) == 0) { // L: 505
 					if (AppConstants.stereo) { // L: 506
 						var2 = method854(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this);
 					} else {
 						var2 = method831(((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this); // L: 507
 					}
 				} else if (AppConstants.stereo) { // L: 510
-					var2 = method858(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this, this.field309, var5);
+					var2 = method858(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this, this.samplePitch, var5);
 				} else {
-					var2 = method899(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this, this.field309, var5); // L: 511
+					var2 = method899(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this, this.samplePitch, var5); // L: 511
 				}
 
 				this.field316 -= var2; // L: 513
@@ -671,7 +671,7 @@ public class RawPcmStream extends PcmStream {
 				return var4;
 			}
 
-			if (this.field309 == -256 && (this.field318 & 255) == 0) { // L: 517
+			if (this.samplePitch == -256 && (this.field318 & 255) == 0) { // L: 517
 				if (AppConstants.stereo) { // L: 518
 					return method846(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this);
 				}
@@ -680,15 +680,15 @@ public class RawPcmStream extends PcmStream {
 			}
 
 			if (AppConstants.stereo) { // L: 522
-				return method850(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this, this.field309, var5);
+				return method850(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this, this.samplePitch, var5);
 			}
 
-			return method849(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, 0, var4, var3, this, this.field309, var5); // L: 523
+			return method849(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, 0, var4, var3, this, this.samplePitch, var5); // L: 523
 		}
 	}
 
 	boolean method954() {
-		int var1 = this.field307; // L: 528
+		int var1 = this.sampleVolume; // L: 528
 		int var2;
 		int var3;
 		if (var1 == Integer.MIN_VALUE) { // L: 531
@@ -696,13 +696,13 @@ public class RawPcmStream extends PcmStream {
 			var2 = 0; // L: 533
 			var1 = 0; // L: 534
 		} else {
-			var2 = method826(var1, this.field308); // L: 537
-			var3 = method968(var1, this.field308); // L: 538
+			var2 = method826(var1, this.samplePan); // L: 537
+			var3 = method968(var1, this.samplePan); // L: 538
 		}
 
 		if (var1 == this.field311 && var2 == this.field310 && var3 == this.field305) { // L: 540
-			if (this.field307 == Integer.MIN_VALUE) { // L: 570
-				this.field307 = 0; // L: 571
+			if (this.sampleVolume == Integer.MIN_VALUE) { // L: 570
+				this.sampleVolume = 0; // L: 571
 				this.field305 = 0; // L: 572
 				this.field310 = 0; // L: 573
 				this.field311 = 0; // L: 574
@@ -775,11 +775,11 @@ public class RawPcmStream extends PcmStream {
 		return var1 < 0 ? -var0 : (int)((double)var0 * Math.sqrt((double)var1 * 1.220703125E-4D) + 0.5D); // L: 27
 	}
 
-	public static RawPcmStream createRawPcmStream(RawSound sound, int pitchFactor, int volumeFactor) {
+	public static RawPcmStream createSoundEffectRawPcmStream(RawSound sound, int pitchFactor, int volumeFactor) {
 		return sound.samples != null && sound.samples.length != 0 ? new RawPcmStream(sound, (int)((long)sound.sampleRate * 256L * (long)pitchFactor / (AppConstants.sampleRate * 100L)), volumeFactor << 6) : null; // L: 63 64
 	}
 
-	public static RawPcmStream method817(RawSound sound, int pitchFactor, int volumeFactor, int panFactor) {
+	public static RawPcmStream createSampledRawPcmStream(RawSound sound, int pitchFactor, int volumeFactor, int panFactor) {
 		return sound.samples != null && sound.samples.length != 0 ? new RawPcmStream(sound, pitchFactor, volumeFactor, panFactor) : null; // L: 68 69
 	}
 

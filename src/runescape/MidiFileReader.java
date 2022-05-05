@@ -4,13 +4,13 @@ public class MidiFileReader {
 
 	static final byte[] field2963;
 	Buffer buffer;
-	public int division;
+	public int resolution;
 	int[] trackStarts;
 	int[] trackPositions;
 	public int[] trackLengths;
-	int[] field2964;
-	int field2967;
-	long field2965;
+	int[] midiMessage;
+	int division;
+	long tick;
 
 	static {
 		field2963 = new byte[]{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -29,8 +29,8 @@ public class MidiFileReader {
 		this.buffer.array = data;
 		this.buffer.offset = 10;
 		int var2 = this.buffer.readUnsignedShort();
-		this.division = this.buffer.readUnsignedShort();
-		this.field2967 = 500000;
+		this.resolution = this.buffer.readUnsignedShort();
+		this.division = 500000;
 		this.trackStarts = new int[var2];
 
 		Buffer var10000;
@@ -47,7 +47,7 @@ public class MidiFileReader {
 			var10000 = this.buffer; // L: 46
 		}
 
-		this.field2965 = 0L; // L: 48
+		this.tick = 0L; // L: 48
 		this.trackPositions = new int[var2]; // L: 49
 
 		for (var3 = 0; var3 < var2; ++var3) { // L: 50
@@ -55,7 +55,7 @@ public class MidiFileReader {
 		}
 
 		this.trackLengths = new int[var2]; // L: 51
-		this.field2964 = new int[var2]; // L: 52
+		this.midiMessage = new int[var2]; // L: 52
 	} // L: 53
 
 	public void clear() {
@@ -63,7 +63,7 @@ public class MidiFileReader {
 		this.trackStarts = null; // L: 57
 		this.trackPositions = null; // L: 58
 		this.trackLengths = null; // L: 59
-		this.field2964 = null; // L: 60
+		this.midiMessage = null; // L: 60
 	} // L: 61
 
 	public boolean isReady() {
@@ -102,10 +102,10 @@ public class MidiFileReader {
 		int var5;
 		if (var2 < 0) { // L: 95
 			var5 = var2 & 255; // L: 96
-			this.field2964[var1] = var5; // L: 97
+			this.midiMessage[var1] = var5; // L: 97
 			++this.buffer.offset; // L: 98
 		} else {
-			var5 = this.field2964[var1]; // L: 101
+			var5 = this.midiMessage[var1]; // L: 101
 		}
 
 		if (var5 != 240 && var5 != 247) { // L: 103
@@ -116,7 +116,7 @@ public class MidiFileReader {
 				int var4 = this.buffer.array[this.buffer.offset] & 255; // L: 106
 				if (var4 >= 241 && var4 <= 243 || var4 == 246 || var4 == 248 || var4 >= 250 && var4 <= 252 || var4 == 254) { // L: 107
 					++this.buffer.offset; // L: 108
-					this.field2964[var1] = var4; // L: 109
+					this.midiMessage[var1] = var4; // L: 109
 					return this.method4891(var1, var4); // L: 110
 				}
 			}
@@ -141,8 +141,8 @@ public class MidiFileReader {
 				int var5 = this.buffer.readMedium(); // L: 128
 				var4 -= 3; // L: 129
 				int var6 = this.trackLengths[var1]; // L: 130
-				this.field2965 += (long)var6 * (long)(this.field2967 - var5); // L: 131
-				this.field2967 = var5; // L: 132
+				this.tick += (long)var6 * (long)(this.division - var5); // L: 131
+				this.division = var5; // L: 132
 				var10000 = this.buffer; // L: 133
 				var10000.offset += var4;
 				return 2; // L: 134
@@ -167,7 +167,7 @@ public class MidiFileReader {
 	}
 
 	public long method4934(int var1) {
-		return this.field2965 + (long)var1 * (long)this.field2967; // L: 147
+		return this.tick + (long)var1 * (long)this.division; // L: 147
 	}
 
 	public int getPrioritizedTrack() {
@@ -198,12 +198,12 @@ public class MidiFileReader {
 	}
 
 	public void reset(long var1) {
-		this.field2965 = var1; // L: 171
+		this.tick = var1; // L: 171
 		int var3 = this.trackPositions.length; // L: 172
 
 		for (int var4 = 0; var4 < var3; ++var4) { // L: 173
 			this.trackLengths[var4] = 0; // L: 174
-			this.field2964[var4] = 0; // L: 175
+			this.midiMessage[var4] = 0; // L: 175
 			this.buffer.offset = this.trackStarts[var4]; // L: 176
 			this.readTrackLength(var4); // L: 177
 			this.trackPositions[var4] = this.buffer.offset; // L: 178
