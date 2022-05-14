@@ -177,7 +177,7 @@ public class MidiReceiver implements Receiver {
                 } else if (var2 == 208) {
                     midiPcmStream.channelPressure(var3, var4);
                 } else if (var2 == 224) {
-                    midiPcmStream.pitchBend(var3, var4);
+                    midiPcmStream.pitchBend(var3, (var4 + var5) * 128);
                 } else {
                     if (var2 == 255) {
                         midiPcmStream.systemReset();

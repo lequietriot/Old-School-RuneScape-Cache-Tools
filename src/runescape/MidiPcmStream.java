@@ -252,12 +252,12 @@ public class MidiPcmStream extends PcmStream {
 
 		MusicPatch var9 = (MusicPatch)this.musicPatches.get(this.patch[channel]);
 		if (var9 != null) {
-			RawSound var5 = var9.rawSounds[data1];
+			AudioDataSource var5 = var9.audioDataSources[data1];
 			if (var5 != null) {
 				MusicPatchNode var6 = new MusicPatchNode();
 				var6.midiChannel = channel;
 				var6.patch = var9;
-				var6.rawSound = var5;
+				var6.audioDataSource = var5;
 				var6.musicPatchNode2 = var9.musicPatchParameters[data1];
 				var6.loopType = var9.loopOffset[data1];
 				var6.midiNote = data1;
@@ -299,10 +299,10 @@ public class MidiPcmStream extends PcmStream {
 	}
 
 	void method4765(MusicPatchNode musicPatchNode, boolean validPitch) {
-		int var3 = musicPatchNode.rawSound.samples.length;
+		int var3 = musicPatchNode.audioDataSource.audioData.length;
 		int var4;
-		if (validPitch && musicPatchNode.rawSound.loop) {
-			int var5 = var3 + var3 - musicPatchNode.rawSound.start;
+		if (validPitch && musicPatchNode.audioDataSource.isLooping) {
+			int var5 = var3 + var3 - musicPatchNode.audioDataSource.loopStart;
 			var4 = (int)((long)this.sampleLoopControls[musicPatchNode.midiChannel] * (long)var5 >> 6);
 			var3 <<= 8;
 			if (var4 >= var3) {
@@ -436,7 +436,7 @@ public class MidiPcmStream extends PcmStream {
 
 	}
 
-	void send(int message) {
+	void dispatchEvent(int message) {
 		int command = message & 240;
 		int channel;
 		int data1;
@@ -647,7 +647,7 @@ public class MidiPcmStream extends PcmStream {
 			var2 += (int)(var6 * (double)var4);
 		}
 
-		var4 = (int)((double)(var1.rawSound.sampleRate * 256) * Math.pow(2.0D, (double)var2 * 3.255208333333333E-4D) / (double) AppConstants.sampleRate + 0.5D);
+		var4 = (int)((double)(var1.audioDataSource.sampleRate * 256) * Math.pow(2.0D, (double)var2 * 3.255208333333333E-4D) / (double) AppConstants.sampleRate + 0.5D);
 		return Math.max(var4, 1);
 	}
 
@@ -722,7 +722,7 @@ public class MidiPcmStream extends PcmStream {
 				}
 
 				if ((midiMessage & 128) != 0) {
-					this.send(midiMessage);
+					this.dispatchEvent(midiMessage);
 				}
 
 				this.midiFile.readTrackLength(trackNumber);

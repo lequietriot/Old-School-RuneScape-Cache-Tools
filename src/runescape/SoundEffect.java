@@ -24,9 +24,9 @@ public class SoundEffect {
 		this.end = var1.readUnsignedShort();
 	}
 
-	public RawSound toRawSound() {
+	public AudioDataSource toRawSound() {
 		byte[] var1 = this.mix();
-		return new RawSound(22050, var1, this.start * 22050 / 1000, this.end * 22050 / 1000);
+		return new AudioDataSource(22050, var1, this.start * 22050 / 1000, this.end * 22050 / 1000);
 	}
 
 	public final int calculateDelay() {

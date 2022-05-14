@@ -28,7 +28,7 @@ public class RSHDCacheIndexConstants {
     public static int WORLD_MAP;
     public static int QUICK_CHAT;
     public static int QUICK_CHAT_GLOBAL;
-    public static int MATERIALS;
+    public static int TEXTURE_DEFINITIONS;
     public static int PARTICLES;
     public static int DEFAULTS;
     public static int BILLBOARDS;
@@ -60,7 +60,7 @@ public class RSHDCacheIndexConstants {
         WORLD_MAP = 23;
         QUICK_CHAT = 24;
         QUICK_CHAT_GLOBAL = 25;
-        MATERIALS = 26;
+        TEXTURE_DEFINITIONS = 26;
         PARTICLES = 27;
         DEFAULTS = 28;
         BILLBOARDS = 29;

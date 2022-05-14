@@ -5,7 +5,7 @@ public abstract class PcmStream extends Node {
 	volatile boolean active;
 	PcmStream after;
 	int field320;
-	AbstractSound sound;
+	AudioDataPosition sound;
 
 	protected PcmStream() {
 		this.active = true;

@@ -16,11 +16,11 @@ public class SoundCache {
 		this.musicSampleIndex = var2;
 	}
 
-	RawSound getSoundEffect0(int var1, int var2, int[] var3) {
+	AudioDataSource getSoundEffect0(int var1, int var2, int[] var3) {
 		int var4 = var2 ^ (var1 << 4 & 65535 | var1 >>> 12);
 		var4 |= var1 << 16;
 		long var5 = var4;
-		RawSound var7 = (RawSound)this.rawSounds.get(var5);
+		AudioDataSource var7 = (AudioDataSource)this.rawSounds.get(var5);
 		if (var7 != null) {
 			return var7;
 		} else if (var3 != null && var3[0] <= 0) {
@@ -33,7 +33,7 @@ public class SoundCache {
 				var7 = var8.toRawSound();
 				this.rawSounds.put(var7, var5);
 				if (var3 != null) {
-					var3[0] -= var7.samples.length;
+					var3[0] -= var7.audioData.length;
 				}
 
 				return var7;
@@ -41,11 +41,11 @@ public class SoundCache {
 		}
 	}
 
-	RawSound getMusicSample0(int var1, int var2, int[] var3) {
+	AudioDataSource getMusicSample0(int var1, int var2, int[] var3) {
 		int var4 = var2 ^ (var1 << 4 & 65535 | var1 >>> 12);
 		var4 |= var1 << 16;
 		long var5 = (long)var4 ^ 4294967296L;
-		RawSound var7 = (RawSound)this.rawSounds.get(var5);
+		AudioDataSource var7 = (AudioDataSource)this.rawSounds.get(var5);
 		if (var7 != null) {
 			return var7;
 		} else if (var3 != null && var3[0] <= 0) {
@@ -72,7 +72,7 @@ public class SoundCache {
 		}
 	}
 
-	public RawSound getSoundEffect(int var1, int[] var2) {
+	public AudioDataSource getSoundEffect(int var1, int[] var2) {
 		if (this.soundEffectIndex.getArchives().length == 1) {
 			return this.getSoundEffect0(0, var1, var2);
 		} else if (this.soundEffectIndex.getArchive(var1).getFiles().length == 1) {
@@ -82,7 +82,7 @@ public class SoundCache {
 		}
 	}
 
-	public RawSound getMusicSample(int var1, int[] var2) {
+	public AudioDataSource getMusicSample(int var1, int[] var2) {
 		if (this.musicSampleIndex.getArchives().length == 1) {
 			return this.getMusicSample0(0, var1, var2);
 		} else if (this.musicSampleIndex.getArchive(var1).getFiles().length == 1) {

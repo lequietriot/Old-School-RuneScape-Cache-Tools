@@ -91,8 +91,8 @@ public class DevicePcmPlayer extends PcmPlayer {
 				var3 = 8388607 ^ var3 >> 31;
 			}
 
-			this.byteSamples[var2 * 2] = (byte)(var3 >> 8);
-			this.byteSamples[var2 * 2 + 1] = (byte)(var3 >> 16);
+			this.byteSamples[var2 * 2] = (byte)(var3 >> 8 >> 1);
+			this.byteSamples[var2 * 2 + 1] = (byte)(var3 >> 16 >> 1);
 		}
 		try {
 			this.byteArrayOutputStream.write(this.byteSamples);

@@ -2,8 +2,9 @@ package decoders;
 
 import application.GUI;
 import org.displee.CacheLibrary;
-import runelite.definitions.ModelDefinition;
 import runelite.loaders.ModelLoaderHD;
+import runelite.managers.TextureManagerHD;
+import runelite.models.ObjExporterHD;
 
 import javax.swing.*;
 import java.io.File;
@@ -32,17 +33,16 @@ public class ModelDecoderHD {
                     JOptionPane.showMessageDialog(gui.getContentPane(), "Archive " + archive + " was decoded successfully.\nIt can be found in the following path: " + outputFilePath.getPath());
                 }
 
-                //TextureManagerHD tm = new TextureManagerHD(cacheLibrary);
-                //tm.load();
+                TextureManagerHD tm = new TextureManagerHD(cacheLibrary);
+                tm.load();
 
-                ModelLoaderHD loader = new ModelLoaderHD();
-                ModelDefinition model = loader.load(archive, cacheLibrary.getIndex(index).getArchive(archive).getFile(file).getData());
+                ModelLoaderHD loader = new ModelLoaderHD(cacheLibrary.getIndex(index).getArchive(archive).getFile(file).getData());
 
-                //ObjExporterHD exporter = new ObjExporterHD(null, model);
-                try (PrintWriter objWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + archive + ".obj")))
-                     //PrintWriter mtlWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + archive + ".mtl")))
+                ObjExporterHD exporter = new ObjExporterHD(tm, loader, archive);
+                try (PrintWriter objWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + archive + ".obj"));
+                     PrintWriter mtlWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + archive + ".mtl")))
                 {
-                    //exporter.export(objWriter, null);
+                    exporter.export(objWriter, mtlWriter);
                 }
             }
         } catch (IOException e) {

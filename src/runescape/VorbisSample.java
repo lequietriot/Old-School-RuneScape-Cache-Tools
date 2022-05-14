@@ -1,17 +1,7 @@
 package runescape;
 
 import org.displee.cache.index.Index;
-import org.gagravarr.ogg.OggFile;
-import org.gagravarr.ogg.OggPacket;
-import org.gagravarr.ogg.OggPacketWriter;
-import org.gagravarr.vorbis.VorbisComments;
-import org.gagravarr.vorbis.VorbisFile;
-import org.gagravarr.vorbis.VorbisInfo;
-import org.gagravarr.vorbis.VorbisSetup;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public class VorbisSample extends Node {
@@ -42,7 +32,7 @@ public class VorbisSample extends Node {
 	int sampleCount;
 	int start;
 	int end;
-	boolean field339;
+	boolean isLooped;
 	float[] field353;
 	int field349;
 	int field343;
@@ -52,7 +42,7 @@ public class VorbisSample extends Node {
 	int field367;
 
 	static {
-		initialized = false; // L: 28
+		initialized = false;
 	}
 
 	VorbisSample(byte[] var1) {
@@ -60,30 +50,30 @@ public class VorbisSample extends Node {
 	}
 
 	void read(byte[] var1) {
-		ByteBuffer var2 = ByteBuffer.wrap(var1);
-		this.sampleRate = var2.getInt();
-		this.sampleCount = var2.getInt();
-		this.start = var2.getInt();
-		this.end = var2.getInt();
+		ByteBuffer buffer = ByteBuffer.wrap(var1);
+		this.sampleRate = buffer.getInt();
+		this.sampleCount = buffer.getInt();
+		this.start = buffer.getInt();
+		this.end = buffer.getInt();
 		if (this.end < 0) {
 			this.end = ~this.end;
-			this.field339 = true;
+			this.isLooped = true;
 		}
 
-		int var3 = var2.getInt();
-		this.packets = new byte[var3][];
+		int packetCount = buffer.getInt();
+		this.packets = new byte[packetCount][];
 
-		for (int var4 = 0; var4 < var3; ++var4) {
+		for (int var4 = 0; var4 < packetCount; ++var4) {
 			int var5 = 0;
 
 			int var6;
 			do {
-				var6 = var2.get() & 0xFF;
+				var6 = buffer.get() & 0xFF;
 				var5 += var6;
 			} while(var6 >= 255);
 
 			byte[] var7 = new byte[var5];
-			var2.get(var7, 0, var5);
+			buffer.get(var7, 0, var5);
 			this.packets[var4] = var7;
 		}
 
@@ -342,7 +332,7 @@ public class VorbisSample extends Node {
 		return var41; // L: 393
 	}
 
-	RawSound toRawSound(int[] var1) {
+	AudioDataSource toRawSound(int[] var1) {
 		if (var1 != null && var1[0] <= 0) { // L: 421
 			return null;
 		} else {
@@ -384,22 +374,22 @@ public class VorbisSample extends Node {
 				}
 			}
 
-			this.field353 = null; // L: 446
-			byte[] var7 = this.samples; // L: 447
-			this.samples = null; // L: 448
-			return new RawSound(this.sampleRate, var7, this.start, this.end, this.field339); // L: 449
+			this.field353 = null;
+			byte[] sampleData = this.samples;
+			this.samples = null;
+			return new AudioDataSource(this.sampleRate, sampleData, this.start, this.end, this.isLooped);
 		}
 	}
 
 	static float float32Unpack(int var0) {
-		int var1 = var0 & 2097151; // L: 47
-		int var2 = var0 & Integer.MIN_VALUE; // L: 48
-		int var3 = (var0 & 2145386496) >> 21; // L: 49
-		if (var2 != 0) { // L: 50
+		int var1 = var0 & 2097151;
+		int var2 = var0 & Integer.MIN_VALUE;
+		int var3 = (var0 & 2145386496) >> 21;
+		if (var2 != 0) {
 			var1 = -var1;
 		}
 
-		return (float)((double)var1 * Math.pow(2.0D, (double)(var3 - 788))); // L: 51
+		return (float)((double)var1 * Math.pow(2.0D, var3 - 788));
 	}
 
 	static void VorbisSample_setData(byte[] var0, int var1) {
@@ -439,7 +429,7 @@ public class VorbisSample extends Node {
 		return var1; // L: 85
 	}
 
-	static void method1025(byte[] var0) {
+	static void initVorbisSetup(byte[] var0) {
 		VorbisSample_setData(var0, 0); // L: 114
 		VorbisSample_blockSize0 = 1 << readBits(4); // L: 115
 		VorbisSample_blockSize1 = 1 << readBits(4); // L: 116
@@ -559,7 +549,7 @@ public class VorbisSample extends Node {
 				return false;
 			}
 
-			method1025(setupData);
+			initVorbisSetup(setupData);
 			initialized = true;
 		}
 

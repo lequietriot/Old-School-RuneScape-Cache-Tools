@@ -216,7 +216,7 @@ public class PcmPlayer {
 									break label102;
 								}
 
-								AbstractSound var12 = var11.sound; // L: 211
+								AudioDataPosition var12 = var11.sound; // L: 211
 								if (var12 != null && var12.position > var8) { // L: 212
 									var5 |= 1 << var7; // L: 213
 									var10 = var11; // L: 214

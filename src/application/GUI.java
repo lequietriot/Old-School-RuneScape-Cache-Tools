@@ -41,6 +41,8 @@ public class GUI extends JFrame {
 
     JTextField songNameInput;
 
+    JTextField patchIdInput;
+
     JLabel cacheOperationInfo;
 
     DefaultMutableTreeNode cacheNode;
@@ -65,6 +67,7 @@ public class GUI extends JFrame {
     }
 
     GUI() {
+        //TODO: Improve the GUI frame, make it resizable
         super("Old School RuneScape Cache Tools");
         setSize(620, 480);
         setLocationRelativeTo(null);
@@ -137,9 +140,13 @@ public class GUI extends JFrame {
         quickTest.addActionListener(e -> quickTestSound());
         //toolsMenu.add(quickTest);
 
+        JMenuItem synthPatchEditor = new JMenuItem("Synth Patch Editor");
+        synthPatchEditor.addActionListener(e -> editSynthPatch());
+        toolsMenu.add(synthPatchEditor);
+
         JMenuItem test = new JMenuItem("Test new tool");
         test.addActionListener(e -> testTool());
-        //toolsMenu.add(test);
+        toolsMenu.add(test);
 
         JLabel loadCacheLabel = new JLabel("Please load your cache from the File menu to begin!");
         loadCacheLabel.setVerticalAlignment(SwingConstants.CENTER);
@@ -151,6 +158,39 @@ public class GUI extends JFrame {
 
         setContentPane(contentPanel);
         loadCache(defaultCachePath);
+    }
+
+    private void editSynthPatch() {
+
+        JPanel patchEditorPanel = new JPanel();
+
+        JLabel patchIdentifier = new JLabel("Empty Patch");
+
+        JTable patchParameterTable = new JTable();
+
+        JScrollPane patchTableScroll = new JScrollPane(patchParameterTable);
+        patchTableScroll.setViewportView(patchParameterTable);
+
+        Object[][] parameters = new Object[][] {
+                new Object[] {
+                    "Note", "1"
+                },
+                new Object[] {
+                    ""
+                }
+        };
+
+        Object[] parameterLabels = new Object[] {
+                "", ""
+        };
+
+        patchParameterTable.setModel(new DefaultTableModel(parameters, parameterLabels));
+        patchParameterTable.revalidate();
+
+        patchEditorPanel.add(patchIdentifier);
+        patchEditorPanel.add(patchParameterTable);
+        setContentPane(patchEditorPanel);
+        revalidate();
     }
 
     private void chooseMusicTrack() {
@@ -265,7 +305,7 @@ public class GUI extends JFrame {
             midiPcmStream = new MidiPcmStream();
             midiPcmStream.setInitialPatch(9, 128);
             midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.getIndex(15), new SoundCache(cacheLibrary.getIndex(4), cacheLibrary.getIndex(14)), 0);
-            midiPcmStream.setPcmStreamVolume(255);
+            midiPcmStream.setPcmStreamVolume(AppConstants.volumeLevel);
 
             MidiReceiver midiReceiver = new MidiReceiver(midiPcmStream);
             MidiDevice.Info[] infoArray = MidiSystem.getMidiDeviceInfo();
@@ -327,8 +367,20 @@ public class GUI extends JFrame {
                     AppConstants.midiMusicFileBytes = Files.readAllBytes(Paths.get(selected.toURI()));
                     AppConstants.currentSongName = selected.getName().replace(".mid", "").trim() + " (Custom)";
                     songNameInput.setText(AppConstants.currentSongName);
+                    if (AppConstants.shuffle) {
+                        if (AppConstants.currentSongName.contains("(Custom)")) {
+                            File nextSelected = AppConstants.currentMusicFiles[(int) (Math.random() * AppConstants.currentMusicFiles.length)];
+                            if (nextSelected.getName().endsWith(".mid")) {
+                                AppConstants.nextMidiFileBytes = Files.readAllBytes(Paths.get(nextSelected.toURI()));
+                                AppConstants.nextSongName = nextSelected.getName().replace(".mid", "").trim() + "(Custom)";
+                            }
+                        }
+                        else {
+                            AppConstants.nextSongName = String.valueOf((int) (Math.random() * cacheLibrary.getIndex(AppConstants.currentMusicIndex).getArchives().length));
+                        }
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                e.printStackTrace();
                 }
             }
         }
@@ -927,6 +979,13 @@ public class GUI extends JFrame {
                                         fileOutputStream.close();
                                         cacheOperationInfo.setText("Successfully exported Index " + selectedIndex + ", Archive " + selectedArchive + ", File " + selectedFile + " to " + selected.getPath() + "!");
                                     }
+                                    else {
+                                        byte[] sectorData = cacheLibrary.getIndex(selectedIndex).readArchiveSector(selectedArchive).getData();
+                                        fileOutputStream.write(sectorData);
+                                        fileOutputStream.flush();
+                                        fileOutputStream.close();
+                                        cacheOperationInfo.setText("Successfully exported Index " + selectedIndex + ", Archive " + selectedArchive + ", File " + selectedFile + " to " + selected.getPath() + "!");
+                                    }
                                 }
                             }
                         }
@@ -1001,24 +1060,46 @@ public class GUI extends JFrame {
             if (indexDirectory.mkdirs()) {
                 JOptionPane.showMessageDialog(this, "Created an Index " + selectedIndex + " folder.");
             }
-            for (Archive archive : cacheLibrary.getIndex(selectedIndex).getArchives()) {
-                try {
-                    for (org.displee.cache.index.archive.file.File archiveFileData : cacheLibrary.getIndex(selectedIndex).getArchive(archive.getId()).getFiles()) {
-                        if (archiveFileData.getData() != null) {
-                            File fileData = new File(indexDirectory + File.separator + archive.getId() + File.separator + archiveFileData.getId() + ".dat");
-                            if (new File(indexDirectory + File.separator + archive.getId()).mkdirs()) {
-                                System.out.println("made directory for file");
-                            }
-                            FileOutputStream fileOutputStream = new FileOutputStream(fileData);
-                            DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
-                            dataOutputStream.write(archiveFileData.getData());
-                            dataOutputStream.flush();
-                            dataOutputStream.close();
+            try {
+                int index = selectedIndex;
+                if (cacheLibrary.getIndex(index).getArchive(0) != null) {
+                    for (int archive = 0; archive < cacheLibrary.getIndex(index).getArchives().length; archive++) {
+                        if (cacheLibrary.getIndex(index).getArchive(archive) != null) {
+                            for (int file = 0; file < cacheLibrary.getIndex(index).getArchive(archive).getFiles().length; file++) {
+                                if (cacheLibrary.getIndex(index).getArchive(archive).getFile(file).getData() != null) {
+                                    File fileData = new File(indexDirectory + File.separator + archive + File.separator + file + ".dat");
+                                    if (new File(indexDirectory + File.separator + archive).mkdirs()) {
+                                        System.out.println("made directory for file");
+                                    }
+
+                                    byte[] output = cacheLibrary.getIndex(index).getArchive(archive).getFile(file).getData();
+
+                                    FileOutputStream fileOutputStream = new FileOutputStream(fileData);
+                                    DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
+                                    dataOutputStream.write(output);
+                                    dataOutputStream.flush();
+                                    dataOutputStream.close();
+                                }
                             }
                         }
-                    } catch (IOException e) {
-                    e.printStackTrace();
+                        else {
+                            if (cacheLibrary.getIndex(index).readArchiveSector(archive) != null) {
+                                File fileData = new File(indexDirectory + File.separator + archive + File.separator + "0.dat");
+                                if (new File(indexDirectory + File.separator + archive).mkdirs()) {
+                                    System.out.println("made directory for file");
+                                }
+                                FileOutputStream fileOutputStream = new FileOutputStream(fileData);
+                                DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
+                                dataOutputStream.write(cacheLibrary.getIndex(index).readArchiveSector(archive).getData());
+                                dataOutputStream.flush();
+                                dataOutputStream.close();
+                            }
+                        }
+                    }
                 }
+            }
+            catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -1082,6 +1163,7 @@ public class GUI extends JFrame {
     }
 
     private void testTool() {
+
     }
 
     private void quickTestSound() {

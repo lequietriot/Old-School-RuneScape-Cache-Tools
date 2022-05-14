@@ -250,9 +250,9 @@ public class MusicTrack extends Node {
 
 					midiBuff.put((byte) 81); // type - set tempo
 					midiBuff.put((byte) 3); // length
-					midiBuff.put((byte) buf.array()[var50++]);
-					midiBuff.put((byte) buf.array()[var50++]);
-					midiBuff.put((byte) buf.array()[var50++]);
+					midiBuff.put(buf.array()[var50++]);
+					midiBuff.put(buf.array()[var50++]);
+					midiBuff.put(buf.array()[var50++]);
 				} else {
 					var52 ^= var64 >> 4;
 					if (var62 == 0) {

@@ -7,6 +7,18 @@ public class VertexNormal
 	public int z;
 	public int magnitude;
 
+	public VertexNormal() {
+
+	}
+
+	public VertexNormal(int xVertex, int yVertex, int zVertex, int magnitudeValue) {
+		x = xVertex;
+		y = yVertex;
+		z = zVertex;
+		magnitude = magnitudeValue;
+	}
+
+
 	public Vector3f normalize()
 	{
 		Vector3f v = new Vector3f();
@@ -27,4 +39,9 @@ public class VertexNormal
 
 		return v;
 	}
+
+	public VertexNormal method1459(int yVertex) {
+		return new VertexNormal(x, yVertex, z, magnitude);
+	}
+
 }

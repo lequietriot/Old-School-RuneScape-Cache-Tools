@@ -5,7 +5,7 @@ public class MusicPatchNode extends Node {
 	int midiChannel;
 	MusicPatchNode2 musicPatchNode2;
 	MusicPatch patch;
-	RawSound rawSound;
+	AudioDataSource audioDataSource;
 	int loopType;
 	int midiNote;
 	int midiNoteVolume;
@@ -30,7 +30,7 @@ public class MusicPatchNode extends Node {
 
 	void reset() {
 		this.patch = null;
-		this.rawSound = null;
+		this.audioDataSource = null;
 		this.musicPatchNode2 = null;
 		this.stream = null;
 	}

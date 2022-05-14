@@ -1,11 +1,12 @@
 package runelite.managers;
 
-import application.constants.OSRSCacheIndexConstants;
+import application.constants.RSHDCacheIndexConstants;
 import org.displee.CacheLibrary;
 import org.displee.cache.index.Index;
 import org.displee.cache.index.archive.Archive;
 import runelite.definitions.TextureDefinition;
-import runelite.loaders.TextureLoader;
+import runelite.definitions.TextureDetails;
+import runelite.loaders.ImageIndexLoader;
 import runelite.providers.TextureProvider;
 
 import java.io.IOException;
@@ -15,7 +16,7 @@ import java.util.List;
 public class TextureManagerHD implements TextureProvider {
 
     private final CacheLibrary store;
-    private final List<TextureDefinition> textures = new ArrayList<>();
+    private final List<TextureDetails> textures = new ArrayList<TextureDetails>();
 
     public TextureManagerHD(CacheLibrary store)
     {
@@ -24,26 +25,24 @@ public class TextureManagerHD implements TextureProvider {
 
     public void load() throws IOException
     {
-        Index index = store.getIndex(OSRSCacheIndexConstants.TEXTURES);
-        Archive[] archives = index.getArchives();
+        Index textureIndex = store.getIndex(RSHDCacheIndexConstants.TEXTURES);
+        Index textureDefinitionsIndex = store.getIndex(RSHDCacheIndexConstants.TEXTURE_DEFINITIONS);
+        Index spriteIndex = store.getIndex(RSHDCacheIndexConstants.SPRITES);
 
-        TextureLoader loader = new TextureLoader();
-
-        for (Archive archive : archives)
-        {
-            TextureDefinition texture = loader.load(archive.getId(), archive.getFile(0).getData());
-            textures.add(texture);
+        ImageIndexLoader imageIndexLoader = new ImageIndexLoader(textureDefinitionsIndex, textureIndex, spriteIndex);
+        for (Archive archive : textureIndex.getArchives()) {
+            textures.add(imageIndexLoader.getTextureDetails(archive.getId()));
         }
     }
 
-    public List<TextureDefinition> getTextures()
+    public List<TextureDetails> getTextures()
     {
         return textures;
     }
 
-    public TextureDefinition findTexture(int id)
+    public TextureDetails findTexture(int id)
     {
-        for (TextureDefinition td : textures)
+        for (TextureDetails td : textures)
         {
             if (td.getId() == id)
             {

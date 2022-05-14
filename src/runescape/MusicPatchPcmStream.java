@@ -37,9 +37,9 @@ public class MusicPatchPcmStream extends PcmStream {
 
 				RawPcmStream var10 = var1.stream; // L: 85
 				if (this.superStream.sampleLoopControls[var1.midiChannel] == 0) { // L: 86
-					var1.stream = RawPcmStream.createSampledRawPcmStream(var1.rawSound, var10.method832(), var10.method936(), var10.method824()); // L: 87
+					var1.stream = RawPcmStream.createSampledRawPcmStream(var1.audioDataSource, var10.method832(), var10.method936(), var10.method824()); // L: 87
 				} else {
-					var1.stream = RawPcmStream.createSampledRawPcmStream(var1.rawSound, var10.method832(), 0, var10.method824()); // L: 90
+					var1.stream = RawPcmStream.createSampledRawPcmStream(var1.audioDataSource, var10.method832(), 0, var10.method824()); // L: 90
 					this.superStream.method4765(var1, var1.patch.pitchOffset[var1.midiNote] < 0); // L: 91
 					var1.stream.method941(var8, var10.method936()); // L: 92
 				}
@@ -66,9 +66,9 @@ public class MusicPatchPcmStream extends PcmStream {
 			var1.field3003 = var3 * var2 + var1.field3003 & 1048575; // L: 108
 			if (var4 <= var2) { // L: 109
 				if (this.superStream.sampleLoopControls[var1.midiChannel] == 0) { // L: 110
-					var1.stream = RawPcmStream.createSampledRawPcmStream(var1.rawSound, var1.stream.method832(), var1.stream.method936(), var1.stream.method824()); // L: 111
+					var1.stream = RawPcmStream.createSampledRawPcmStream(var1.audioDataSource, var1.stream.method832(), var1.stream.method936(), var1.stream.method824()); // L: 111
 				} else {
-					var1.stream = RawPcmStream.createSampledRawPcmStream(var1.rawSound, var1.stream.method832(), 0, var1.stream.method824()); // L: 114
+					var1.stream = RawPcmStream.createSampledRawPcmStream(var1.audioDataSource, var1.stream.method832(), 0, var1.stream.method824()); // L: 114
 					this.superStream.method4765(var1, var1.patch.pitchOffset[var1.midiNote] < 0); // L: 115
 				}
 

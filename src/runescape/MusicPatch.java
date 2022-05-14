@@ -14,7 +14,7 @@ import java.util.List;
 public class MusicPatch extends Node {
 
 	public int volume;
-	public RawSound[] rawSounds;
+	public AudioDataSource[] audioDataSources;
 	public short[] pitchOffset;
 	public byte[] volumeOffset;
 	public byte[] panOffset;
@@ -25,9 +25,8 @@ public class MusicPatch extends Node {
 	private static final int DEFAULT_BUFFER_SIZE = 8192;
 	private static final int MAX_BUFFER_SIZE = Integer.MAX_VALUE - 8;
 
-
 	public MusicPatch(byte[] var1) {
-		this.rawSounds = new RawSound[128];
+		this.audioDataSources = new AudioDataSource[128];
 		this.pitchOffset = new short[128];
 		this.volumeOffset = new byte[128];
 		this.panOffset = new byte[128];
@@ -478,7 +477,7 @@ public class MusicPatch extends Node {
 	boolean method4945(SoundCache var1, byte[] var2, int[] var3) {
 		boolean var4 = true;
 		int var5 = 0;
-		RawSound var6 = null;
+		AudioDataSource var6 = null;
 
 		for (int var7 = 0; var7 < 128; ++var7) {
 			if (var2 == null || var2[var7] != 0) {
@@ -498,7 +497,7 @@ public class MusicPatch extends Node {
 					}
 
 					if (var6 != null) {
-						this.rawSounds[var7] = var6;
+						this.audioDataSources[var7] = var6;
 						this.sampleOffset[var7] = 0;
 					}
 				}
@@ -515,7 +514,7 @@ public class MusicPatch extends Node {
 	public SF2Soundbank decodeMusicPatch(SoundCache soundCache, SF2Soundbank sf2Soundbank, int id) {
 		int var5 = 0;
 		int lowNote = 0;
-		RawSound var6 = null;
+		AudioDataSource var6 = null;
 		SF2Sample sf2Sample = null;
 		SF2Layer sf2Layer = null;
 		SF2LayerRegion sf2LayerRegion = null;
@@ -533,16 +532,16 @@ public class MusicPatch extends Node {
 						var6 = soundCache.getMusicSample(var8 >> 2, null);
 					}
 					if (var6 != null) {
-						byte[] sample = new byte[var6.samples.length * 2];
+						byte[] sample = new byte[var6.audioData.length * 2];
 						for (int index = 0; index < sample.length; index++) {
-							sample[index] = var6.samples[index / 2];
+							sample[index] = var6.audioData[index / 2];
 						}
 						sf2Sample = new SF2Sample(sf2Soundbank);
 						sf2Sample.setName(String.valueOf(var8 >> 2));
 						sf2Sample.setData(sample);
 						sf2Sample.setSampleRate(var6.sampleRate);
-						sf2Sample.setStartLoop(var6.start);
-						sf2Sample.setEndLoop(var6.end);
+						sf2Sample.setStartLoop(var6.loopStart);
+						sf2Sample.setEndLoop(var6.loopEnd);
 						sf2Sample.setSampleType(1);
 						sf2Sample.setSampleLink(-1);
 
@@ -675,6 +674,23 @@ public class MusicPatch extends Node {
 		sf2LayerRegion.putShort(SF2Region.GENERATOR_FINETUNE, pitchCorrection);
 		sf2LayerRegion.putShort(SF2Region.GENERATOR_INITIALATTENUATION, (short) ((maxEightBits + attenuation) * -4));
 		sf2LayerRegion.putShort(SF2Region.GENERATOR_PAN, (short) (((panOffset[currentNote] / 1.28) - 50) * 10));
+
+		/*
+		try {
+			SF2Soundbank sf2Copy = new SF2Soundbank(new File(AppConstants.customSoundFontPath));
+			if (sf2Copy.getInstrument(sf2Instrument.getPatch()) != null) {
+				int attack = ((SF2Instrument) sf2Copy.getInstrument(sf2Instrument.getPatch())).getRegions().get(0).getLayer().getGlobalRegion().getInteger(SF2Region.GENERATOR_ATTACKVOLENV);
+				int decay = ((SF2Instrument) sf2Copy.getInstrument(sf2Instrument.getPatch())).getRegions().get(0).getLayer().getGlobalRegion().getInteger(SF2Region.GENERATOR_DECAYVOLENV);
+				int sustain = ((SF2Instrument) sf2Copy.getInstrument(sf2Instrument.getPatch())).getRegions().get(0).getLayer().getGlobalRegion().getInteger(SF2Region.GENERATOR_SUSTAINVOLENV);
+				int release = ((SF2Instrument) sf2Copy.getInstrument(sf2Instrument.getPatch())).getRegions().get(0).getLayer().getGlobalRegion().getInteger(SF2Region.GENERATOR_RELEASEVOLENV);
+				sf2LayerRegion.putInteger(SF2Region.GENERATOR_ATTACKVOLENV, attack);
+				sf2LayerRegion.putInteger(SF2Region.GENERATOR_DECAYVOLENV, decay);
+				sf2LayerRegion.putInteger(SF2Region.GENERATOR_SUSTAINVOLENV, sustain);
+				sf2LayerRegion.putInteger(SF2Region.GENERATOR_RELEASEVOLENV, release);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		if (musicPatchParameters[currentNote] != null) {
 			if (musicPatchParameters[currentNote].attackEnvelope != null) {
 				int attackValue = 0;
@@ -693,6 +709,7 @@ public class MusicPatch extends Node {
 			}
 			//sf2LayerRegion.putInteger(SF2Region.GENERATOR_RELEASEVOLENV, 0);
 		}
+		 */
 
 		sf2Layer.getRegions().add(sf2LayerRegion);
 
@@ -753,7 +770,7 @@ public class MusicPatch extends Node {
 
 						 for (int note = noteRange[0]; note < noteRange[1] + 1; note++) {
 							 if (loopModes == 1) {
-								 rawSounds[note] = new RawSound((int) sf2Sample.getSampleRate(), getEightBitData(sampleData), (int) sf2Sample.getStartLoop(), (int) sf2Sample.getEndLoop());
+								 audioDataSources[note] = new AudioDataSource((int) sf2Sample.getSampleRate(), getEightBitData(sampleData), (int) sf2Sample.getStartLoop(), (int) sf2Sample.getEndLoop());
 								 if (overridingNote != null && overridingNote[0] != -1) {
 									 this.pitchOffset[note] = (short) ((overridingNote[0] * 256) - ((pitchCorrection + fineTune + coarseTune)));
 								 } else {
@@ -763,7 +780,7 @@ public class MusicPatch extends Node {
 								 this.pitchOffset[note] = (short) (this.pitchOffset[note] - 32768);
 
 							 } else {
-								 rawSounds[note] = new RawSound((int) sf2Sample.getSampleRate(), getEightBitData(sampleData), 0, 0);
+								 audioDataSources[note] = new AudioDataSource((int) sf2Sample.getSampleRate(), getEightBitData(sampleData), 0, 0);
 								 if (overridingNote != null && overridingNote[0] != -1) {
 									 this.pitchOffset[note] = (short) ((overridingNote[0] * 256) + ((pitchCorrection + fineTune + coarseTune)));
 								 } else {

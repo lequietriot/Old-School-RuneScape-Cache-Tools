@@ -18,7 +18,7 @@
 * Data Decoding tools (To General Format)
   * MIDI Music and MIDI Jingles
   * OBJ Model and MTL Textures from Old School RuneScape
-  * OBJ Model and MTL Textures from RuneScape High Definition (Work in Progress)
+  * OBJ Model and MTL Textures from RuneScape High Definition
   * OGG Vorbis Instrument Samples
   * SoundFont 2 Instrument Patches (Work in Progress)
 ### Tools
@@ -38,5 +38,14 @@
 * Gagravarr (https://github.com/Gagravarr): vorbis-java libraries.
 * RuneLite Contributors (https://github.com/runelite/runelite): for the open source Old School RuneScape Client.
 * Jagex: for being an inspiration in making this happen.
+
+### Known Bugs/Issues
+* Cache Explorer: Not able to dump/export all files of single archive - only the first file is exported
+* Cache Explorer: Some loaded caches are not supported
+* Cache Explorer: Indicator in GUI not present for replacing/adding files
+* Cache Explorer: Attempting to replace single files does not modify the cache
+* Cache Explorer: Maps in Index 5 are not always dumped correctly (May need Xtea Keys decoding support)
+* Music Player: Custom soundfonts do not apply when rendering midi to audio
+* Music Player: Changing the settings do not apply after rendering a midi to audio
 
 ## That's all for now. Enjoy!

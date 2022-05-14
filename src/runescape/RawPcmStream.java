@@ -20,11 +20,11 @@ public class RawPcmStream extends PcmStream {
 	int field306;
 	int field319;
 
-    RawPcmStream(RawSound rawSound, int pitch, int volume, int pan) {
-		super.sound = rawSound; // L: 51
-		this.start = rawSound.start; // L: 52
-		this.end = rawSound.end; // L: 53
-		this.isLooping = rawSound.loop; // L: 54
+    RawPcmStream(AudioDataSource audioDataSource, int pitch, int volume, int pan) {
+		super.sound = audioDataSource; // L: 51
+		this.start = audioDataSource.loopStart; // L: 52
+		this.end = audioDataSource.loopEnd; // L: 53
+		this.isLooping = audioDataSource.isLooping; // L: 54
 		this.samplePitch = pitch; // L: 55
 		this.sampleVolume = volume; // L: 56
 		this.samplePan = pan; // L: 57
@@ -32,11 +32,11 @@ public class RawPcmStream extends PcmStream {
 		this.method818(); // L: 59
 	} // L: 60
 
-    RawPcmStream(RawSound rawSound, int pitch, int volume) {
-		super.sound = rawSound; // L: 39
-		this.start = rawSound.start; // L: 40
-		this.end = rawSound.end; // L: 41
-		this.isLooping = rawSound.loop; // L: 42
+    RawPcmStream(AudioDataSource audioDataSource, int pitch, int volume) {
+		super.sound = audioDataSource; // L: 39
+		this.start = audioDataSource.loopStart; // L: 40
+		this.end = audioDataSource.loopEnd; // L: 41
+		this.isLooping = audioDataSource.isLooping; // L: 42
 		this.samplePitch = pitch; // L: 43
 		this.sampleVolume = volume; // L: 44
 		this.samplePan = 8192; // L: 45
@@ -66,10 +66,10 @@ public class RawPcmStream extends PcmStream {
 		if (this.sampleVolume == 0 && this.field316 == 0) {
 			this.skip(var3);
 		} else {
-			RawSound rawSound = (RawSound) super.sound;
+			AudioDataSource audioDataSource = (AudioDataSource) super.sound;
 			int var5 = this.start << 8; // L: 218
 			int var6 = this.end << 8; // L: 219
-			int var7 = rawSound.samples.length << 8; // L: 220
+			int var7 = audioDataSource.audioData.length << 8; // L: 220
 			int var8 = var6 - var5; // L: 221
 			if (var8 <= 0) { // L: 222
 				this.numLoops = 0;
@@ -100,7 +100,7 @@ public class RawPcmStream extends PcmStream {
 			if (this.numLoops < 0) { // L: 241
 				if (this.isLooping) { // L: 242
 					if (this.samplePitch < 0) { // L: 243
-						var9 = this.method841(sampleBuffer, var2, var5, var3, rawSound.samples[this.start]); // L: 244
+						var9 = this.method841(sampleBuffer, var2, var5, var3, audioDataSource.audioData[this.start]); // L: 244
 						if (this.field318 >= var5) { // L: 245
 							return;
 						}
@@ -110,14 +110,14 @@ public class RawPcmStream extends PcmStream {
 					}
 
 					while (true) {
-						var9 = this.method827(sampleBuffer, var9, var6, var3, rawSound.samples[this.end - 1]); // L: 250
+						var9 = this.method827(sampleBuffer, var9, var6, var3, audioDataSource.audioData[this.end - 1]); // L: 250
 						if (this.field318 < var6) { // L: 251
 							return;
 						}
 
 						this.field318 = var6 + var6 - 1 - this.field318; // L: 252
 						this.samplePitch = -this.samplePitch; // L: 253
-						var9 = this.method841(sampleBuffer, var9, var5, var3, rawSound.samples[this.start]); // L: 254
+						var9 = this.method841(sampleBuffer, var9, var5, var3, audioDataSource.audioData[this.start]); // L: 254
 						if (this.field318 >= var5) { // L: 255
 							return;
 						}
@@ -127,7 +127,7 @@ public class RawPcmStream extends PcmStream {
 					}
 				} else if (this.samplePitch < 0) { // L: 260
 					while (true) {
-						var9 = this.method841(sampleBuffer, var9, var5, var3, rawSound.samples[this.end - 1]); // L: 262
+						var9 = this.method841(sampleBuffer, var9, var5, var3, audioDataSource.audioData[this.end - 1]); // L: 262
 						if (this.field318 >= var5) { // L: 263
 							return;
 						}
@@ -136,7 +136,7 @@ public class RawPcmStream extends PcmStream {
 					}
 				} else {
 					while (true) {
-						var9 = this.method827(sampleBuffer, var9, var6, var3, rawSound.samples[this.start]); // L: 269
+						var9 = this.method827(sampleBuffer, var9, var6, var3, audioDataSource.audioData[this.start]); // L: 269
 						if (this.field318 < var6) { // L: 270
 							return;
 						}
@@ -149,7 +149,7 @@ public class RawPcmStream extends PcmStream {
 					if (this.isLooping) { // L: 276
 						label127: {
 							if (this.samplePitch < 0) { // L: 277
-								var9 = this.method841(sampleBuffer, var2, var5, var3, rawSound.samples[this.start]); // L: 278
+								var9 = this.method841(sampleBuffer, var2, var5, var3, audioDataSource.audioData[this.start]); // L: 278
 								if (this.field318 >= var5) { // L: 279
 									return;
 								}
@@ -162,7 +162,7 @@ public class RawPcmStream extends PcmStream {
 							}
 
 							do {
-								var9 = this.method827(sampleBuffer, var9, var6, var3, rawSound.samples[this.end - 1]); // L: 285
+								var9 = this.method827(sampleBuffer, var9, var6, var3, audioDataSource.audioData[this.end - 1]); // L: 285
 								if (this.field318 < var6) { // L: 286
 									return;
 								}
@@ -173,7 +173,7 @@ public class RawPcmStream extends PcmStream {
 									break;
 								}
 
-								var9 = this.method841(sampleBuffer, var9, var5, var3, rawSound.samples[this.start]); // L: 290
+								var9 = this.method841(sampleBuffer, var9, var5, var3, audioDataSource.audioData[this.start]); // L: 290
 								if (this.field318 >= var5) { // L: 291
 									return;
 								}
@@ -186,7 +186,7 @@ public class RawPcmStream extends PcmStream {
 						int var10;
 						if (this.samplePitch < 0) { // L: 297
 							while (true) {
-								var9 = this.method841(sampleBuffer, var9, var5, var3, rawSound.samples[this.end - 1]); // L: 299
+								var9 = this.method841(sampleBuffer, var9, var5, var3, audioDataSource.audioData[this.end - 1]); // L: 299
 								if (this.field318 >= var5) { // L: 300
 									return;
 								}
@@ -203,7 +203,7 @@ public class RawPcmStream extends PcmStream {
 							}
 						} else {
 							while (true) {
-								var9 = this.method827(sampleBuffer, var9, var6, var3, rawSound.samples[this.start]); // L: 313
+								var9 = this.method827(sampleBuffer, var9, var6, var3, audioDataSource.audioData[this.start]); // L: 313
 								if (this.field318 < var6) { // L: 314
 									return;
 								}
@@ -268,10 +268,10 @@ public class RawPcmStream extends PcmStream {
 			}
 		}
 
-		RawSound var2 = (RawSound)super.sound; // L: 365
+		AudioDataSource var2 = (AudioDataSource)super.sound; // L: 365
 		int var3 = this.start << 8; // L: 366
 		int var4 = this.end << 8; // L: 367
-		int var5 = var2.samples.length << 8; // L: 368
+		int var5 = var2.audioData.length << 8; // L: 368
 		int var6 = var4 - var3; // L: 369
 		if (var6 <= 0) { // L: 370
 			this.numLoops = 0;
@@ -448,7 +448,7 @@ public class RawPcmStream extends PcmStream {
 	}
 
 	public synchronized void method825(int var1) {
-		int var2 = ((RawSound)super.sound).samples.length << 8; // L: 106
+		int var2 = ((AudioDataSource)super.sound).audioData.length << 8; // L: 106
 		if (var1 < -1) { // L: 107
 			var1 = -1;
 		}
@@ -582,7 +582,7 @@ public class RawPcmStream extends PcmStream {
 	}
 
 	public boolean method833() {
-		return this.field318 < 0 || this.field318 >= ((RawSound)super.sound).samples.length << 8; // L: 192
+		return this.field318 < 0 || this.field318 >= ((AudioDataSource)super.sound).audioData.length << 8; // L: 192
 	}
 
 	public boolean method834() {
@@ -600,14 +600,14 @@ public class RawPcmStream extends PcmStream {
 				this.field316 += var2; // L: 477
 				if (this.samplePitch == 256 && (this.field318 & 255) == 0) { // L: 478
 					if (AppConstants.stereo) { // L: 479
-						var2 = method852(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this);
+						var2 = method852(0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this);
 					} else {
-						var2 = method960(((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this); // L: 480
+						var2 = method960(((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this); // L: 480
 					}
 				} else if (AppConstants.stereo) { // L: 483
-					var2 = method856(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this, this.samplePitch, var5);
+					var2 = method856(0, 0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this, this.samplePitch, var5);
 				} else {
-					var2 = method855(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this, this.samplePitch, var5); // L: 484
+					var2 = method855(0, 0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this, this.samplePitch, var5); // L: 484
 				}
 
 				this.field316 -= var2; // L: 486
@@ -624,17 +624,17 @@ public class RawPcmStream extends PcmStream {
 
 			if (this.samplePitch == 256 && (this.field318 & 255) == 0) { // L: 490
 				if (AppConstants.stereo) { // L: 491
-					return method962(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this);
+					return method962(0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this);
 				}
 
-				return method843(((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, 0, var4, var3, this); // L: 492
+				return method843(((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field311, 0, var4, var3, this); // L: 492
 			}
 
 			if (AppConstants.stereo) { // L: 495
-				return method848(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this, this.samplePitch, var5);
+				return method848(0, 0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this, this.samplePitch, var5);
 			}
 
-			return method847(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, 0, var4, var3, this, this.samplePitch, var5); // L: 496
+			return method847(0, 0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field311, 0, var4, var3, this, this.samplePitch, var5); // L: 496
 		}
 	}
 
@@ -649,14 +649,14 @@ public class RawPcmStream extends PcmStream {
 				this.field316 += var2; // L: 504
 				if (this.samplePitch == -256 && (this.field318 & 255) == 0) { // L: 505
 					if (AppConstants.stereo) { // L: 506
-						var2 = method854(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this);
+						var2 = method854(0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this);
 					} else {
-						var2 = method831(((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this); // L: 507
+						var2 = method831(((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this); // L: 507
 					}
 				} else if (AppConstants.stereo) { // L: 510
-					var2 = method858(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this, this.samplePitch, var5);
+					var2 = method858(0, 0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field310, this.field305, this.field306, this.field319, 0, var6, var3, this, this.samplePitch, var5);
 				} else {
-					var2 = method899(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this, this.samplePitch, var5); // L: 511
+					var2 = method899(0, 0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field311, this.field317, 0, var6, var3, this, this.samplePitch, var5); // L: 511
 				}
 
 				this.field316 -= var2; // L: 513
@@ -673,17 +673,17 @@ public class RawPcmStream extends PcmStream {
 
 			if (this.samplePitch == -256 && (this.field318 & 255) == 0) { // L: 517
 				if (AppConstants.stereo) { // L: 518
-					return method846(0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this);
+					return method846(0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this);
 				}
 
-				return method845(((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, 0, var4, var3, this); // L: 519
+				return method845(((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field311, 0, var4, var3, this); // L: 519
 			}
 
 			if (AppConstants.stereo) { // L: 522
-				return method850(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this, this.samplePitch, var5);
+				return method850(0, 0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field310, this.field305, 0, var4, var3, this, this.samplePitch, var5);
 			}
 
-			return method849(0, 0, ((RawSound)super.sound).samples, var1, this.field318, var2, this.field311, 0, var4, var3, this, this.samplePitch, var5); // L: 523
+			return method849(0, 0, ((AudioDataSource)super.sound).audioData, var1, this.field318, var2, this.field311, 0, var4, var3, this, this.samplePitch, var5); // L: 523
 		}
 	}
 
@@ -759,9 +759,9 @@ public class RawPcmStream extends PcmStream {
 		int var1 = this.field311 * 3 >> 6; // L: 31
 		var1 = (var1 ^ var1 >> 31) + (var1 >>> 31); // L: 32
 		if (this.numLoops == 0) { // L: 33
-			var1 -= var1 * this.field318 / (((RawSound)super.sound).samples.length << 8);
+			var1 -= var1 * this.field318 / (((AudioDataSource)super.sound).audioData.length << 8);
 		} else if (this.numLoops >= 0) {
-			var1 -= var1 * this.start / ((RawSound)super.sound).samples.length; // L: 34
+			var1 -= var1 * this.start / ((AudioDataSource)super.sound).audioData.length; // L: 34
 		}
 
 		return var1 > 255 ? 255 : var1; // L: 35
@@ -775,12 +775,12 @@ public class RawPcmStream extends PcmStream {
 		return var1 < 0 ? -var0 : (int)((double)var0 * Math.sqrt((double)var1 * 1.220703125E-4D) + 0.5D); // L: 27
 	}
 
-	public static RawPcmStream createSoundEffectRawPcmStream(RawSound sound, int pitchFactor, int volumeFactor) {
-		return sound.samples != null && sound.samples.length != 0 ? new RawPcmStream(sound, (int)((long)sound.sampleRate * 256L * (long)pitchFactor / (AppConstants.sampleRate * 100L)), volumeFactor << 6) : null; // L: 63 64
+	public static RawPcmStream createSoundEffectRawPcmStream(AudioDataSource sound, int pitchFactor, int volumeFactor) {
+		return sound.audioData != null && sound.audioData.length != 0 ? new RawPcmStream(sound, (int)((long)sound.sampleRate * 256L * (long)pitchFactor / (AppConstants.sampleRate * 100L)), volumeFactor << 6) : null; // L: 63 64
 	}
 
-	public static RawPcmStream createSampledRawPcmStream(RawSound sound, int pitchFactor, int volumeFactor, int panFactor) {
-		return sound.samples != null && sound.samples.length != 0 ? new RawPcmStream(sound, pitchFactor, volumeFactor, panFactor) : null; // L: 68 69
+	public static RawPcmStream createSampledRawPcmStream(AudioDataSource sound, int pitchFactor, int volumeFactor, int panFactor) {
+		return sound.audioData != null && sound.audioData.length != 0 ? new RawPcmStream(sound, pitchFactor, volumeFactor, panFactor) : null; // L: 68 69
 	}
 
 	static int method843(byte[] var0, int[] var1, int var2, int var3, int var4, int var5, int var6, int var7, RawPcmStream var8) {
