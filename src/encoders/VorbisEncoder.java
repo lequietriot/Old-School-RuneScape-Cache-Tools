@@ -1,13 +1,11 @@
 package encoders;
 
 import application.GUI;
-import org.displee.CacheLibrary;
 import org.gagravarr.vorbis.VorbisAudioData;
 import org.gagravarr.vorbis.VorbisFile;
 
 import javax.swing.*;
 import java.io.*;
-import java.net.URISyntaxException;
 
 public class VorbisEncoder {
 

@@ -1,15 +1,16 @@
 package decoders;
 
 import application.GUI;
+import com.displee.cache.CacheLibrary;
 import com.sun.media.sound.SF2Instrument;
 import com.sun.media.sound.SF2Soundbank;
-import org.displee.CacheLibrary;
-import runescape.MusicPatch;
-import runescape.SoundCache;
+import osrs.MusicPatch;
+import osrs.SoundCache;
 
 import javax.sound.midi.SoundbankResource;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.IOException;
+import java.util.Objects;
 
 public class SoundBankDecoder {
 
@@ -19,12 +20,12 @@ public class SoundBankDecoder {
 
     public SoundBankDecoder(GUI currentGUI) {
         gui = currentGUI;
-        cacheLibrary = currentGUI.cacheLibrary;
+        cacheLibrary = GUI.cacheLibrary;
         sf2Soundbank = new SF2Soundbank();
         for (int id = 0; id < 4000; id++) {
-            if (cacheLibrary.getIndex(15).getArchive(id) != null) {
-                SoundCache soundCache = new SoundCache(cacheLibrary.getIndex(4), cacheLibrary.getIndex(14));
-                MusicPatch musicPatch = new MusicPatch(cacheLibrary.getIndex(15).getArchive(id).getFile(0).getData());
+            if (cacheLibrary.index(15).archive(id) != null) {
+                SoundCache soundCache = new SoundCache(cacheLibrary.index(4), cacheLibrary.index(14));
+                MusicPatch musicPatch = new MusicPatch(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(15).archive(id)).file(0)).getData());
                 try {
                     decodeAsSoundFont2(musicPatch, soundCache, id);
                 } catch (UnsupportedAudioFileException | IOException e) {

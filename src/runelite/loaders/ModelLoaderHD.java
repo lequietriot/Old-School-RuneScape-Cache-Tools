@@ -1,12 +1,15 @@
 package runelite.loaders;
 
-import org.displee.cache.index.Index;
 import runelite.definitions.ParticleEmitterConfig;
 import runelite.definitions.SurfaceSkin;
 import runelite.definitions.Trig;
 import runelite.models.FaceNormal;
 import runelite.models.VertexNormal;
-import runescape.Buffer;
+import osrs.Buffer;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class ModelLoaderHD {
 
@@ -145,6 +148,17 @@ public class ModelLoaderHD {
             }
             else if (var15 == 1)
             {
+                if (this.faceNormals == null)
+                {
+                    this.faceNormals = new FaceNormal[this.faceCount];
+                }
+
+                FaceNormal var17 = this.faceNormals[var1] = new FaceNormal();
+                var17.x = var11;
+                var17.y = var12;
+                var17.z = var13;
+            }
+            else {
                 if (this.faceNormals == null)
                 {
                     this.faceNormals = new FaceNormal[this.faceCount];
@@ -541,11 +555,6 @@ public class ModelLoaderHD {
             textureSecondaryColor = new int[i_3];
         }
 
-    }
-
-    public static ModelLoaderHD decodeMesh(Index index_0, int i_1) {
-        byte[] bytes_3 = index_0.getArchive(i_1).getFile(0).getData();
-        return bytes_3 == null ? null : new ModelLoaderHD(bytes_3);
     }
 
     int method2657(ModelLoaderHD rsmesh_1, int i_2, short s_3) {
@@ -1561,4 +1570,154 @@ public class ModelLoaderHD {
 
     }
 
+    public byte[] convertToOldModel() {
+        try {
+            ByteArrayOutputStream masterBuffer = new ByteArrayOutputStream();
+            DataOutputStream vertexFlagsBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream faceTypesBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream faceIndexTypesBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream trianglePrioritiesBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream faceSkinsBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream vertexSkinsBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream faceAlphasBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream triangleIndicesBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream faceColorsBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream verticesXBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream verticesYBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream verticesZBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream texturesBuffer = new DataOutputStream(masterBuffer);
+            DataOutputStream footerBuffer = new DataOutputStream(masterBuffer);
+
+            boolean hasVertexLabels = vertexSkins != null;
+
+            int baseX = 0;
+            int baseY = 0;
+            int baseZ = 0;
+
+            for (int vertex = 0; vertex < vertexCount; vertex++) {
+                int x = vertexX[vertex];
+                int y = vertexY[vertex];
+                int z = vertexZ[vertex];
+                int xOffset = x - baseX;
+                int yOffset = y - baseY;
+                int zOffset = z - baseZ;
+                int flag = 0;
+                if (xOffset != 0) {
+                    verticesXBuffer.write(xOffset);
+                    flag |= 0x1;
+                }
+                if (yOffset != 0) {
+                    verticesYBuffer.write(yOffset);
+                    flag |= 0x2;
+                }
+                if (zOffset != 0) {
+                    verticesZBuffer.write(zOffset);
+                    flag |= 0x4;
+                }
+
+                vertexFlagsBuffer.writeByte(flag);
+
+                vertexX[vertex] = baseX + xOffset;
+                vertexY[vertex] = baseY + yOffset;
+                vertexZ[vertex] = baseZ + zOffset;
+                baseX = vertexX[vertex];
+                baseY = vertexY[vertex];
+                baseZ = vertexZ[vertex];
+                if (hasVertexLabels) {
+                    int weight = vertexSkins[vertex];
+                    vertexSkinsBuffer.writeByte(weight);
+                }
+            }
+
+
+            boolean hasTriangleInfo = faceType != null;
+            boolean hasTrianglePriorities = facePriorities != null;
+            boolean hasTriangleAlpha = faceAlphas != null;
+            boolean hasTriangleSkins = textureSkins != null;
+
+            for (int face = 0; face < faceCount; face++) {
+                faceColorsBuffer.writeShort(faceColor[face]);
+
+                if (hasTriangleInfo) {
+                    faceTypesBuffer.writeByte(faceType[face]);
+                }
+
+                if (hasTrianglePriorities) {
+                    trianglePrioritiesBuffer.writeByte(facePriorities[face]);
+                }
+                if (hasTriangleAlpha) {
+                    faceAlphasBuffer.writeByte(faceAlphas[face]);
+                }
+
+                if (hasTriangleSkins) {
+                    int weight = textureSkins[face];
+                    faceSkinsBuffer.writeByte(weight);
+                }
+            }
+
+            int lastA = 0;
+            int lastB = 0;
+            int lastC = 0;
+            int pAcc = 0;
+
+            // share edge info to save space
+            for (int face = 0; face < faceCount; face++) {
+                int currentA = triangleX[face];
+                int currentB = triangleY[face];
+                int currentC = triangleZ[face];
+                if (currentA == lastB && currentB == lastA && currentC != lastC) {
+                    faceIndexTypesBuffer.writeByte(4);
+                    triangleIndicesBuffer.write(currentC - pAcc);
+                    int back = lastA;
+                    lastA = lastB;
+                    lastB = back;
+                    pAcc = lastC = currentC;
+                } else if (currentA == lastC && currentB == lastB && currentC != lastC) {
+                    faceIndexTypesBuffer.writeByte(3);
+                    triangleIndicesBuffer.write(currentC - pAcc);
+                    lastA = lastC;
+                    pAcc = lastC = currentC;
+                } else if (currentA == lastA && currentB == lastC && currentC != lastC) {
+                    faceIndexTypesBuffer.writeByte(2);
+                    triangleIndicesBuffer.write(currentC - pAcc);
+                    lastB = lastC;
+                    pAcc = lastC = currentC;
+                } else {
+                    faceIndexTypesBuffer.writeByte(1);
+                    triangleIndicesBuffer.write(currentA - pAcc);
+                    triangleIndicesBuffer.write(currentB - currentA);
+                    triangleIndicesBuffer.write(currentC - currentB);
+                    lastA = currentA;
+                    lastB = currentB;
+                    pAcc = lastC = currentC;
+                }
+            }
+
+            for (int face = 0; face < texturedFaceCount; face++) {
+                texturesBuffer.writeShort(texTriX[face]);
+                texturesBuffer.writeShort(texTriY[face]);
+                texturesBuffer.writeShort(texTriZ[face]);
+            }
+
+            footerBuffer.writeShort(vertexCount);
+            footerBuffer.writeShort(faceCount);
+            footerBuffer.writeByte(texturedFaceCount);
+
+            footerBuffer.writeByte(hasTriangleInfo ? 1 : 0);
+            footerBuffer.writeByte(hasTrianglePriorities ? -1 : priority);
+            footerBuffer.writeBoolean(hasTriangleAlpha);
+            footerBuffer.writeBoolean(hasTriangleSkins);
+            footerBuffer.writeBoolean(hasVertexLabels);
+
+            footerBuffer.writeShort(vertexX.length);
+            footerBuffer.writeShort(vertexY.length);
+            footerBuffer.writeShort(vertexZ.length);
+            footerBuffer.writeShort(triangleX.length);
+
+            return masterBuffer.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

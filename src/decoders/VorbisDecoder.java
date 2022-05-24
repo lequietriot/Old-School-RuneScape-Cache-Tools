@@ -1,7 +1,7 @@
 package decoders;
 
 import application.GUI;
-import org.displee.CacheLibrary;
+import com.displee.cache.CacheLibrary;
 import org.gagravarr.ogg.OggFile;
 import org.gagravarr.ogg.OggPacket;
 import org.gagravarr.ogg.OggPacketWriter;
@@ -10,38 +10,38 @@ import org.gagravarr.vorbis.VorbisFile;
 import org.gagravarr.vorbis.VorbisInfo;
 import org.gagravarr.vorbis.VorbisSetup;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.util.Objects;
 
 public class VorbisDecoder {
 
-    GUI gui;
+    GUI currentGUI;
     CacheLibrary cacheLibrary;
 
     public VorbisDecoder(GUI currentGUI) {
-        gui = currentGUI;
-        cacheLibrary = currentGUI.cacheLibrary;
+        this.currentGUI = currentGUI;
+        cacheLibrary = GUI.cacheLibrary;
         int index = currentGUI.selectedIndex;
         int archive = currentGUI.selectedArchive;
         int file = currentGUI.selectedFile;
         try {
-            decodeAsOGG(cacheLibrary.getIndex(index).getArchive(archive).getFile(file).getData(), archive);
+            decodeAsOGG(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file)).getData(), archive);
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
     }
 
     private void decodeAsOGG(byte[] data, int archiveID) throws IOException, URISyntaxException {
-        File outputFilePath = new File(gui.cacheLibrary.getPath() + File.separator + "Decoded Data" + File.separator + "OGG Vorbis");
+        File outputFilePath = new File(GUI.cacheLibrary.getPath() + File.separator + "Decoded Data" + File.separator + "OGG Vorbis");
         boolean madeDirectory = outputFilePath.mkdirs();
         if (madeDirectory) {
-            JOptionPane.showMessageDialog(gui.getContentPane(), "Archive " + archiveID + " was decoded successfully.\nIt can be found in the newly created path: " + outputFilePath.getPath());
+            currentGUI.cacheOperationInfo.setText("Archive " + archiveID + " was decoded successfully. New folder created in cache directory.");
         } else {
-            JOptionPane.showMessageDialog(gui.getContentPane(), "Archive " + archiveID + " was decoded successfully.\nIt can be found in the following path: " + outputFilePath.getPath());
+            currentGUI.cacheOperationInfo.setText("Archive " + archiveID + " was decoded successfully. It is in the cache directory.");
         }
         File outputFile = new File(outputFilePath + File.separator + archiveID + ".ogg");
         FileOutputStream fileOutputStream = new FileOutputStream(outputFile);

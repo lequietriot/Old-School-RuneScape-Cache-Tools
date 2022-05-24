@@ -1,7 +1,7 @@
 package encoders;
 
 import application.GUI;
-import runescape.ByteBufferUtils;
+import osrs.ByteBufferUtils;
 
 import javax.sound.midi.*;
 import javax.swing.*;

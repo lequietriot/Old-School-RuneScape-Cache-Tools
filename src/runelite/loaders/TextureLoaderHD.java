@@ -24,58 +24,120 @@
  */
 package runelite.loaders;
 
-import runelite.definitions.TextureDefinition;
+import runelite.definitions.TextureDetails;
 import runelite.io.InputStream;
 
 public class TextureLoaderHD
 {
-	public TextureDefinition load(int id, byte[] b)
+	public TextureDetails[] textureDefinitions;
+
+	public void load(byte[] b)
 	{
-		TextureDefinition def = new TextureDefinition();
-		InputStream is = new InputStream(b);
+		InputStream stream = new InputStream(b);
 
-		def.field1777 = is.readUnsignedShort();
-		def.field1778 = is.readByte() != 0;
-		def.setId(id);
-
-		int count = is.readUnsignedByte();
-		int[] files = new int[count];
-
-		for (int i = 0; i < count; ++i)
-			files[i] = is.readUnsignedShort();
-
-		def.setFileIds(files);
-
-		if (count > 1)
-		{
-			def.field1780 = new int[count - 1];
-
-			for (int var3 = 0; var3 < count - 1; ++var3)
-			{
-				def.field1780[var3] = is.readUnsignedByte();
+		int size = stream.readUnsignedShort();
+		textureDefinitions = new TextureDetails[size];
+		int index;
+		for (index = 0; index < size; index++) {
+			if (stream.readUnsignedByte() == 1) {
+				textureDefinitions[index] = new TextureDetails();
+				textureDefinitions[index].setId(index);
 			}
 		}
-
-		if (count > 1)
-		{
-			def.field1781 = new int[count - 1];
-
-			for (int var3 = 0; var3 < count - 1; ++var3)
-			{
-				def.field1781[var3] = is.readUnsignedByte();
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].isGroundMesh = stream.readUnsignedByte() == 0;
 			}
 		}
-
-		def.field1786 = new int[count];
-
-		for (int var3 = 0; var3 < count; ++var3)
-		{
-			def.field1786[var3] = is.readInt();
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].isHalfSize = stream.readUnsignedByte() == 1;
+			}
 		}
-
-		def.animationDirection = is.readUnsignedByte();
-		def.animationSpeed = is.readUnsignedByte();
-
-		return def;
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].skipTriangles = stream.readUnsignedByte() == 1;
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].brightness = stream.readByte();
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].shadowFactor = stream.readByte();
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].effectId = stream.readByte();
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].effectParam1 = stream.readByte();
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].color = (short) stream.readUnsignedShort();
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].textureSpeedU = stream.readByte();
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].textureSpeedV = stream.readByte();
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].aBool2087 = stream.readUnsignedByte() == 1;
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].isBrickTile = stream.readUnsignedByte() == 1;
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].useMipmaps = stream.readByte();
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].repeatS = stream.readUnsignedByte() == 1;
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].repeatT = stream.readUnsignedByte() == 1;
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].hdr = stream.readUnsignedByte() == 1;
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].combineMode = stream.readUnsignedByte();
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].effectParam2 = stream.readInt();
+			}
+		}
+		for (index = 0; index < size; index++) {
+			if (textureDefinitions[index] != null) {
+				textureDefinitions[index].blendType = stream.readUnsignedByte();
+			}
+		}
 	}
 }

@@ -1,5 +1,8 @@
 package runelite.definitions;
 
+import lombok.Data;
+
+@Data
 public class TextureDetails {
 
     public boolean isGroundMesh;

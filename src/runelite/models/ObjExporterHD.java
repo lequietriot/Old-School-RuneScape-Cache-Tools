@@ -24,8 +24,8 @@
  */
 package runelite.models;
 
+import runelite.definitions.ModelDefinition;
 import runelite.definitions.TextureDetails;
-import runelite.loaders.ModelLoaderHD;
 import runelite.managers.TextureManagerHD;
 
 import java.io.PrintWriter;
@@ -35,10 +35,10 @@ public class ObjExporterHD
     private static final double BRIGHTNESS = JagexColor.BRIGTHNESS_MIN;
 
     private final TextureManagerHD textureManager;
-    private final ModelLoaderHD model;
+    private final ModelDefinition model;
     private final int modelId;
 
-    public ObjExporterHD(TextureManagerHD textureManager, ModelLoaderHD model, int archive)
+    public ObjExporterHD(TextureManagerHD textureManager, ModelDefinition model, int archive)
     {
         this.textureManager = textureManager;
         this.model = model;
@@ -74,16 +74,18 @@ public class ObjExporterHD
             }
         }
 
-        for (VertexNormal normal : model.isolatedVertexNormals)
+        for (VertexNormal normal : model.vertexNormals)
         {
-            objWriter.println("vn " + normal.x + " " + normal.y + " " + normal.z);
+            if (normal != null) {
+                objWriter.println("vn " + normal.x + " " + normal.y + " " + normal.z);
+            }
         }
 
         for (int i = 0; i < model.faceCount; ++i)
         {
-            int x = model.triangleX[i] + 1;
-            int y = model.triangleY[i] + 1;
-            int z = model.triangleZ[i] + 1;
+            int x = model.faceIndices1[i] + 1;
+            int y = model.faceIndices2[i] + 1;
+            int z = model.faceIndices3[i] + 1;
 
             objWriter.println("usemtl m" + i);
             if (model.faceTextures != null)
@@ -113,9 +115,9 @@ public class ObjExporterHD
 
             mtlWriter.println("newmtl m" + i);
 
-            if (textureId != -2)
+            if (textureId != -2048)
             {
-                int rgb = JagexColor.HSLtoRGB(model.faceColor[i], BRIGHTNESS);
+                int rgb = JagexColor.HSLtoRGB(model.faceColors[i], BRIGHTNESS);
                 double r = ((rgb >> 16) & 0xff) / 255.0;
                 double g = ((rgb >> 8) & 0xff) / 255.0;
                 double b = (rgb & 0xff) / 255.0;
@@ -132,9 +134,9 @@ public class ObjExporterHD
 
             int alpha = 0;
 
-            if (model.faceAlphas != null)
+            if (model.faceTransparencies != null)
             {
-                alpha = model.faceAlphas[i] & 0xFF;
+                alpha = model.faceTransparencies[i] & 0xFF;
             }
 
             if (alpha != 0)

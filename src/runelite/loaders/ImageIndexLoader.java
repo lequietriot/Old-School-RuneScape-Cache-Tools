@@ -1,8 +1,10 @@
 package runelite.loaders;
 
-import org.displee.cache.index.Index;
+import com.displee.cache.index.Index;
 import runelite.definitions.TextureDetails;
-import runescape.Buffer;
+import osrs.Buffer;
+
+import java.util.Objects;
 
 public class ImageIndexLoader implements ImageLoader {
 
@@ -17,7 +19,7 @@ public class ImageIndexLoader implements ImageLoader {
     public ImageIndexLoader(Index textureDefIndex, Index textureIndex, Index spriteIndex) {
         this.textureIndex = textureIndex;
         this.spriteIndex = spriteIndex;
-        Buffer stream = new Buffer(textureDefIndex.getArchive(0).getFile(0).getData());
+        Buffer stream = new Buffer(Objects.requireNonNull(Objects.requireNonNull(textureDefIndex.archive(0)).file(0)).getData());
         textureDefSize = stream.readUnsignedShort();
         textures = new TextureDetails[textureDefSize];
         int i_5;
@@ -121,13 +123,6 @@ public class ImageIndexLoader implements ImageLoader {
                 textures[i_5].blendType = stream.readUnsignedByte();
             }
         }
-    }
-
-    public static int method5773(int i_0, int i_1) {
-        int i_3 = i_1 >>> 24;
-        int i_4 = 255 - i_3;
-        i_1 = (i_3 * (i_1 & 0xff00ff) & -16711936 | i_3 * (i_1 & 0xff00) & 0xff0000) >>> 8;
-        return ((i_4 * (i_0 & 0xff00ff) & -16711936 | (i_0 & 0xff00) * i_4 & 0xff0000) >>> 8) + i_1;
     }
 
     @Override

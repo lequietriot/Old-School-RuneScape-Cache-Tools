@@ -24,9 +24,9 @@
  */
 package runelite.providers;
 
-import runelite.definitions.TextureDefinition;
+import runelite.definitions.TextureDetails;
 
 public interface TextureProvider
 {
-	TextureDefinition[] provide();
+	TextureDetails[] provide();
 }

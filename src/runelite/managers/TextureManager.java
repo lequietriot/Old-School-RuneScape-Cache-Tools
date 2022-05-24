@@ -24,12 +24,12 @@
  */
 package runelite.managers;
 
-import application.constants.OSRSCacheIndexConstants;
-import org.displee.CacheLibrary;
-import org.displee.cache.index.Index;
-import org.displee.cache.index.archive.Archive;
-import org.displee.cache.index.archive.file.File;
+import com.displee.cache.CacheLibrary;
+import com.displee.cache.index.Index;
+import com.displee.cache.index.archive.Archive;
+import com.displee.cache.index.archive.file.File;
 import runelite.definitions.TextureDefinition;
+import runelite.definitions.TextureDetails;
 import runelite.loaders.TextureLoader;
 import runelite.providers.TextureProvider;
 
@@ -49,9 +49,10 @@ public class TextureManager implements TextureProvider
 
     public void load() throws IOException
     {
-        Index index = store.getIndex(OSRSCacheIndexConstants.TEXTURES);
-        Archive archive = index.getArchive(0);
-        File[] files = archive.getFiles();
+        Index index = store.index(9);
+        Archive archive = index.archive(0);
+        assert archive != null;
+        File[] files = archive.files();
 
         TextureLoader loader = new TextureLoader();
 
@@ -80,8 +81,8 @@ public class TextureManager implements TextureProvider
     }
 
     @Override
-    public TextureDefinition[] provide()
+    public TextureDetails[] provide()
     {
-        return textures.toArray(new TextureDefinition[textures.size()]);
+        return textures.toArray(new TextureDetails[textures.size()]);
     }
 }
