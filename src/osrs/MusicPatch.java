@@ -1204,7 +1204,10 @@ public class MusicPatch extends Node {
 						 byte[] sampleData = readAllBytes((AudioInputStream) sf2Sample.getData());
 						 byte[] noteRange = sf2LayerRegion.getBytes(SF2Region.GENERATOR_KEYRANGE);
 						 int loopModes = sf2LayerRegion.getInteger(SF2Region.GENERATOR_SAMPLEMODES);
-						 int loopModeGlobal = sf2InstrumentRegion.getLayer().getGlobalRegion().getInteger(SF2Region.GENERATOR_SAMPLEMODES);
+						 int loopModeGlobal = 0;
+						 if (sf2InstrumentRegion.getLayer().getGlobalRegion() != null) {
+							  loopModeGlobal = sf2InstrumentRegion.getLayer().getGlobalRegion().getInteger(SF2Region.GENERATOR_SAMPLEMODES);
+						 }
 						 int pitchCorrection = sf2Sample.getPitchCorrection();
 						 byte[] overridingNote = sf2LayerRegion.getBytes(SF2Region.GENERATOR_OVERRIDINGROOTKEY);
 						 int fineTune = sf2LayerRegion.getInteger(SF2Region.GENERATOR_FINETUNE) * 256 / 100;
