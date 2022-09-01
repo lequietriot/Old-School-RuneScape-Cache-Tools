@@ -29,7 +29,6 @@ import com.displee.cache.index.Index;
 import com.displee.cache.index.archive.Archive;
 import com.displee.cache.index.archive.file.File;
 import runelite.definitions.TextureDefinition;
-import runelite.definitions.TextureDetails;
 import runelite.loaders.TextureLoader;
 import runelite.providers.TextureProvider;
 
@@ -40,7 +39,7 @@ import java.util.List;
 public class TextureManager implements TextureProvider
 {
     private final CacheLibrary store;
-    private final List<TextureDefinition> textures = new ArrayList<>();
+    public static final List<TextureDefinition> textures = new ArrayList<>();
 
     public TextureManager(CacheLibrary store)
     {
@@ -81,8 +80,8 @@ public class TextureManager implements TextureProvider
     }
 
     @Override
-    public TextureDetails[] provide()
+    public TextureDefinition[] provide()
     {
-        return textures.toArray(new TextureDetails[textures.size()]);
+        return textures.toArray(new TextureDefinition[textures.size()]);
     }
 }

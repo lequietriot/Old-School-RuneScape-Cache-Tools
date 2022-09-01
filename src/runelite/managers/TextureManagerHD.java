@@ -3,6 +3,7 @@ package runelite.managers;
 import com.displee.cache.CacheLibrary;
 import com.displee.cache.index.Index;
 import com.displee.cache.index.archive.Archive;
+import runelite.definitions.TextureDefinition;
 import runelite.definitions.TextureDetails;
 import runelite.loaders.ImageIndexLoader;
 import runelite.providers.TextureProvider;
@@ -51,8 +52,8 @@ public class TextureManagerHD implements TextureProvider {
     }
 
     @Override
-    public TextureDetails[] provide()
+    public TextureDefinition[] provide()
     {
-        return textures.toArray(new TextureDetails[textures.size()]);
+        return textures.toArray(new TextureDefinition[textures.size()]);
     }
 }

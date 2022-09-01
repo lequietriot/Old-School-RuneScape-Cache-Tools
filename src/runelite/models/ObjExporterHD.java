@@ -32,7 +32,7 @@ import java.io.PrintWriter;
 
 public class ObjExporterHD
 {
-    private static final double BRIGHTNESS = JagexColor.BRIGTHNESS_MIN;
+    private static final double BRIGHTNESS = JagexColor.BRIGHTNESS_MIN;
 
     private final TextureManagerHD textureManager;
     private final ModelDefinition model;

@@ -2,6 +2,8 @@
 ### The ultimate suite of older RuneScape Cache editing tools!
 ## This suite features:
 ### Cache Functions
+* Search Cache (Work in progress)
+  * Allows you to search for the location of a file based on any given name. Currently, whatever is searched for prints the results to the system console.
 * Cache explorer with functions for manipulating raw data
   * Add Files
   * Export Files
@@ -27,12 +29,13 @@
 #### Cache Data Encoding and Decoding
 * Data Encoding tools (To RuneScape Format)
   * MIDI Music and MIDI Jingles
+  * OBJ Model and MTL File
   * OGG Vorbis Instrument Samples
 ####
 * Data Decoding tools (To General Format)
   * MIDI Music and MIDI Jingles
-  * OBJ Model and MTL Textures
-    * Automatically adjusted decoder based on Cache Type (Currently supports: Old School RuneScape & RuneScape High Definition)
+  * OBJ Model and MTL File
+    * Automatically adjusted decoder based on Cache Type (Currently supports: RuneScape 2, Old School RuneScape & RuneScape High Definition)
   * OGG Vorbis Instrument Samples
   * SoundFont 2 Instrument Patches (Work in Progress)
 ### Tools
@@ -42,10 +45,12 @@
   * Ability to render songs to lossless and uncompressed wav file
   * Choose from either music or jingles in the cache index
   * Listen/Render songs in mono or stereo
+  * Batch render all music and jingles to the cache output folder
   * Shuffle songs from folder or cache where possible
   * Ability to override the instruments with a SoundFont 2 file of choice, using the original instrument configurations.
 * Music port tool for utilizing the RuneScape sounds in music producing applications such as Cubase, etc. (MIDI Port must contain "port" in its name)
 * Xtea Keys Tool, to decode encrypted map files - The relevant archive/file must be selected in the explorer while using the tool.
+* Model Converter - New to Old, converts the RuneScape High Definition era models to older RuneScape 2 models, preserving the RuneScape format.
 
 ### Credits
 * Displee (https://github.com/Displee): for the cache library.

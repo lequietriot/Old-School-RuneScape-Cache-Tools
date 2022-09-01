@@ -50,6 +50,7 @@ public class ModelData {
 
         ModelDefinition modelDefinition = new ModelDefinition();
         modelDefinition.id = modelId;
+        modelDefinition.modelData = data;
 
         if (data[data.length - 1] == -1 && data[data.length - 2] == -1) {
             decodeNewFormat(modelDefinition, data);
@@ -324,7 +325,7 @@ public class ModelData {
         fourth.offset = i_46;
         fifth.offset = i_47;
         sixth.offset = i_48;
-        decodeTexturedTriangles(modelDefinition, first, second, third, fourth, fifth, sixth);
+        //decodeTexturedTriangles(modelDefinition, first, second, third, fourth, fifth, sixth);
         first.offset = totalFaces;
         if (hasParticleEffects) {
             int emitterCount = first.readUnsignedByte();

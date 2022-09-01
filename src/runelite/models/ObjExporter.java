@@ -32,7 +32,7 @@ import java.io.PrintWriter;
 
 public class ObjExporter
 {
-	private static final double BRIGHTNESS = JagexColor.BRIGTHNESS_MIN;
+	private static final double BRIGHTNESS = JagexColor.BRIGHTNESS_MIN;
 
 	private final TextureManager textureManager;
 	private final ModelDefinition model;
@@ -113,7 +113,7 @@ public class ObjExporter
 
 			if (textureId == -1)
 			{
-				int rgb = JagexColor.HSLtoRGB( model.faceColors[i], BRIGHTNESS);
+				int rgb = JagexColor.HSLtoRGB(model.faceColors[i], BRIGHTNESS);
 				double r = ((rgb >> 16) & 0xff) / 255.0;
 				double g = ((rgb >> 8) & 0xff) / 255.0;
 				double b = (rgb & 0xff) / 255.0;

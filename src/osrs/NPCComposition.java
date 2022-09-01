@@ -2,7 +2,6 @@ package osrs;
 
 import com.displee.cache.index.Index;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 public class NPCComposition extends DualNode {
@@ -12,7 +11,7 @@ public class NPCComposition extends DualNode {
 	public int id;
 	public String name;
 	public int size;
-	int[] models;
+	public int[] models;
 	int[] field1957;
 	public int idleSequence;
 	public int turnLeftSequence;
@@ -46,7 +45,7 @@ public class NPCComposition extends DualNode {
 	public int[] transforms;
 	int transformVarbit;
 	int transformVarp;
-	public boolean isInteractable;
+	public boolean isInteractive;
 	public boolean isClickable;
 	public boolean isFollower;
 	IterableNodeHashTable params;
@@ -86,7 +85,7 @@ public class NPCComposition extends DualNode {
 		this.rotation = 32; // L: 53
 		this.transformVarbit = -1; // L: 55
 		this.transformVarp = -1; // L: 56
-		this.isInteractable = true; // L: 57
+		this.isInteractive = true; // L: 57
 		this.isClickable = true; // L: 58
 		this.isFollower = false; // L: 59
 	} // L: 62
@@ -104,28 +103,14 @@ public class NPCComposition extends DualNode {
 
 			var1.postDecode(); // L: 71
 			NPCComposition.NpcDefinition_cached.put(var1, (long)fileId); // L: 72
-			System.out.println("Name: " + name);
-			System.out.println("Size: " + size);
-			System.out.println("Idle Sequence: " + idleSequence);
-			System.out.println("Walk Sequence: " + walkSequence);
-			System.out.println("Walk Back Sequence: " + walkBackSequence);
-			System.out.println("Walk Left Sequence: " + walkLeftSequence);
-			System.out.println("Walk Right Sequence: " + walkRightSequence);
-			System.out.println("Actions: " + Arrays.toString(actions));
-			System.out.println("Size: " + size);
-			System.out.println("Size: " + size);
-			System.out.println("Size: " + size);
-			System.out.println("Size: " + size);
-			System.out.println("Size: " + size);
-			System.out.println("Size: " + size);
-			System.out.println("Size: " + size);
+
 		}
 	}
 
 	void postDecode() {
 	} // L: 76
 
-	void decode(Buffer var1) {
+	public void decode(Buffer var1) {
 		while (true) {
 			int var2 = var1.readUnsignedByte(); // L: 80
 			if (var2 == 0) { // L: 81
@@ -215,7 +200,7 @@ public class NPCComposition extends DualNode {
 			this.rotation = var1.readUnsignedShort();
 		} else if (var2 != 106 && var2 != 118) { // L: 143
 			if (var2 == 107) { // L: 161
-				this.isInteractable = false;
+				this.isInteractive = false;
 			} else if (var2 == 109) { // L: 162
 				this.isClickable = false;
 			} else if (var2 == 111) { // L: 163

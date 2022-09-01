@@ -44,5 +44,6 @@ public enum OSRSCacheIndices {
     Overhead_Icons,
     World_Map_Geography,
     World_Map_Current,
-    World_Map_Ground
+    World_Map_Ground,
+    Data_Base_Table_Index
 }

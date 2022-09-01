@@ -380,17 +380,15 @@ public final class ByteBufferUtils {
         }
     }
 
-    public static void writeUnsignedSmartb(int value, Buffer buffer) {
-        if (value < 64 && value >= -64) {
-            buffer.writeByte(value + 64);
-            return;
-        }
-        if (value < 16384 && value >= -16384) {
-            buffer.writeShort(value + 49152);
-            return;
-        } else {
-            System.out.println("Error psmart out of range: " + value);
-            return;
+    public static void writeSmart(int value, DataOutputStream dataOutputStream) {
+        try {
+            if (value >= 128) {
+                dataOutputStream.writeShort(value + 32768);
+            } else {
+                dataOutputStream.writeByte(value);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

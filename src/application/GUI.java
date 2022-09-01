@@ -8,6 +8,7 @@ import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.sun.media.sound.SF2Soundbank;
 import decoders.*;
 import encoders.MidiEncoder;
+import encoders.ModelConverter;
 import encoders.ModelEncoder;
 import encoders.VorbisEncoder;
 import osrs.*;
@@ -43,6 +44,8 @@ public class GUI extends JFrame {
 
     static JPanel contentPanel;
 
+    static JPanel contentPreviewPane;
+
     final JMenuItem modelDecoder;
 
     JTextField songNameInput;
@@ -70,8 +73,9 @@ public class GUI extends JFrame {
         defaultCachePath = new File(System.getProperty("user.home") + File.separator + "jagexcache" + File.separator + "oldschool" + File.separator + "LIVE");
     }
 
+
     GUI() {
-        super("Old School RuneScape Cache Tools v0.3.0-beta");
+        super("Old School RuneScape Cache Tools v0.4-beta");
         setSize(640, 480);
         setMinimumSize(new Dimension(640, 480));
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -94,12 +98,20 @@ public class GUI extends JFrame {
         loadCache.addActionListener(e -> chooseCacheFolder());
         fileMenu.add(loadCache);
 
+        JMenuItem searchCache = new JMenuItem("Search Cache");
+        searchCache.addActionListener(e -> searchCacheData());
+        fileMenu.add(searchCache);
+
         JMenu encoderMenu = new JMenu("Data Encoders");
         jMenuBar.add(encoderMenu);
 
         JMenuItem midiEncoder = new JMenuItem("MIDI Encoder");
         midiEncoder.addActionListener(e -> new MidiEncoder(this));
         encoderMenu.add(midiEncoder);
+
+        JMenuItem modelEncoder = new JMenuItem("Model Encoder");
+        modelEncoder.addActionListener(e -> new ModelEncoder(this));
+        encoderMenu.add(modelEncoder);
 
         JMenuItem vorbisEncoder = new JMenuItem("Vorbis Encoder");
         vorbisEncoder.addActionListener(e -> new VorbisEncoder(this));
@@ -151,8 +163,8 @@ public class GUI extends JFrame {
         //toolsMenu.add(test);
 
         JMenuItem convertModels = new JMenuItem("Model - New to Old");
-        convertModels.addActionListener(e -> new ModelEncoder(this));
-        //toolsMenu.add(convertModels);
+        convertModels.addActionListener(e -> new ModelConverter(this));
+        toolsMenu.add(convertModels);
 
         JLabel loadCacheLabel = new JLabel("Please load your cache from the File menu to begin!");
         loadCacheLabel.setVerticalAlignment(SwingConstants.CENTER);
@@ -167,9 +179,68 @@ public class GUI extends JFrame {
         initModelToolModes();
     }
 
+    private void searchCacheData() {
+        String searchPrompt = JOptionPane.showInputDialog("Enter the name of what you are looking for.");
+        int searchValueHash = searchPrompt.toLowerCase().hashCode();
+        new Thread(() -> {
+            for (int index = 0; index < cacheLibrary.indices().length; index++) {
+                for (int archive = 0; archive < cacheLibrary.index(index).archives().length; archive++) {
+                    if (cacheLibrary.index(index).archive(archive) != null) {
+                        int archiveHashName = Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).getHashName();
+                        if (archiveHashName == searchValueHash) {
+                            System.out.println("Index " + index + ", " + "Archive " + archive + ", File 0");
+                        }
+                        //Enum Definitions
+                        if (index == 2 && archive == 8) {
+                            if (cacheLibrary.index(index).archive(archive) != null) {
+                                for (int file = 0; file < Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).files().length; file++) {
+                                    if (Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file) != null) {
+                                        EnumComposition enumComposition = new EnumComposition();
+                                        enumComposition.decode(new Buffer(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file)).getData()));
+                                        if (enumComposition.strVals != null) {
+                                            for (String stringValue : enumComposition.strVals) {
+                                                if (stringValue.contains(searchPrompt)) {
+                                                    System.out.println("Index " + index + ", " + "Archive " + archive + ", File " + file);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        //NPC Definitions
+                        if (index == 2 && archive == 9) {
+                            if (cacheLibrary.index(index).archive(archive) != null) {
+                                for (int file = 0; file < Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).files().length; file++) {
+                                    if (Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file) != null) {
+                                        NPCComposition npcComposition = new NPCComposition();
+                                        npcComposition.decode(new Buffer(cacheLibrary.data(index, archive, file)));
+                                        if (npcComposition.name.contains(searchPrompt)) {
+                                            System.out.println("Index " + index + ", " + "Archive " + archive + ", File " + file);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            System.out.println("Done searching");
+        }).start();
+    }
+
     private void testTool() {
         NPCComposition npcComposition = new NPCComposition();
-        npcComposition.getNpcDefinition(cacheLibrary.index(selectedIndex), selectedArchive, selectedFile);
+        npcComposition.decode(new Buffer(cacheLibrary.data(selectedIndex, selectedArchive, selectedFile)));
+        System.out.println("Name: " + npcComposition.name);
+        System.out.println("Model IDs: " + Arrays.toString(npcComposition.models));
+        System.out.println("Size: " + npcComposition.size);
+        System.out.println("Idle Sequence: " + npcComposition.idleSequence);
+        System.out.println("Walk Sequence: " + npcComposition.walkSequence);
+        System.out.println("Walk Back Sequence: " + npcComposition.walkBackSequence);
+        System.out.println("Walk Left Sequence: " + npcComposition.walkLeftSequence);
+        System.out.println("Walk Right Sequence: " + npcComposition.walkRightSequence);
+        System.out.println("Actions: " + Arrays.toString(npcComposition.actions));
     }
 
     private void editSynthPatch() {
@@ -203,6 +274,9 @@ public class GUI extends JFrame {
         JButton musicRenderButton = new JButton("Render to File");
         musicRenderButton.addActionListener(e -> renderSong());
 
+        JButton musicRenderAllButton = new JButton("Render all Music to Files");
+        musicRenderAllButton.addActionListener(e -> renderAllSongs());
+
         JButton exitMusicPlayerButton = new JButton("Exit Music Player");
         exitMusicPlayerButton.addActionListener(e -> exitPlayer());
 
@@ -215,6 +289,7 @@ public class GUI extends JFrame {
         musicPlayerPanel.add(musicPlayButton);
         musicPlayerPanel.add(musicStopButton);
         musicPlayerPanel.add(musicRenderButton);
+        musicPlayerPanel.add(musicRenderAllButton);
         musicPlayerPanel.add(exitMusicPlayerButton);
 
         JPanel settingsPanel = new JPanel();
@@ -530,12 +605,13 @@ public class GUI extends JFrame {
                     try {
                         File outputFilePath = new File(cacheLibrary.getPath() + File.separator + "Output");
                         boolean madeDirectory = outputFilePath.mkdirs();
-                        AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(outputFilePath + File.separator + AppConstants.currentSongName + ".wav"));
+                        AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(outputFilePath + File.separator + AppConstants.currentSongName + "_Index_" + AppConstants.currentMusicIndex + ".wav"));
                         if (madeDirectory) {
-                            JOptionPane.showMessageDialog(getContentPane(), "An output directory in your current cache folder was created!\n" + AppConstants.currentSongName + " was then rendered successfully to your output folder!");
+                            //JOptionPane.showMessageDialog(getContentPane(), "An output directory in your current cache folder was created!\n" + AppConstants.currentSongName + " was then rendered successfully to your output folder!");
                         } else {
-                            JOptionPane.showMessageDialog(getContentPane(), AppConstants.currentSongName + " was rendered successfully to your output folder!");
+                            //JOptionPane.showMessageDialog(getContentPane(), AppConstants.currentSongName + " was rendered successfully to your output folder!");
                         }
+                        AppConstants.currentSongName = null;
                         stopSong();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -544,6 +620,24 @@ public class GUI extends JFrame {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void renderAllSongs() {
+        for (int music = 0; music < 2000; music++) {
+            if (cacheLibrary.index(6).archive(music) != null) {
+                AppConstants.currentMusicIndex = 6;
+                AppConstants.currentSongName = String.valueOf(music);
+                renderSong();
+            }
+        }
+
+        for (int jingle = 0; jingle < 1000; jingle++) {
+            if (cacheLibrary.index(11).archive(jingle) != null) {
+                AppConstants.currentMusicIndex = 11;
+                AppConstants.currentSongName = String.valueOf(jingle);
+                renderSong();
+            }
         }
     }
 
@@ -683,8 +777,7 @@ public class GUI extends JFrame {
                     modelDecoder.removeActionListener(actionListener);
                 }
             }
-            //TODO: Implement RS2 Model Decoding
-            //modelDecoder.addActionListener(e -> new ModelDecoderRS2(this));
+            modelDecoder.addActionListener(e -> new ModelDecoderRS2(this));
         }
         if (AppConstants.cacheType.equals("Old School RuneScape")) {
             if (modelDecoder.getActionListeners() != null) {
@@ -719,6 +812,9 @@ public class GUI extends JFrame {
 
         JTree cacheTree = new JTree();
         cacheTree.setModel(new DefaultTreeModel(cacheNode));
+
+        contentPreviewPane = new JPanel();
+        contentPreviewPane.setLayout(new GridLayout());
 
         JScrollPane cacheScrollPane = new JScrollPane(cacheTree);
         cacheScrollPane.setViewportView(cacheTree);
@@ -977,7 +1073,17 @@ public class GUI extends JFrame {
         splitCacheViewPane.setResizeWeight(0.5);
         splitCacheViewPane.revalidate();
 
-        contentPanel.add(splitCacheViewPane, BorderLayout.CENTER);
+        //contentPreviewPane.add(new ModelViewer(new JPanel(new BorderLayout())));
+        contentPreviewPane.revalidate();
+
+        JSplitPane splitCacheDetailedViewPane = new JSplitPane();
+        splitCacheDetailedViewPane.setLeftComponent(splitCacheViewPane);
+        splitCacheDetailedViewPane.setRightComponent(contentPreviewPane);
+        splitCacheDetailedViewPane.setEnabled(false);
+        splitCacheDetailedViewPane.setResizeWeight(0.5);
+        splitCacheDetailedViewPane.revalidate();
+
+        contentPanel.add(splitCacheDetailedViewPane, BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.add(cacheLoadedInfo, BorderLayout.SOUTH);
         contentPanel.revalidate();
@@ -1142,12 +1248,14 @@ public class GUI extends JFrame {
                             if (new File(indexDirectory + File.separator + archive).mkdirs()) {
                                 cacheOperationInfo.setText("made directory for file");
                             }
-                            byte[] output = Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file)).getData();
-                            FileOutputStream fileOutputStream = new FileOutputStream(fileData);
-                            DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
-                            dataOutputStream.write(Objects.requireNonNull(output));
-                            dataOutputStream.flush();
-                            dataOutputStream.close();
+                            if (cacheLibrary.data(index, archive, file) != null) {
+                                byte[] output = cacheLibrary.data(index, archive, file);
+                                FileOutputStream fileOutputStream = new FileOutputStream(fileData);
+                                DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
+                                dataOutputStream.write(Objects.requireNonNull(output));
+                                dataOutputStream.flush();
+                                dataOutputStream.close();
+                            }
                         }
                     }
                     else {

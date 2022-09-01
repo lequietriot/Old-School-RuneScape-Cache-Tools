@@ -23,7 +23,7 @@ public class EnumComposition extends DualNode {
 		this.outputCount = 0; // L: 17
 	} // L: 22
 
-	void decode(Buffer var1) {
+	public void decode(Buffer var1) {
 		while (true) {
 			int var2 = var1.readUnsignedByte(); // L: 36
 			if (var2 == 0) { // L: 37

@@ -18,8 +18,13 @@ public class VertexNormal
 		magnitude = magnitudeValue;
 	}
 
+	public VertexNormal(int xVertex, int yVertex, int zVertex) {
+		x = xVertex;
+		y = yVertex;
+		z = zVertex;
+	}
 
-	public Vector3f normalize()
+    public Vector3f normalize()
 	{
 		Vector3f v = new Vector3f();
 

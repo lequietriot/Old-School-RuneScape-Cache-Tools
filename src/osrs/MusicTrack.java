@@ -2,6 +2,10 @@ package osrs;
 
 import com.displee.cache.index.Index;
 
+import javax.sound.midi.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -356,6 +360,19 @@ public class MusicTrack extends Node {
 		}
 
 		midiBuff.flip();
+
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		try {
+			Sequence sequence = MidiSystem.getSequence(new ByteArrayInputStream(midiBuff.array()));
+			sequence.getTracks()[0].add(new MidiEvent(new ShortMessage(ShortMessage.NOTE_ON, 0, 0, 0), (sequence.getTickLength()) + 900));
+			sequence.getTracks()[0].add(new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 0, 0), (sequence.getTickLength()) + 903));
+			MidiSystem.write(sequence, 1, byteArrayOutputStream);
+
+			this.midi = byteArrayOutputStream.toByteArray();
+			return;
+		} catch (InvalidMidiDataException | IOException e) {
+			e.printStackTrace();
+		}
 
 		this.midi = midiBuff.array();
 	}
