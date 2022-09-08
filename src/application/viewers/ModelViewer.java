@@ -59,7 +59,11 @@ public class ModelViewer extends JPanel {
     }
 
     @Override
-    public void paint(Graphics g) {
-        g.drawImage(buffer.getImage(), 0, 0, null);
+    public void update(Graphics g) {
+        try {
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

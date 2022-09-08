@@ -866,6 +866,9 @@ public class MidiPcmStream extends PcmStream {
 	public void loadSoundFont(SF2Soundbank sf2Soundbank, int channel) {
 		if (musicPatches != null) {
 			for (MusicPatch musicPatch = (MusicPatch) musicPatches.first(); musicPatch != null; musicPatch = (MusicPatch) musicPatches.next()) {
+				for (int note = 0; note < 128; note++) {
+					musicPatch.audioDataSources[note] = null;
+				}
 				musicPatch.mapSoundFontSamples((int) musicPatch.key, channel, sf2Soundbank);
 			}
 		}

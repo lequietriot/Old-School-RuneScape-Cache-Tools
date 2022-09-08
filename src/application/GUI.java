@@ -4,7 +4,7 @@ import application.constants.*;
 import com.displee.cache.CacheLibrary;
 import com.displee.cache.index.Index;
 import com.displee.cache.index.archive.Archive;
-import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatDarculaLaf;
 import com.sun.media.sound.SF2Soundbank;
 import decoders.*;
 import encoders.MidiEncoder;
@@ -82,7 +82,7 @@ public class GUI extends JFrame {
         setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("logo.png"))).getImage());
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         try {
-            UIManager.setLookAndFeel(new FlatIntelliJLaf());
+            UIManager.setLookAndFeel(new FlatDarculaLaf());
             SwingUtilities.updateComponentTreeUI(this);
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
@@ -148,7 +148,7 @@ public class GUI extends JFrame {
 
         JMenuItem quickTest = new JMenuItem("Quick Sound Test");
         quickTest.addActionListener(e -> quickTestSound());
-        //toolsMenu.add(quickTest);
+        toolsMenu.add(quickTest);
 
         JMenuItem synthPatchEditor = new JMenuItem("Synth Patch Editor");
         synthPatchEditor.addActionListener(e -> editSynthPatch());
@@ -160,7 +160,7 @@ public class GUI extends JFrame {
 
         JMenuItem test = new JMenuItem("Test tool");
         test.addActionListener(e -> testTool());
-        //toolsMenu.add(test);
+        toolsMenu.add(test);
 
         JMenuItem convertModels = new JMenuItem("Model - New to Old");
         convertModels.addActionListener(e -> new ModelConverter(this));
@@ -183,6 +183,7 @@ public class GUI extends JFrame {
         String searchPrompt = JOptionPane.showInputDialog("Enter the name of what you are looking for.");
         int searchValueHash = searchPrompt.toLowerCase().hashCode();
         new Thread(() -> {
+            System.out.println("Searching for: " + searchPrompt);
             for (int index = 0; index < cacheLibrary.indices().length; index++) {
                 for (int archive = 0; archive < cacheLibrary.index(index).archives().length; archive++) {
                     if (cacheLibrary.index(index).archive(archive) != null) {
@@ -230,6 +231,7 @@ public class GUI extends JFrame {
     }
 
     private void testTool() {
+
         NPCComposition npcComposition = new NPCComposition();
         npcComposition.decode(new Buffer(cacheLibrary.data(selectedIndex, selectedArchive, selectedFile)));
         System.out.println("Name: " + npcComposition.name);
@@ -673,11 +675,14 @@ public class GUI extends JFrame {
 
                     SoundCache soundCache = new SoundCache(cacheLibrary.index(4), cacheLibrary.index(14));
 
-                    if (musicTrack != null && midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.index(15), soundCache, 0)) {
+                    if (musicTrack != null && !midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.index(15), soundCache, 22050)) {
                         midiPcmStream.setPcmStreamVolume(AppConstants.volumeLevel);
                         midiPcmStream.setMusicTrack(musicTrack, false);
                         if (AppConstants.usingSoundFont) {
                             midiPcmStream.loadSoundFont(new SF2Soundbank(new File(AppConstants.customSoundFontPath)), -1);
+                        }
+                        else {
+                            midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.index(15), soundCache, 0);
                         }
                         devicePcmPlayer.init();
                         devicePcmPlayer.setStream(midiPcmStream);
@@ -1334,7 +1339,7 @@ public class GUI extends JFrame {
 
     private void quickTestSound() {
         new Thread(() -> {
-            MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(AppConstants.customSoundFontsPath);
+            MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(AppConstants.customSoundFontPath);//(AppConstants.customSoundFontsPath);
             DevicePcmPlayer[] devicePcmPlayers = initDevicePcmPlayers(midiPcmStreams);
             while (true) {
                 playDevicePcmPlayers(devicePcmPlayers);

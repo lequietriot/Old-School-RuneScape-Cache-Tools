@@ -325,7 +325,7 @@ public class ModelData {
         fourth.offset = i_46;
         fifth.offset = i_47;
         sixth.offset = i_48;
-        //decodeTexturedTriangles(modelDefinition, first, second, third, fourth, fifth, sixth);
+        decodeTexturedTriangles(modelDefinition, first, second, third, fourth, fifth, sixth);
         first.offset = totalFaces;
         if (hasParticleEffects) {
             int emitterCount = first.readUnsignedByte();
@@ -342,7 +342,7 @@ public class ModelData {
                         b_60 = (byte) modelPriority;
                     }
 
-                    //particleConfig[i] = new ParticleEmitterConfig(particleId, modelDefinition.vertexX[faceIdx], modelDefinition.vertexY[faceIdx], modelDefinition.vertexZ[faceIdx], b_60);
+                    particleConfig[i] = new ParticleEmitterConfig(particleId, modelDefinition.vertexX[faceIdx], modelDefinition.vertexY[faceIdx], modelDefinition.vertexZ[faceIdx], b_60);
                 }
             }
 
@@ -353,7 +353,7 @@ public class ModelData {
                 for (int i = 0; i < surfaceSkinCount; i++) {
                     int x = first.readUnsignedShort();
                     int y = first.readUnsignedShort();
-                    //surfaceSkins[i] = new SurfaceSkin(x, y);
+                    surfaceSkins[i] = new SurfaceSkin(x, y);
                 }
             }
         }
@@ -361,14 +361,14 @@ public class ModelData {
         if (hasBillboards) {
             int i_53 = first.readUnsignedByte();
             if (i_53 > 0) {
-                //modelDefinition.vertexNormals = new VertexNormal[i_53];
+                modelDefinition.vertexNormals = new VertexNormal[i_53];
 
                 for (int i = 0; i < i_53; i++) {
                     int vertextOffsetX = first.readUnsignedShort();
                     int vertextOffsetY = first.readUnsignedShort();
                     int vertetxOffsetZ = first.readUnsignedByte();
                     byte b_58 = first.readByte();
-                    //modelDefinition.vertexNormals[i] = new VertexNormal(vertextOffsetX, vertextOffsetY, vertetxOffsetZ, b_58);
+                    modelDefinition.vertexNormals[i] = new VertexNormal(vertextOffsetX, vertextOffsetY, vertetxOffsetZ, b_58);
                 }
             }
         }

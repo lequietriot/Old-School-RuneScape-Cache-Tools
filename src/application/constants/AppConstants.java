@@ -20,7 +20,7 @@ public class AppConstants {
     public static String currentSongName = "";
     public static String nextSongName = "";
     public static int currentMusicIndex = 6;
-    public static String customSoundFontPath = System.getProperty("user.home") + File.separator + "Downloads" + File.separator + "RS2.sf2";
+    public static String customSoundFontPath = System.getProperty("user.home") + File.separator + "Downloads" + File.separator + "RuneScape 3.sf2";
     public static String customSoundFontsPath = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "Custom Sounds";
     public static File[] currentMusicFiles;
     public static String customCache = System.getProperty("user.home") + File.separator + "Custom Cache";

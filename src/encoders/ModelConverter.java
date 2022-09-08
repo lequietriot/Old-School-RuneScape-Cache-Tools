@@ -51,7 +51,7 @@ public class ModelConverter {
         int resizeY = 32;
         int resizeZ = 32;
 
-        //modelDefinition.resize(resizeX, resizeY, resizeZ);
+        modelDefinition.resize(resizeX, resizeY, resizeZ);
 
         File file = new File(GUI.cacheLibrary.getPath() + File.separator + "Encoded Data" + File.separator + "Models");
         if (!file.exists()) {
