@@ -11,9 +11,6 @@ import rs3.model.Particle;
 import runelite.definitions.ModelDefinition;
 import runelite.io.InputStream;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * A class representing the model definition in RS3 format.
  * @author Displee
@@ -83,8 +80,7 @@ public class RS3ModelData {
 	 * Decode this model.
 	 * @param library The cache library.
 	 */
-	public void decode(ModelDefinition modelDefinition, CacheLibrary library) {
-		byte[] modelData = library.index(7).archive(id).file(0).getData();
+	public void decode(ModelDefinition modelDefinition, byte[] modelData, CacheLibrary library) {
 		Buffer first = new Buffer(modelData);
 		Buffer second = new Buffer(modelData);
 		Buffer third = new Buffer(modelData);
@@ -244,9 +240,9 @@ public class RS3ModelData {
 			modelDefinition.vertexX = new int[modelDefinition.vertexCount];
 			modelDefinition.vertexY = new int[modelDefinition.vertexCount];
 			modelDefinition.vertexZ = new int[modelDefinition.vertexCount];
-			this.faceIndicesA = new short[modelDefinition.faceCount];
-			this.faceIndicesB = new short[modelDefinition.faceCount];
-			this.faceIndicesC = new short[modelDefinition.faceCount];
+			modelDefinition.faceIndices1 = new int[modelDefinition.faceCount];
+			modelDefinition.faceIndices2 = new int[modelDefinition.faceCount];
+			modelDefinition.faceIndices3 = new int[modelDefinition.faceCount];
 			if (hasVertexSkins == 1) {
 				this.vertexSkins = new int[modelDefinition.vertexCount];
 			}
@@ -277,7 +273,7 @@ public class RS3ModelData {
 				this.faceTextures = new short[modelDefinition.faceCount];
 			}
 
-			this.faceColors = new short[modelDefinition.faceCount];
+			modelDefinition.faceColors = new short[modelDefinition.faceCount];
 			if (modelDefinition.numTextureFaces > 0) {
 				this.textureMappingP = new short[modelDefinition.numTextureFaces];
 				this.textureMappingM = new short[modelDefinition.numTextureFaces];
@@ -347,6 +343,7 @@ public class RS3ModelData {
 			}
 
 			if (this.anInt1951 > 0) {
+				/*
 				first.offset = modelDataLength2;
 				second.offset = modelDataLength3;
 				third.offset = modelDataLength4;
@@ -368,6 +365,7 @@ public class RS3ModelData {
 					this.aFloatArray1914[vertexCount] = (float) second.readShort() / 4096.0F;
 					this.aFloatArray1928[vertexCount] = (float) third.readShort() / 4096.0F;
 				}
+				 */
 			}
 
 			first.offset = (faceColorsOffset);
@@ -379,7 +377,7 @@ public class RS3ModelData {
 			seventh.offset = (faceTextureIndicesOffset);
 
 			for (vertexCount = 0; vertexCount < modelDefinition.faceCount; ++vertexCount) {
-				this.faceColors[vertexCount] = (short) first.readUnsignedShort();
+				modelDefinition.faceColors[vertexCount] = (short) first.readUnsignedShort();
 				if (hasFaceTypes) {
 					this.faceTypes[vertexCount] = second.readByte();
 				}
@@ -448,7 +446,7 @@ public class RS3ModelData {
 							pri = (byte) modelPriority;
 						}
 
-						this.emitters[pflag] = new EmissiveTriangle(xOffset, yOffset, this.faceIndicesA[yOffset], this.faceIndicesB[yOffset], this.faceIndicesC[yOffset], pri);
+						this.emitters[pflag] = new EmissiveTriangle(xOffset, yOffset, modelDefinition.faceIndices1[yOffset], modelDefinition.faceIndices2[yOffset], modelDefinition.faceIndices3[yOffset], pri);
 					}
 				}
 				pflag = first.readUnsignedByte();
@@ -489,6 +487,7 @@ public class RS3ModelData {
 			return;
 		}
 
+		/*
 		//custom
 		Map<Short, TextureData> map = new HashMap<>();
 		textures = new TextureData[faceMaterials.length];
@@ -506,7 +505,9 @@ public class RS3ModelData {
 			textures[i] = texture;
 		}
 		map.clear();
+		 */
 	}
+
 
 	/**
 	 * Decode the face indices.
@@ -524,9 +525,9 @@ public class RS3ModelData {
 			int var9 = second.readUnsignedByte();
 			int var10 = var9 & 7;
 			if (var10 == 1) {
-				this.faceIndicesA[var8] = var4 = (short) (first.readUnsignedSmart() + var7);
-				this.faceIndicesB[var8] = var5 = (short) (first.readUnsignedSmart() + var4);
-				this.faceIndicesC[var8] = var6 = (short) (first.readUnsignedSmart() + var5);
+				modelDefinition.faceIndices1[var8] = var4 = (short) (first.readUnsignedSmart() + var7);
+				modelDefinition.faceIndices2[var8] = var5 = (short) (first.readUnsignedSmart() + var4);
+				modelDefinition.faceIndices3[var8] = var6 = (short) (first.readUnsignedSmart() + var5);
 				var7 = var6;
 				if (var4 > this.maxIndex) {
 					this.maxIndex = var4;
@@ -545,9 +546,9 @@ public class RS3ModelData {
 				var5 = var6;
 				var6 = (short) (first.readUnsignedSmart() + var7);
 				var7 = var6;
-				this.faceIndicesA[var8] = var4;
-				this.faceIndicesB[var8] = var5;
-				this.faceIndicesC[var8] = var6;
+				modelDefinition.faceIndices1[var8] = var4;
+				modelDefinition.faceIndices2[var8] = var5;
+				modelDefinition.faceIndices3[var8] = var6;
 				if (var6 > this.maxIndex) {
 					this.maxIndex = var6;
 				}
@@ -557,9 +558,9 @@ public class RS3ModelData {
 				var4 = var6;
 				var6 = (short) (first.readUnsignedSmart() + var7);
 				var7 = var6;
-				this.faceIndicesA[var8] = var4;
-				this.faceIndicesB[var8] = var5;
-				this.faceIndicesC[var8] = var6;
+				modelDefinition.faceIndices1[var8] = var4;
+				modelDefinition.faceIndices2[var8] = var5;
+				modelDefinition.faceIndices3[var8] = var6;
 				if (var6 > this.maxIndex) {
 					this.maxIndex = var6;
 				}
@@ -571,19 +572,21 @@ public class RS3ModelData {
 				var5 = var11;
 				var6 = (short) (first.readUnsignedSmart() + var7);
 				var7 = var6;
-				this.faceIndicesA[var8] = var4;
-				this.faceIndicesB[var8] = var11;
-				this.faceIndicesC[var8] = var6;
+				modelDefinition.faceIndices1[var8] = var4;
+				modelDefinition.faceIndices2[var8] = var11;
+				modelDefinition.faceIndices3[var8] = var6;
 				if (var6 > this.maxIndex) {
 					this.maxIndex = var6;
 				}
 			}
 
+			/*
 			if (this.anInt1951 > 0 && (var9 & 8) != 0) {
 				this.aByteArray1933[var8] = (byte) third.readUnsignedByte();
 				this.aByteArray1934[var8] = (byte) third.readUnsignedByte();
 				this.aByteArray1952[var8] = (byte) third.readUnsignedByte();
 			}
+			 */
 		}
 
 		++this.maxIndex;
@@ -1158,7 +1161,7 @@ public class RS3ModelData {
 		modelDefinition.id = archive;
 		modelDefinition.modelData = data;
 
-		decode(modelDefinition, cacheLibrary);
+		decode(modelDefinition, data, cacheLibrary);
 
 		return modelDefinition;
 	}

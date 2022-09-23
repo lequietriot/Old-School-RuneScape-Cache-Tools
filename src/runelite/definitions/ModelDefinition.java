@@ -39,21 +39,22 @@ public class ModelDefinition
 	public transient float[][] faceTextureVCoordinates;
 	public short[] texturePrimaryColors;
 	public short[] faceTextures;
-	public byte[] textureCoords;
+	public byte[] textureCoordinates;
 	public byte[] textureRenderTypes;
+	public int[] faceTextureFlags;
 
 	public int[] packedVertexGroups;
 	public int[] packedTransparencyVertexGroups;
 
 	public byte priority;
 
-	private transient int[][] vertexGroups;
+	public transient int[][] vertexGroups;
 	public int[][] animayaGroups;
 	public int[][] animayaScales;
 
-	private transient int[] origVX;
-	private transient int[] origVY;
-	private transient int[] origVZ;
+	public transient int[] origVX;
+	public transient int[] origVY;
+	public transient int[] origVZ;
 
 	public transient int maxPriority;
 
@@ -167,13 +168,13 @@ public class ModelDefinition
 		for (int i = 0; i < faceCount; i++)
 		{
 			int textureCoordinate;
-			if (textureCoords == null)
+			if (textureCoordinates == null)
 			{
 				textureCoordinate = -1;
 			}
 			else
 			{
-				textureCoordinate = textureCoords[i];
+				textureCoordinate = textureCoordinates[i];
 			}
 
 			int textureIdx;
@@ -896,8 +897,8 @@ public class ModelDefinition
 		} else {
 			int texFaceX = 0, texFaceY = 0, texFaceZ = 0;
 			try {
-				if(textureCoords != null &&  textureCoords[index] != -1) {
-					int k1 = textureCoords[index] & 0xFF;
+				if(textureCoordinates != null &&  textureCoordinates[index] != -1) {
+					int k1 = textureCoordinates[index] & 0xFF;
 					texFaceX = texIndices1[k1];
 					texFaceY = texIndices2[k1];
 					texFaceZ = texIndices3[k1];
@@ -1050,8 +1051,8 @@ public class ModelDefinition
 							rasterizer.colourPalette[faceColors[index]]);
 				} else if (type == 2) {
 					int texFaceX, texFaceY, texFaceZ;
-					if(textureCoords != null && textureCoords[index] != -1) {
-						int texFaceIndex = textureCoords[index] & 0xFF;
+					if(textureCoordinates != null && textureCoordinates[index] != -1) {
+						int texFaceIndex = textureCoordinates[index] & 0xFF;
 						texFaceX = texIndices1[texFaceIndex];
 						texFaceY = texIndices2[texFaceIndex];
 						texFaceZ = texIndices3[texFaceIndex];
@@ -1074,8 +1075,8 @@ public class ModelDefinition
 							rasterizer.camera_vertex_z[texFaceY], rasterizer.camera_vertex_z[texFaceZ], faceTextures[index]);
 				} else if (type == 3) {
 					int texFaceX, texFaceY, texFaceZ;
-					if(textureCoords != null && textureCoords[index] != -1) {
-						int texFaceIndex = textureCoords[index] & 0xFF;
+					if(textureCoordinates != null && textureCoordinates[index] != -1) {
+						int texFaceIndex = textureCoordinates[index] & 0xFF;
 						texFaceX = texIndices1[texFaceIndex];
 						texFaceY = texIndices2[texFaceIndex];
 						texFaceZ = texIndices3[texFaceIndex];
@@ -1122,8 +1123,8 @@ public class ModelDefinition
 					return;
 				} else if (type == 2) {
 					int texFaceX, texFaceY, texFaceZ;
-					if(textureCoords != null && textureCoords[index] != -1) {
-						int texFaceIndex = textureCoords[index] & 0xFF;
+					if(textureCoordinates != null && textureCoordinates[index] != -1) {
+						int texFaceIndex = textureCoordinates[index] & 0xFF;
 						texFaceX = texIndices1[texFaceIndex];
 						texFaceY = texIndices2[texFaceIndex];
 						texFaceZ = texIndices3[texFaceIndex];
@@ -1152,8 +1153,8 @@ public class ModelDefinition
 					return;
 				} else if (type == 3) {
 					int texFaceX, texFaceY, texFaceZ;
-					if(textureCoords != null && textureCoords[index] != -1) {
-						int texFaceIndex = textureCoords[index] & 0xFF;
+					if(textureCoordinates != null && textureCoordinates[index] != -1) {
+						int texFaceIndex = textureCoordinates[index] & 0xFF;
 						texFaceX = texIndices1[texFaceIndex];
 						texFaceY = texIndices2[texFaceIndex];
 						texFaceZ = texIndices3[texFaceIndex];

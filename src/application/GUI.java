@@ -7,10 +7,7 @@ import com.displee.cache.index.archive.Archive;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import com.sun.media.sound.SF2Soundbank;
 import decoders.*;
-import encoders.MidiEncoder;
-import encoders.ModelConverter;
-import encoders.ModelEncoder;
-import encoders.VorbisEncoder;
+import encoders.*;
 import osrs.*;
 
 import javax.sound.midi.MidiDevice;
@@ -45,6 +42,10 @@ public class GUI extends JFrame {
     static JPanel contentPanel;
 
     static JPanel contentPreviewPane;
+
+    JScrollPane cacheScrollPane;
+
+    JTree cacheTree;
 
     final JMenuItem modelDecoder;
 
@@ -101,6 +102,10 @@ public class GUI extends JFrame {
         JMenuItem searchCache = new JMenuItem("Search Cache");
         searchCache.addActionListener(e -> searchCacheData());
         fileMenu.add(searchCache);
+
+        JMenuItem findFile = new JMenuItem("Find File");
+        findFile.addActionListener(e -> findSelectFile());
+        fileMenu.add(findFile);
 
         JMenu encoderMenu = new JMenu("Data Encoders");
         jMenuBar.add(encoderMenu);
@@ -162,9 +167,14 @@ public class GUI extends JFrame {
         test.addActionListener(e -> testTool());
         toolsMenu.add(test);
 
-        JMenuItem convertModels = new JMenuItem("Model - New to Old");
-        convertModels.addActionListener(e -> new ModelConverter(this));
-        toolsMenu.add(convertModels);
+        JMenuItem convertToOldModel = new JMenuItem("Model - Convert to Old Format");
+        convertToOldModel.addActionListener(e -> new ModelOldConverter(this));
+        toolsMenu.add(convertToOldModel);
+
+        JMenuItem convertToNewModel = new JMenuItem("Model - Convert to New Format");
+        convertToNewModel.addActionListener(e -> new ModelNewConverter(this));
+        toolsMenu.add(convertToNewModel);
+
 
         JLabel loadCacheLabel = new JLabel("Please load your cache from the File menu to begin!");
         loadCacheLabel.setVerticalAlignment(SwingConstants.CENTER);
@@ -177,6 +187,14 @@ public class GUI extends JFrame {
         setContentPane(contentPanel);
         loadCache(defaultCachePath);
         initModelToolModes();
+    }
+
+    private void findSelectFile() {
+        String findPrompt = JOptionPane.showInputDialog("Please enter the Index, Archive, and File ID of what you want to select", selectedIndex + "-" + selectedArchive + "-" + selectedFile);
+        String[] values = findPrompt.split("-");
+        selectedIndex = Integer.parseInt(values[0]);
+        selectedArchive = Integer.parseInt(values[1]);
+        selectedFile = Integer.parseInt(values[2]);
     }
 
     private void searchCacheData() {
@@ -218,6 +236,19 @@ public class GUI extends JFrame {
                                         npcComposition.decode(new Buffer(cacheLibrary.data(index, archive, file)));
                                         if (npcComposition.name.contains(searchPrompt)) {
                                             System.out.println("Index " + index + ", " + "Archive " + archive + ", File " + file);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            if (cacheLibrary.index(index).archive(archive) != null) {
+                                for (int file = 0; file < Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).files().length; file++) {
+                                    if (Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file) != null) {
+                                        if (cacheLibrary.data(index, archive, file) != null) {
+                                            if (new String(Objects.requireNonNull(cacheLibrary.data(index, archive, file))).contains(searchPrompt)) {
+                                                System.out.println("Index " + index + ", " + "Archive " + archive + ", File " + file);
+                                            }
                                         }
                                     }
                                 }
@@ -675,7 +706,7 @@ public class GUI extends JFrame {
 
                     SoundCache soundCache = new SoundCache(cacheLibrary.index(4), cacheLibrary.index(14));
 
-                    if (musicTrack != null && !midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.index(15), soundCache, 22050)) {
+                    if (musicTrack != null && midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.index(15), soundCache, 0)) {
                         midiPcmStream.setPcmStreamVolume(AppConstants.volumeLevel);
                         midiPcmStream.setMusicTrack(musicTrack, false);
                         if (AppConstants.usingSoundFont) {
@@ -800,6 +831,14 @@ public class GUI extends JFrame {
             }
             modelDecoder.addActionListener(e -> new ModelDecoderHD(this));
         }
+        if (AppConstants.cacheType.equals("RuneScape 3")) {
+            if (modelDecoder.getActionListeners() != null) {
+                for (ActionListener actionListener : modelDecoder.getActionListeners()) {
+                    modelDecoder.removeActionListener(actionListener);
+                }
+            }
+            modelDecoder.addActionListener(e -> new ModelDecoderRS3(this));
+        }
     }
 
     private void initFileViewer() {
@@ -815,13 +854,13 @@ public class GUI extends JFrame {
 
         buildTreeNode();
 
-        JTree cacheTree = new JTree();
+        cacheTree = new JTree();
         cacheTree.setModel(new DefaultTreeModel(cacheNode));
 
         contentPreviewPane = new JPanel();
         contentPreviewPane.setLayout(new GridLayout());
 
-        JScrollPane cacheScrollPane = new JScrollPane(cacheTree);
+        cacheScrollPane = new JScrollPane(cacheTree);
         cacheScrollPane.setViewportView(cacheTree);
 
         JSplitPane cacheInfoSplitPanel = new JSplitPane();
@@ -929,7 +968,7 @@ public class GUI extends JFrame {
                         AppConstants.cacheType = "Old School RuneScape";
                         indexName = String.valueOf(OSRSCacheIndices.values()[selectedIndex]).replace("_", " ").trim();
                     }
-                    if (!cacheLibrary.isOSRS() && cacheLibrary.indices().length > 15) {
+                    if (!cacheLibrary.isOSRS() && !cacheLibrary.isRS3() && cacheLibrary.indices().length > 15) {
                         AppConstants.cacheType = "RuneScape High Definition";
                         indexName = String.valueOf(RSHDCacheIndices.values()[selectedIndex]).replace("_", " ").trim();
 
@@ -1078,7 +1117,7 @@ public class GUI extends JFrame {
         splitCacheViewPane.setResizeWeight(0.5);
         splitCacheViewPane.revalidate();
 
-        //contentPreviewPane.add(new ModelViewer(new JPanel(new BorderLayout())));
+        //contentPreviewPane.add(new ModelViewer(new JFXPanel()));
         contentPreviewPane.revalidate();
 
         JSplitPane splitCacheDetailedViewPane = new JSplitPane();
@@ -1249,7 +1288,7 @@ public class GUI extends JFrame {
                 for (int archive = 0; archive < cacheLibrary.index(index).archives().length; archive++) {
                     if (cacheLibrary.index(index).archive(archive) != null) {
                         for (int file = 0; file < Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).files().length; file++) {
-                            File fileData = new File(indexDirectory + File.separator + archive + File.separator + file + ".dat");
+                            File fileData = new File(indexDirectory + File.separator + archive + "-0.dat");
                             if (new File(indexDirectory + File.separator + archive).mkdirs()) {
                                 cacheOperationInfo.setText("made directory for file");
                             }
@@ -1265,7 +1304,7 @@ public class GUI extends JFrame {
                     }
                     else {
                         if (cacheLibrary.index(index).readArchiveSector(archive) != null) {
-                            File fileData = new File(indexDirectory + File.separator + archive + File.separator + "0.dat");
+                            File fileData = new File(indexDirectory + File.separator + archive + "-0.dat");
                             if (new File(indexDirectory + File.separator + archive).mkdirs()) {
                                 cacheOperationInfo.setText("made directory for file");
                             }
@@ -1339,7 +1378,7 @@ public class GUI extends JFrame {
 
     private void quickTestSound() {
         new Thread(() -> {
-            MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(AppConstants.customSoundFontPath);//(AppConstants.customSoundFontsPath);
+            MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(AppConstants.customSoundFontsPath);
             DevicePcmPlayer[] devicePcmPlayers = initDevicePcmPlayers(midiPcmStreams);
             while (true) {
                 playDevicePcmPlayers(devicePcmPlayers);

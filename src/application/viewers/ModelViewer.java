@@ -1,27 +1,27 @@
 package application.viewers;
 
 import application.GUI;
+import application.constants.AppConstants;
 import com.displee.cache.CacheLibrary;
-import osrs.GameRasterizer;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
 import osrs.RotationControl;
-import osrs.ProducingGraphicsBuffer;
+import rshd.ModelData;
 import runelite.definitions.ModelDefinition;
 import runelite.loaders.ModelLoader;
-import runelite.models.JagexColor;
+import runelite.managers.TextureManager;
 
 import javax.swing.*;
-import java.awt.*;
+import java.io.IOException;
 import java.util.Objects;
 
 public class ModelViewer extends JPanel {
 
-    private final GameRasterizer modelRasterizer;
-    private final ProducingGraphicsBuffer buffer;
     private final CacheLibrary cacheLibrary;
     private ModelDefinition model;
     private RotationControl rotationControl;
 
-    public ModelViewer(JPanel modelPanel) {
+    public ModelViewer(JFXPanel modelPanel) {
 
         modelPanel.setVisible(true);
 
@@ -30,40 +30,27 @@ public class ModelViewer extends JPanel {
         int index = 7;
         int archive = 0;
         int file = 0;
-        
-        modelRasterizer = new GameRasterizer();
-        modelRasterizer.setBrightness(JagexColor.BRIGHTNESS_MAX);
 
-        buffer = new ProducingGraphicsBuffer(modelPanel, 400, 400);
-        buffer.initializeRasterizer();
-
-        modelRasterizer.useViewport();
-        modelRasterizer.setDefaultBounds();
-        modelRasterizer.init(modelPanel.getHeight(), modelPanel.getWidth(), buffer.getRaster().getRaster());
-
-        rotationControl = new RotationControl();
-
-        ModelLoader loader = new ModelLoader();
-        model = loader.load(archive, Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file)).getData()));
-        
-        renderModel();
-    }
-
-    private void renderModel() {
-
-        int roll = (int) Math.toDegrees(Math.toRadians(rotationControl.getRotateX().getAngle()) * 5.65) & 0x7ff;
-        int yaw = (int) Math.toDegrees(Math.toRadians(rotationControl.getRotateY().getAngle()) * 5.65) & 0x7ff;
-        int pitch = (int) Math.toDegrees(Math.toRadians(rotationControl.getRotateZ().getAngle()) * 5.65) & 0x7ff;
-
-        model.render(modelRasterizer, 0, 0, 0, 0, 1, 1, 1);
-    }
-
-    @Override
-    public void update(Graphics g) {
         try {
+            if (AppConstants.cacheType.equals("RuneScape High Definition")) {
+                ModelData loader = new ModelData();
+                if (cacheLibrary.index(7).archive(archive) != null) {
+                    model = loader.load(archive, Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(7).archive(archive)).file(0)).getData()));
+                }
+            } else {
+                TextureManager tm = new TextureManager(cacheLibrary);
+                tm.load();
 
-        } catch (Exception e) {
+                ModelLoader loader = new ModelLoader();
+                model = loader.load(archive, Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file)).getData()));
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }
+
+        model.computeNormals();
+
+        Scene scene = modelPanel.getScene();
+
     }
 }

@@ -41,5 +41,5 @@ public enum RSHDCacheIndices {
     Empty_36,
     GFX_Configurations,
     Empty_38,
-    Empty_39,
+    Empty_39
 }

@@ -193,7 +193,7 @@ public class ModelLoader
 
 		if (var16 == 1 && var11 > 0)
 		{
-			def.textureCoords = new byte[var10];
+			def.textureCoordinates = new byte[var10];
 		}
 
 		if (var18 == 1)
@@ -309,9 +309,9 @@ public class ModelLoader
 				def.faceTextures[var51] = (short) (var7.readUnsignedShort() - 1);
 			}
 
-			if (def.textureCoords != null && def.faceTextures[var51] != -1)
+			if (def.textureCoordinates != null && def.faceTextures[var51] != -1)
 			{
-				def.textureCoords[var51] = (byte) (var8.readUnsignedByte() - 1);
+				def.textureCoordinates[var51] = (byte) (var8.readUnsignedByte() - 1);
 			}
 		}
 
@@ -490,7 +490,7 @@ public class ModelLoader
 		if (var12 == 1)
 		{
 			def.faceRenderTypes = new byte[var10];
-			def.textureCoords = new byte[var10];
+			def.textureCoordinates = new byte[var10];
 			def.faceTextures = new short[var10];
 		}
 
@@ -607,7 +607,7 @@ public class ModelLoader
 
 				if ((var41 & 2) == 2)
 				{
-					def.textureCoords[var40] = (byte) (var41 >> 2);
+					def.textureCoordinates[var40] = (byte) (var41 >> 2);
 					def.faceTextures[var40] = def.faceColors[var40];
 					def.faceColors[var40] = 127;
 					if (def.faceTextures[var40] != -1)
@@ -617,7 +617,7 @@ public class ModelLoader
 				}
 				else
 				{
-					def.textureCoords[var40] = -1;
+					def.textureCoordinates[var40] = -1;
 					def.faceTextures[var40] = -1;
 				}
 			}
@@ -704,18 +704,18 @@ public class ModelLoader
 			def.texIndices3[var44] = (short) var4.readUnsignedShort();
 		}
 
-		if (def.textureCoords != null)
+		if (def.textureCoordinates != null)
 		{
 			boolean var47 = false;
 
 			for (var45 = 0; var45 < var10; ++var45)
 			{
-				var46 = def.textureCoords[var45] & 255;
+				var46 = def.textureCoordinates[var45] & 255;
 				if (var46 != 255)
 				{
 					if (def.faceIndices1[var45] == (def.texIndices1[var46] & '\uffff') && def.faceIndices2[var45] == (def.texIndices2[var46] & '\uffff') && def.faceIndices3[var45] == (def.texIndices3[var46] & '\uffff'))
 					{
-						def.textureCoords[var45] = -1;
+						def.textureCoordinates[var45] = -1;
 					}
 					else
 					{
@@ -726,7 +726,7 @@ public class ModelLoader
 
 			if (!var47)
 			{
-				def.textureCoords = null;
+				def.textureCoordinates = null;
 			}
 		}
 
@@ -903,7 +903,7 @@ public class ModelLoader
 
 		if (var16 == 1 && var11 > 0)
 		{
-			def.textureCoords = new byte[var10];
+			def.textureCoordinates = new byte[var10];
 		}
 
 		def.faceColors = new short[var10];
@@ -997,9 +997,9 @@ public class ModelLoader
 				def.faceTextures[var49] = (short) (var7.readUnsignedShort() - 1);
 			}
 
-			if (def.textureCoords != null && def.faceTextures[var49] != -1)
+			if (def.textureCoordinates != null && def.faceTextures[var49] != -1)
 			{
-				def.textureCoords[var49] = (byte) (var8.readUnsignedByte() - 1);
+				def.textureCoordinates[var49] = (byte) (var8.readUnsignedByte() - 1);
 			}
 		}
 
@@ -1108,7 +1108,7 @@ public class ModelLoader
 		int hasPackedVertexGroups = stream1.readUnsignedByte();
 		int vertexXDataByteCount = stream1.readUnsignedShort();
 		int vertexYDataByteCount = stream1.readUnsignedShort();
-		int vertezZDataByteCount = stream1.readUnsignedShort();
+		int vertexZDataByteCount = stream1.readUnsignedShort();
 		int faceIndexDataByteCount = stream1.readUnsignedShort();
 		byte offsetOfVertexFlags = 0;
 		int dataOffset = offsetOfVertexFlags + vertexCount;
@@ -1180,7 +1180,7 @@ public class ModelLoader
 		if (isTextured == 1)
 		{
 			def.faceRenderTypes = new byte[faceCount];
-			def.textureCoords = new byte[faceCount];
+			def.textureCoordinates = new byte[faceCount];
 			def.faceTextures = new short[faceCount];
 		}
 
@@ -1252,12 +1252,14 @@ public class ModelLoader
 		stream4.setOffset(offsetOfFaceTransparencies);
 		stream5.setOffset(offsetOfPackedTransparencyVertexGroups);
 
+		def.faceTextureFlags = new int[faceCount];
 		for (int i = 0; i < faceCount; ++i)
 		{
 			def.faceColors[i] = (short) stream1.readUnsignedShort();
 			if (isTextured == 1)
 			{
 				int faceTextureFlags = stream2.readUnsignedByte();
+				def.faceTextureFlags[i] = faceTextureFlags;
 				if ((faceTextureFlags & 1) == 1)
 				{
 					def.faceRenderTypes[i] = 1;
@@ -1270,7 +1272,7 @@ public class ModelLoader
 
 				if ((faceTextureFlags & 2) == 2)
 				{
-					def.textureCoords[i] = (byte) (faceTextureFlags >> 2);
+					def.textureCoordinates[i] = (byte) (faceTextureFlags >> 2);
 					def.faceTextures[i] = def.faceColors[i];
 					def.faceColors[i] = 127;
 					if (def.faceTextures[i] != -1)
@@ -1280,7 +1282,7 @@ public class ModelLoader
 				}
 				else
 				{
-					def.textureCoords[i] = -1;
+					def.textureCoordinates[i] = -1;
 					def.faceTextures[i] = -1;
 				}
 			}
@@ -1360,18 +1362,18 @@ public class ModelLoader
 			def.texIndices3[i] = (short) stream1.readUnsignedShort();
 		}
 
-		if (def.textureCoords != null)
+		if (def.textureCoordinates != null)
 		{
 			boolean usesTextureCoords = false;
 
 			for (int i = 0; i < faceCount; ++i)
 			{
-				int coord = def.textureCoords[i] & 255;
+				int coord = def.textureCoordinates[i] & 255;
 				if (coord != 255)
 				{
 					if (def.faceIndices1[i] == (def.texIndices1[coord] & '\uffff') && def.faceIndices2[i] == (def.texIndices2[coord] & '\uffff') && def.faceIndices3[i] == (def.texIndices3[coord] & '\uffff'))
 					{
-						def.textureCoords[i] = -1;
+						def.textureCoordinates[i] = -1;
 					}
 					else
 					{
@@ -1382,7 +1384,7 @@ public class ModelLoader
 
 			if (!usesTextureCoords)
 			{
-				def.textureCoords = null;
+				def.textureCoordinates = null;
 			}
 		}
 

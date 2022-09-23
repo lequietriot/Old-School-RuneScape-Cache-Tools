@@ -1,10 +1,10 @@
 package rshd;
 
+import osrs.Buffer;
 import runelite.definitions.ModelDefinition;
 import runelite.definitions.ParticleEmitterConfig;
 import runelite.definitions.SurfaceSkin;
 import runelite.models.VertexNormal;
-import osrs.Buffer;
 
 public class ModelData {
 
@@ -54,7 +54,21 @@ public class ModelData {
 
         if (data[data.length - 1] == -1 && data[data.length - 2] == -1) {
             decodeNewFormat(modelDefinition, data);
-        } else {
+            modelDefinition.resize(32, 32, 32);
+            modelDefinition.setModelData(data);
+        }
+        /*
+        if (data[data.length - 1] == -1 && data[data.length - 2] == -1 && data[0] == 1) {
+            ByteBuffer dataBuffer = ByteBuffer.allocate(data.length - 1);
+            for (int index = 1; index < data.length; index++) {
+                dataBuffer.put(data[index]);
+            }
+            dataBuffer.flip();
+            decodeNewFormat(modelDefinition, dataBuffer.array());
+            modelDefinition.resize(32, 32, 32);
+        }
+         */
+        else {
             decodeOldFormat(modelDefinition, data);
         }
 
@@ -62,6 +76,7 @@ public class ModelData {
     }
 
     void decodeNewFormat(ModelDefinition modelDefinition, byte[] data) {
+        Buffer textureBuffer = new Buffer(data);
         Buffer first = new Buffer(data);
         Buffer second = new Buffer(data);
         Buffer third = new Buffer(data);
@@ -97,6 +112,7 @@ public class ModelData {
         int numVertexSkins = 0;
         int i_25 = 0;
         int i_26 = 0;
+        modelDefinition.faceTextureFlags = new int[modelDefinition.faceCount];
         if (modelDefinition.numTextureFaces > 0) {
             modelDefinition.textureRenderTypes = new byte[modelDefinition.numTextureFaces];
             first.offset = 0;
@@ -153,7 +169,6 @@ public class ModelData {
         if (hasFaceTextures == 1) {
             totalFaces += modelDefinition.faceCount * 2;
         }
-
         int i_37 = totalFaces;
         totalFaces += textureIndices;
         int i_38 = totalFaces;
@@ -216,7 +231,7 @@ public class ModelData {
         }
 
         if (hasFaceTextures == 1 && modelDefinition.numTextureFaces > 0) {
-            modelDefinition.textureCoords = new byte[modelDefinition.faceCount];
+            modelDefinition.textureCoordinates = new byte[modelDefinition.faceCount];
         }
 
         modelDefinition.faceColors = new short[modelDefinition.faceCount];
@@ -248,6 +263,8 @@ public class ModelData {
         int baseY = 0;
         int baseZ = 0;
 
+        System.out.println(second.offset);
+        System.out.println(fifth.offset);
         for (int vertex = 0; vertex < modelDefinition.vertexCount; vertex++) {
             int offsetFlags = first.readUnsignedByte();
             int vertextOffsetX = 0;
@@ -306,13 +323,16 @@ public class ModelData {
                 modelDefinition.faceTextures[i_53] = (short) (sixth.readUnsignedShort() - 1);
             }
 
-            if (modelDefinition.textureCoords != null) {
+            if (modelDefinition.textureCoordinates != null) {
                 if (modelDefinition.faceTextures[i_53] != -1) {
-                    modelDefinition.textureCoords[i_53] = (byte) (seventh.readUnsignedByte() - 1);
+                    modelDefinition.textureCoordinates[i_53] = (byte) (seventh.readUnsignedByte() - 1);
+                    modelDefinition.faceTextureFlags[i_53] = modelDefinition.textureCoordinates[i_53];
                 } else {
-                    modelDefinition.textureCoords[i_53] = -1;
+                    modelDefinition.textureCoordinates[i_53] = -1;
+                    modelDefinition.faceTextureFlags[i_53] = -1;
                 }
             }
+
         }
 
         maxDepth = -1;
@@ -612,7 +632,7 @@ public class ModelData {
 
         if (i_9 == 1) {
             modelDefinition.faceRenderTypes = new byte[modelDefinition.faceCount];
-            modelDefinition.textureCoords = new byte[modelDefinition.faceCount];
+            modelDefinition.textureCoordinates = new byte[modelDefinition.faceCount];
             modelDefinition.faceTextures = new short[modelDefinition.faceCount];
         }
 
@@ -677,10 +697,12 @@ public class ModelData {
         rsbytebuffer_7.offset = i_25;
         rsbytebuffer_8.offset = i_22;
 
+        modelDefinition.faceTextureFlags = new int[faceCount];
         for (i_35 = 0; i_35 < modelDefinition.faceCount; i_35++) {
             modelDefinition.faceColors[i_35] = (short) rsbytebuffer_4.readUnsignedShort();
             if (i_9 == 1) {
                 i_36 = rsbytebuffer_5.readUnsignedByte();
+                modelDefinition.faceTextureFlags[i_35] = i_36;
                 if ((i_36 & 0x1) == 1) {
                     modelDefinition.faceRenderTypes[i_35] = 1;
                     bool_2 = true;
@@ -689,14 +711,14 @@ public class ModelData {
                 }
 
                 if ((i_36 & 0x2) == 2) {
-                    modelDefinition.textureCoords[i_35] = (byte) (i_36 >> 2);
+                    modelDefinition.textureCoordinates[i_35] = (byte) (i_36 >> 2);
                     modelDefinition.faceTextures[i_35] = modelDefinition.faceColors[i_35];
                     modelDefinition.faceColors[i_35] = 127;
                     if (modelDefinition.faceTextures[i_35] != -1) {
                         bool_3 = true;
                     }
                 } else {
-                    modelDefinition.textureCoords[i_35] = -1;
+                    modelDefinition.textureCoordinates[i_35] = -1;
                     modelDefinition.faceTextures[i_35] = -1;
                 }
             }
@@ -795,14 +817,14 @@ public class ModelData {
             modelDefinition.texIndices3[i_39] = (short) rsbytebuffer_4.readUnsignedShort();
         }
 
-        if (modelDefinition.textureCoords != null) {
+        if (modelDefinition.textureCoordinates != null) {
             boolean bool_47 = false;
 
             for (i_40 = 0; i_40 < modelDefinition.faceCount; i_40++) {
-                int i_48 = modelDefinition.textureCoords[i_40] & 0xff;
+                int i_48 = modelDefinition.textureCoordinates[i_40] & 0xff;
                 if (i_48 != 255) {
                     if (modelDefinition.faceIndices1[i_40] == (modelDefinition.texIndices1[i_48] & 0xffff) && modelDefinition.faceIndices2[i_40] == (modelDefinition.texIndices2[i_48] & 0xffff) && modelDefinition.faceIndices3[i_40] == (modelDefinition.texIndices3[i_48] & 0xffff)) {
-                        modelDefinition.textureCoords[i_40] = -1;
+                        modelDefinition.textureCoordinates[i_40] = -1;
                     } else {
                         bool_47 = true;
                     }
@@ -810,7 +832,7 @@ public class ModelData {
             }
 
             if (!bool_47) {
-                modelDefinition.textureCoords = null;
+                modelDefinition.textureCoordinates = null;
             }
         }
 

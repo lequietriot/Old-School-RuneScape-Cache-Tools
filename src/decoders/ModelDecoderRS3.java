@@ -2,21 +2,22 @@ package decoders;
 
 import application.GUI;
 import com.displee.cache.CacheLibrary;
-import rshd.ModelData;
+import rs3.RS3ModelData;
 import runelite.definitions.ModelDefinition;
-import runelite.models.ObjExporterHD;
+import runelite.models.ObjExporterRS3;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Objects;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-public class ModelDecoderHD {
+public class ModelDecoderRS3 {
 
     CacheLibrary cacheLibrary;
 
-    public ModelDecoderHD(GUI currentGUI) {
+    public ModelDecoderRS3(GUI currentGUI) {
         cacheLibrary = GUI.cacheLibrary;
         int index = currentGUI.selectedIndex;
         int archive = currentGUI.selectedArchive;
@@ -30,15 +31,14 @@ public class ModelDecoderHD {
                 currentGUI.cacheOperationInfo.setText("Archive " + archive + " was decoded successfully. It is in the cache directory.");
             }
 
-            //TextureManagerHD tm = new TextureManagerHD(cacheLibrary);
-            //tm.load();
+            int id = 0;
+            RS3ModelData loader = new RS3ModelData(id);
+            ModelDefinition modelDefinition = loader.load(archive, Files.readAllBytes(Paths.get("" + id)), cacheLibrary);
+            modelDefinition.resize(32, 32, 32);
 
-            ModelData loader = new ModelData();
-            ModelDefinition modelDefinition = loader.load(archive, Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file)).getData()));
-
-            ObjExporterHD exporter = new ObjExporterHD(null, modelDefinition, archive);
-            try (PrintWriter objWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + archive + ".obj"));
-                 PrintWriter mtlWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + archive + ".mtl")))
+            ObjExporterRS3 exporter = new ObjExporterRS3(null, modelDefinition, id);
+            try (PrintWriter objWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + id + ".obj"));
+                 PrintWriter mtlWriter = new PrintWriter(new FileWriter(outputFilePath + File.separator + id + ".mtl")))
             {
                 exporter.export(objWriter, mtlWriter);
             }
