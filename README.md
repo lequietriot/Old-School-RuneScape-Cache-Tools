@@ -1,7 +1,9 @@
 # Old School RuneScape Cache Tools
-### The ultimate suite of older RuneScape Cache editing tools!
+### The ultimate suite of RuneScape Cache modification tools!
+Made with IntelliJ IDEA using Java 1.8 SDK.
 ## This suite features:
 ### Cache Functions
+* Select Cache Data - A quick way to select a specific archive file in the cache.
 * Search Cache (Work in progress)
   * Allows you to search for the location of a file based on any given name. Currently, whatever is searched for prints the results to the system console.
 * Cache explorer with functions for manipulating raw data
@@ -27,17 +29,24 @@
   * Index CRC Value
   * Index Version
 #### Cache Data Encoding and Decoding
-* Data Encoding tools (To RuneScape Format)
-  * MIDI Music and MIDI Jingles
-  * OBJ Model and MTL File
+* Individual Data Encoding tools (To RuneScape Format)
+  * MIDI Music and MIDI Jingles (For best results encode with Type 0 MIDI files)
+  * OBJ Model and MTL File (Textures not supported yet)
   * OGG Vorbis Instrument Samples
 ####
-* Data Decoding tools (To General Format)
+* Individual Data Decoding tools (To General Format)
+  * Configuration
+    * Enums
+  * Sound Effects
   * MIDI Music and MIDI Jingles
   * OBJ Model and MTL File
     * Automatically adjusted decoder based on Cache Type (Currently supports: RuneScape 2, Old School RuneScape & RuneScape High Definition)
   * OGG Vorbis Instrument Samples
-  * SoundFont 2 Instrument Patches (Work in Progress)
+  * SoundFont 2 Instrument Patches
+####
+  * Batch Data Decoding Tools (To General Format)
+    * Configuration
+      * Enums
 ### Tools
 * Music player tool
   * Load Custom MIDI Files
@@ -63,5 +72,6 @@
 ### Known Bugs/Issues
 * Cache Explorer: Not able to dump/export all files of single archive - only the first file is exported?
 * Cache Explorer: Some caches may not load correctly
+* Data Decoders: SoundFont conversion - may not be perfect
 
 ## That's all for now. Enjoy!

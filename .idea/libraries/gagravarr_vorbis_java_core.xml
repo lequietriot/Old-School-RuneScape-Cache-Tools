@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="gagravarr.vorbis.java.core" type="repository">
+    <properties maven-id="org.gagravarr:vorbis-java-core:0.8" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/vorbis-java-core-0.8.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
