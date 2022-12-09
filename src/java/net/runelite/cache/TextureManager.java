@@ -35,8 +35,8 @@ import java.util.List;
 
 public class TextureManager implements TextureProvider
 {
-	private final Store store;
-	private final List<TextureDefinition> textures = new ArrayList<>();
+	public final Store store;
+	public final List<TextureDefinition> textures = new ArrayList<>();
 
 	public TextureManager(Store store)
 	{

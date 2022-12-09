@@ -54,7 +54,6 @@ public class ModelData {
 
         if (data[data.length - 1] == -1 && data[data.length - 2] == -1) {
             decodeNewFormat(modelDefinition, data);
-            modelDefinition.resize(32, 32, 32);
             modelDefinition.setModelData(data);
         }
         /*

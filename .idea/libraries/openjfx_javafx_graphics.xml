@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="openjfx.javafx.graphics" type="repository">
+    <properties maven-id="org.openjfx:javafx-graphics:20-ea+2" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/javafx-graphics-20-ea+2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javafx-graphics-20-ea+2-win.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javafx-base-20-ea+2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javafx-base-20-ea+2-win.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

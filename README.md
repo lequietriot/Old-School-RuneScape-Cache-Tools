@@ -1,7 +1,8 @@
-# Old School RuneScape Cache Tools
+# Old School RuneScape Cache Tools (v0.5-beta)
 ### The ultimate suite of RuneScape Cache modification tools!
-Made with IntelliJ IDEA using Java 1.8 SDK.
+Made with IntelliJ IDEA using Java 1.8 SDK with various libraries including JavaFX.
 ## This suite features:
+### A simple 3D Model Viewer, built into the main window!
 ### Cache Functions
 * Select Cache Data - A quick way to select a specific archive file in the cache.
 * Search Cache (Work in progress)
@@ -67,11 +68,14 @@ Made with IntelliJ IDEA using Java 1.8 SDK.
 * Gagravarr (https://github.com/Gagravarr): vorbis-java libraries.
 * FormDev Software: for the FlatLaf interface look and feel.
 * RuneLite Contributors (https://github.com/runelite/runelite): for the open source Old School RuneScape Client.
+* Suic (https://github.com/Suicolen): For the simple JFX model viewer/editor tool.
 * Jagex: for being an inspiration in making this happen.
 
 ### Known Bugs/Issues
 * Cache Explorer: Not able to dump/export all files of single archive - only the first file is exported?
 * Cache Explorer: Some caches may not load correctly
 * Data Decoders: SoundFont conversion - may not be perfect
+* Model Viewer: Does not work on RS2 yet
+* Model Viewer: May not work on Mac computers, a workaround would be running the project directly through IntelliJ IDEA.
 
 ## That's all for now. Enjoy!

@@ -15,5 +15,8 @@
     <orderEntry type="library" name="apache.commons.compress" level="project" />
     <orderEntry type="library" name="gagravarr.vorbis.java.core" level="project" />
     <orderEntry type="library" name="google.api.common" level="project" />
+    <orderEntry type="library" name="openjfx.javafx.graphics" level="project" />
+    <orderEntry type="library" name="openjfx.javafx.fxml" level="project" />
+    <orderEntry type="library" name="openjfx.javafx.swing" level="project" />
   </component>
 </module>

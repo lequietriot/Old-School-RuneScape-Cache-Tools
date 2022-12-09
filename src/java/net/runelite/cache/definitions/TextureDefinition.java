@@ -42,9 +42,11 @@ public class TextureDefinition
 	public int animationDirection;
 
 	public transient int[] pixels;
+	public int width;
 
 	public boolean method2680(double var1, int var3, SpriteProvider spriteProvider)
 	{
+		width = var3;
 		int var5 = var3 * var3;
 		this.pixels = new int[var5];
 

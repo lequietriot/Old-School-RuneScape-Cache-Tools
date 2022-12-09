@@ -7,6 +7,11 @@ import com.formdev.flatlaf.FlatDarculaLaf;
 import com.sun.media.sound.SF2Soundbank;
 import decoders.*;
 import encoders.*;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import modelviewer.ModelViewer;
 import osrs.*;
 
 import javax.sound.midi.MidiDevice;
@@ -60,11 +65,11 @@ public class GUI extends JFrame {
 
     DefaultMutableTreeNode fileNode;
 
-    public int selectedIndex;
+    public static int selectedIndex;
     public int[] selectedIndices;
-    public int selectedArchive;
+    public static int selectedArchive;
     public int[] selectedArchives;
-    public int selectedFile;
+    public static int selectedFile;
     public int[] selectedFiles;
 
     private static final File defaultCachePath;
@@ -73,9 +78,12 @@ public class GUI extends JFrame {
         defaultCachePath = new File(System.getProperty("user.home") + File.separator + "jagexcache" + File.separator + "oldschool" + File.separator + "LIVE");
     }
 
+    JFXPanel modelViewPanel;
+    Scene modelScene;
+    ModelViewer modelViewer;
 
     public GUI() {
-        super("Old School RuneScape Cache Tools v0.4-beta");
+        super("Old School RuneScape Cache Tools v0.5-beta");
         setSize(640, 480);
         setMinimumSize(new Dimension(640, 480));
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -184,7 +192,7 @@ public class GUI extends JFrame {
 
         JMenuItem test = new JMenuItem("Test tool");
         test.addActionListener(e -> testTool());
-        //toolsMenu.add(test);
+        toolsMenu.add(test);
 
         JMenuItem convertToOldModel = new JMenuItem("Model - Convert to Old Format");
         convertToOldModel.addActionListener(e -> new ModelOldConverter(this));
@@ -283,6 +291,7 @@ public class GUI extends JFrame {
     }
 
     private void testTool() {
+        /*
         NPCComposition npcComposition = new NPCComposition();
         npcComposition.decode(new Buffer(cacheLibrary.data(selectedIndex, selectedArchive, selectedFile)));
         System.out.println("Name: " + npcComposition.name);
@@ -294,6 +303,7 @@ public class GUI extends JFrame {
         System.out.println("Walk Left Sequence: " + npcComposition.walkLeftSequence);
         System.out.println("Walk Right Sequence: " + npcComposition.walkRightSequence);
         System.out.println("Actions: " + Arrays.toString(npcComposition.actions));
+         */
     }
 
     private void editSynthPatch() {
@@ -801,6 +811,7 @@ public class GUI extends JFrame {
     }
 
     private void loadCache(File cache) {
+
         if (cache.isDirectory() && cache.exists()) {
             try {
                 cacheLibrary = new CacheLibrary(cache.getPath(), false, null);
@@ -818,11 +829,26 @@ public class GUI extends JFrame {
                     AppConstants.cacheType = "RuneScape 3";
                 }
                 initModelToolModes();
+
+                modelViewer = new ModelViewer();
+                modelViewPanel = new JFXPanel();
+                Platform.runLater(() -> {
+                    try {
+                        modelScene = modelViewer.start(new Stage()).getScene();
+                        modelViewPanel.setScene(modelScene);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
                 initFileViewer();
+                contentPreviewPane.revalidate();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+
+
         this.revalidate();
     }
 
@@ -882,35 +908,51 @@ public class GUI extends JFrame {
 
         cacheScrollPane = new JScrollPane(cacheTree);
         cacheScrollPane.setViewportView(cacheTree);
+        cacheScrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(20, 0));
 
         JSplitPane cacheInfoSplitPanel = new JSplitPane();
 
         JPanel cacheInfoPanel = new JPanel();
         cacheInfoPanel.setLayout(new GridLayout());
 
+        SpringLayout springLayout = new SpringLayout();
         JPanel cacheOperationsButtonPanel = new JPanel();
-        cacheOperationsButtonPanel.setLayout(new FlowLayout());
+        cacheOperationsButtonPanel.setLayout(springLayout);
 
         JButton addFilesButton = new JButton("Add Files");
         addFilesButton.addActionListener(e -> addCacheFiles());
+        springLayout.putConstraint(SpringLayout.NORTH, addFilesButton, 0, SpringLayout.NORTH, cacheOperationsButtonPanel);
+        springLayout.putConstraint(SpringLayout.WEST, addFilesButton, 0, SpringLayout.WEST, cacheOperationsButtonPanel);
 
         JButton exportFilesButton = new JButton("Export Files");
         exportFilesButton.addActionListener(e -> exportFilesData());
+        springLayout.putConstraint(SpringLayout.NORTH, exportFilesButton, 0, SpringLayout.NORTH, cacheOperationsButtonPanel);
+        springLayout.putConstraint(SpringLayout.WEST, exportFilesButton, 100, SpringLayout.WEST, cacheOperationsButtonPanel);
 
         JButton removeArchiveButton = new JButton("Remove Archive");
         removeArchiveButton.addActionListener(e -> removeArchiveFile());
+        springLayout.putConstraint(SpringLayout.NORTH, removeArchiveButton, 0, SpringLayout.NORTH, cacheOperationsButtonPanel);
+        springLayout.putConstraint(SpringLayout.WEST, removeArchiveButton, 200, SpringLayout.WEST, cacheOperationsButtonPanel);
 
         JButton removeFileButton = new JButton("Remove File");
         removeFileButton.addActionListener(e -> removeCacheFile());
+        springLayout.putConstraint(SpringLayout.NORTH, removeFileButton, 30, SpringLayout.NORTH, cacheOperationsButtonPanel);
+        springLayout.putConstraint(SpringLayout.WEST, removeFileButton, 0, SpringLayout.WEST, cacheOperationsButtonPanel);
 
         JButton setArchiveNameHashButton = new JButton("Set Archive name hash");
         setArchiveNameHashButton.addActionListener(e -> setCacheArchiveNameHash());
+        springLayout.putConstraint(SpringLayout.NORTH, setArchiveNameHashButton, 30, SpringLayout.NORTH, cacheOperationsButtonPanel);
+        springLayout.putConstraint(SpringLayout.WEST, setArchiveNameHashButton, 150, SpringLayout.WEST, cacheOperationsButtonPanel);
 
         JButton setArchiveNameButton = new JButton("Set Archive name");
         setArchiveNameButton.addActionListener(e -> setCacheArchiveName());
+        springLayout.putConstraint(SpringLayout.NORTH, setArchiveNameButton, 60, SpringLayout.NORTH, cacheOperationsButtonPanel);
+        springLayout.putConstraint(SpringLayout.WEST, setArchiveNameButton, 0, SpringLayout.WEST, cacheOperationsButtonPanel);
 
         JButton exportAllDataButton = new JButton("Export all Index data");
         exportAllDataButton.addActionListener(e -> dumpAllDataFolders());
+        springLayout.putConstraint(SpringLayout.NORTH, exportAllDataButton, 60, SpringLayout.NORTH, cacheOperationsButtonPanel);
+        springLayout.putConstraint(SpringLayout.WEST, exportAllDataButton, 150, SpringLayout.WEST, cacheOperationsButtonPanel);
 
         cacheOperationsButtonPanel.add(addFilesButton);
         cacheOperationsButtonPanel.add(exportFilesButton);
@@ -1120,6 +1162,19 @@ public class GUI extends JFrame {
                     infoTable.revalidate();
                 }
             }
+
+            if (modelViewer != null) {
+                modelViewer = null;
+                Platform.runLater(() -> {
+                    try {
+                        modelViewer = new ModelViewer();
+                        modelScene = modelViewer.start(new Stage()).getScene();
+                        modelViewPanel.setScene(modelScene);
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
+                });
+            }
         });
 
         cacheInfoPanel.add(infoTable);
@@ -1127,24 +1182,21 @@ public class GUI extends JFrame {
 
         cacheInfoSplitPanel.setBottomComponent(cacheOperationsButtonPanel);
         cacheInfoSplitPanel.setTopComponent(cacheInfoPanel);
-        cacheInfoSplitPanel.setEnabled(false);
         cacheInfoSplitPanel.setResizeWeight(0.5);
         cacheInfoSplitPanel.revalidate();
 
         splitCacheViewPane.setLeftComponent(cacheScrollPane);
         splitCacheViewPane.setRightComponent(cacheInfoSplitPanel);
-        splitCacheViewPane.setEnabled(false);
         splitCacheViewPane.setResizeWeight(0.5);
         splitCacheViewPane.revalidate();
 
-        //contentPreviewPane.add(new ModelViewer(new JFXPanel()));
+        contentPreviewPane.add(modelViewPanel);
         contentPreviewPane.revalidate();
 
         JSplitPane splitCacheDetailedViewPane = new JSplitPane();
         splitCacheDetailedViewPane.setLeftComponent(splitCacheViewPane);
         splitCacheDetailedViewPane.setRightComponent(contentPreviewPane);
-        splitCacheDetailedViewPane.setEnabled(false);
-        splitCacheDetailedViewPane.setResizeWeight(0.5);
+        splitCacheDetailedViewPane.setResizeWeight(0.3);
         splitCacheDetailedViewPane.revalidate();
 
         contentPanel.add(splitCacheDetailedViewPane, BorderLayout.CENTER);
