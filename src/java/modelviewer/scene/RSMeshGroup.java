@@ -99,7 +99,9 @@ public class RSMeshGroup {
                     view.setMaterial(mat);
                 }
                 else {
-                    view.setMaterial(new PhongMaterial(ColorUtils.rs2HSLToColor(model.faceColors[face], model.faceTransparencies == null ? 0 : model.faceTransparencies[face])));
+                    if (model.faceTextures != null && model.faceTextures[face] == -1) {
+                        view.setMaterial(new PhongMaterial(ColorUtils.rs2HSLToColor(model.faceColors[face], model.faceTransparencies == null ? 0 : model.faceTransparencies[face])));
+                    }
                 }
             } else {
                 view.setMaterial(new PhongMaterial(ColorUtils.rs2HSLToColor(model.faceColors[face], model.faceTransparencies == null ? 0 : model.faceTransparencies[face])));
