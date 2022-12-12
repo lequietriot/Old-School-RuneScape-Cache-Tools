@@ -75,7 +75,8 @@ Made with IntelliJ IDEA using Java 1.8 SDK with various libraries including Java
 * Cache Explorer: Not able to dump/export all files of single archive - only the first file is exported?
 * Cache Explorer: Some caches may not load correctly
 * Data Decoders: SoundFont conversion - may not be perfect
-* Model Viewer: Does not work on RS2 yet
-* Model Viewer: May not work on Mac computers, a workaround would be running the project directly through IntelliJ IDEA.
+* Model Viewer: Textures do not work in RS2 caches
+* Model Viewer: Textures may not load in all RSHD caches
+* Model Viewer: May not work on Mac computers, a workaround would be running the project or jar directly through IntelliJ IDEA.
 
 ## That's all for now. Enjoy!

@@ -848,7 +848,6 @@ public class GUI extends JFrame {
             }
         }
 
-
         this.revalidate();
     }
 

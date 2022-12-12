@@ -66,10 +66,10 @@ public class ModelController implements Initializable {
         if (AppConstants.cacheType.equals("RuneScape 2")) {
             ModelLoader modelLoader = new ModelLoader();
             ModelDefinition model;
-            if (selectedIndex == 7) {
+            if (selectedIndex == 1) {
                 model = modelLoader.load(0, Objects.requireNonNull(cacheLibrary.data(selectedIndex, selectedArchive, selectedFile)));
             } else {
-                model = modelLoader.load(0, Objects.requireNonNull(cacheLibrary.data(7, 1, 0)));
+                model = modelLoader.load(0, Objects.requireNonNull(cacheLibrary.data(1, 1, 0)));
             }
             if (model != null) {
                 try {

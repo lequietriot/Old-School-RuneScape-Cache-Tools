@@ -3,7 +3,7 @@ package net.runelite.cache.managers;
 import com.displee.cache.CacheLibrary;
 import com.displee.cache.index.Index;
 import com.displee.cache.index.archive.Archive;
-import net.runelite.cache.loaders.ImageIndexLoader;
+import rshd.ImageIndexLoader;
 import net.runelite.cache.definitions.TextureDefinition;
 import net.runelite.cache.definitions.TextureDetails;
 import net.runelite.cache.providers.TextureProvider;

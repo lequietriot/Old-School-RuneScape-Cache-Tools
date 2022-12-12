@@ -15,6 +15,7 @@ import net.runelite.cache.definitions.ModelDefinition;
 import net.runelite.cache.definitions.SpriteDefinition;
 import net.runelite.cache.definitions.loaders.SpriteLoader;
 import net.runelite.cache.fs.Store;
+import rshd.TextureLoaderHD;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -32,6 +33,7 @@ public class RSMeshGroup {
     public final float MODEL_SCALE = 0.03f;
 
     private TextureManager textureManager;
+    private TextureLoaderHD textureLoaderHD;
 
     public RSMeshGroup(ModelDefinition model) {
         this.model = model;
@@ -40,11 +42,17 @@ public class RSMeshGroup {
     private Image texture;
 
     public void buildMeshes() throws IOException {
+        if (AppConstants.cacheType.equals("RuneScape 2")) {
+
+        }
         if (AppConstants.cacheType.equals("Old School RuneScape")) {
             Store store = new Store(new File(GUI.cacheLibrary.getPath()));
             store.load();
             textureManager = new TextureManager(store);
             textureManager.load();
+        }
+        if (AppConstants.cacheType.equals("RuneScape High Definition")) {
+            textureLoaderHD = new TextureLoaderHD();
         }
         model.computeTextureUVCoordinates();
         for (int face = 0; face < model.faceCount; face++) {
@@ -81,6 +89,13 @@ public class RSMeshGroup {
                 if (model.faceTextures != null && model.faceTextures[face] != -1 && AppConstants.cacheType.equals("Old School RuneScape")) {
                     texture = exportToImage(textureManager.findTexture(model.faceTextures[face]).getFileIds()[0]);
                     mat.setDiffuseMap(texture);
+                    mat.setDiffuseColor(ColorUtils.rs2HSLToColor(model.faceColors[face], model.faceTransparencies == null ? 0 : model.faceTransparencies[face]));
+                    view.setMaterial(mat);
+                }
+                if (model.faceTextures != null && model.faceTextures[face] != -1 && AppConstants.cacheType.equals("RuneScape High Definition")) {
+                    texture = exportToImageHD(model.faceTextures[face]);
+                    mat.setDiffuseMap(texture);
+                    mat.setDiffuseColor(ColorUtils.rs2HSLToColor(model.faceColors[face], 0));//model.faceTransparencies == null ? 0 : model.faceTransparencies[face]));
                     view.setMaterial(mat);
                 }
                 else {
@@ -93,6 +108,7 @@ public class RSMeshGroup {
             meshes.add(view);
         }
     }
+
 
     private void initListeners(MeshView view) {
         view.setOnMouseClicked(event -> {
@@ -126,5 +142,28 @@ public class RSMeshGroup {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ImageIO.write(image, "png", byteArrayOutputStream);
         return new Image(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
+    }
+
+    public Image exportToImageHD(int id) {
+        byte[] data = GUI.cacheLibrary.data(9, id, 0);
+        if (data != null) {
+            if (data[1] == "P".getBytes()[0]) {
+                return new Image(new ByteArrayInputStream(data));
+            }
+        }
+        /*
+        try {
+            ImageIndexLoader imageIndexLoader = new ImageIndexLoader(GUI.cacheLibrary.index(26), GUI.cacheLibrary.index(9), GUI.cacheLibrary.index(8));
+            int[] pixels = imageIndexLoader.renderMaterialPixelsI(id, 256, 256);
+            BufferedImage bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
+            bi.setRGB(0, 0, 256, 256, pixels, 0, 256);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ImageIO.write(bi, "png", byteArrayOutputStream);
+            return new Image(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+         */
+        return null;
     }
 }
