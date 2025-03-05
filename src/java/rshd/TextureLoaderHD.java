@@ -41,7 +41,7 @@ public class TextureLoaderHD
 		for (index = 0; index < size; index++) {
 			if (stream.readUnsignedByte() == 1) {
 				textureDefinitions[index] = new TextureDetails();
-				textureDefinitions[index].setId(index);
+				textureDefinitions[index].id = (index);
 			}
 		}
 		for (index = 0; index < size; index++) {

@@ -41,4 +41,8 @@ public class KitDefinition
 		-1, -1, -1, -1, -1
 	};
 	public boolean nonSelectable = false;
+
+    public KitDefinition(int id) {
+        this.id = id;
+    }
 }

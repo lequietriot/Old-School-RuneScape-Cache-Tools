@@ -6,7 +6,6 @@ import com.displee.cache.index.archive.Archive;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import decoders.*;
 import encoders.*;
-import modelviewer.ModelViewer;
 import org.gagravarr.ogg.OggFile;
 import org.gagravarr.ogg.OggPacket;
 import org.gagravarr.ogg.OggPacketWriter;
@@ -64,8 +63,6 @@ public class GUI extends JFrame {
     static {
         defaultCachePath = new File(System.getProperty("user.home") + File.separator + "jagexcache" + File.separator + "oldschool" + File.separator + "LIVE");
     }
-
-    ModelViewer modelViewer;
 
     public GUI() {
         super("Old School RuneScape Cache Tools v0.6-beta");
@@ -153,10 +150,6 @@ public class GUI extends JFrame {
         JMenuItem soundBankDecoder = new JMenuItem("Sound Bank Decoder");
         soundBankDecoder.addActionListener(e -> new SoundBankDecoder(this));
         decoderMenu.add(soundBankDecoder);
-
-        JMenuItem interfaceDecoder = new JMenuItem("Interface Decoder");
-        interfaceDecoder.addActionListener(e -> new InterfaceDecoder(this));
-        decoderMenu.add(interfaceDecoder);
 
         JMenu batchDecoderMenu = new JMenu("Batch Decoders");
         jMenuBar.add(batchDecoderMenu);

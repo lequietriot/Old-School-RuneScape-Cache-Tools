@@ -3,12 +3,10 @@ package encoders;
 import com.application.AppConstants;
 import com.application.GUI;
 import com.displee.cache.CacheLibrary;
-import net.runelite.cache.fs.Store;
-import osrs.ByteBufferUtils;
-import rshd.ModelData;
 import net.runelite.cache.definitions.ModelDefinition;
 import net.runelite.cache.loaders.ModelLoader;
-import net.runelite.cache.managers.TextureManager;
+import osrs.ByteBufferUtils;
+import rshd.ModelData;
 
 import java.io.*;
 import java.util.Objects;
@@ -34,9 +32,6 @@ public class ModelNewConverter {
                     encode(model, archive);
                 }
             } else {
-                TextureManager tm = new TextureManager(new Store(new File(cacheLibrary.getPath())));
-                tm.load();
-
                 ModelLoader loader = new ModelLoader();
                 ModelDefinition model = loader.load(archive, Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file)).getData()));
                 encode(model, archive);

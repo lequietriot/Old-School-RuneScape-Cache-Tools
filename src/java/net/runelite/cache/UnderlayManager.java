@@ -59,7 +59,7 @@ public class UnderlayManager implements UnderlayProvider
 			UnderlayLoader loader = new UnderlayLoader();
 			UnderlayDefinition underlay = loader.load(file.getFileId(), file.getContents());
 
-			underlays.put(underlay.getId(), underlay);
+			underlays.put(underlay.id, underlay);
 		}
 	}
 

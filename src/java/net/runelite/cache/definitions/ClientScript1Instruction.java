@@ -56,7 +56,11 @@ public class ClientScript1Instruction
 		CONSTANT(1);
 
 		public final int argumentCount;
-	}
+
+        Opcode(int argumentCount) {
+            this.argumentCount = argumentCount;
+        }
+    }
 
 	public Opcode opcode;
 	public int[] operands;

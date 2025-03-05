@@ -41,8 +41,8 @@ public class SpriteExporter
 
 	public BufferedImage export()
 	{
-		BufferedImage bi = new BufferedImage(sprite.getWidth(), sprite.getHeight(), BufferedImage.TYPE_INT_ARGB);
-		bi.setRGB(0, 0, sprite.getWidth(), sprite.getHeight(), sprite.getPixels(), 0, sprite.getWidth());
+		BufferedImage bi = new BufferedImage(sprite.width, sprite.width, BufferedImage.TYPE_INT_ARGB);
+		bi.setRGB(0, 0, sprite.width, sprite.width, sprite.pixels, 0, sprite.width);
 		return bi;
 	}
 

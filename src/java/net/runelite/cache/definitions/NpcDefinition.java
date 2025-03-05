@@ -73,4 +73,8 @@ public class NpcDefinition
 	public boolean isPet;
 	public Map<Integer, Object> params;
 	public int category;
+
+    public NpcDefinition(int id) {
+        this.id = id;
+    }
 }

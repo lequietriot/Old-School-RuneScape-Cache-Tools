@@ -35,6 +35,11 @@ public enum BaseVarType
 
 	private static final BaseVarType[] VALUES = values();
 
+	BaseVarType(int id, Class<?> clazz) {
+        this.id = id;
+        this.clazz = clazz;
+    }
+
 	public static BaseVarType forId(int id)
 	{
 		for (BaseVarType type : VALUES)

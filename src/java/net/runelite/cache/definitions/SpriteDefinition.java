@@ -29,15 +29,15 @@ import lombok.Data;
 @Data
 public class SpriteDefinition
 {
-	private int id;
-	private int frame;
-	private int offsetX;
-	private int offsetY;
-	private int width;
-	private int height;
-	private int[] pixels;
-	private int maxWidth;
-	private int maxHeight;
+	public int id;
+	public int frame;
+	public int offsetX;
+	public int offsetY;
+	public int width;
+	public int height;
+	public int[] pixels;
+	public int maxWidth;
+	public int maxHeight;
 
 	public transient byte[] pixelIdx;
 	public transient int[] palette;

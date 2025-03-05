@@ -59,30 +59,30 @@ public class SpriteLoader
 		for (int i = 0; i < spriteCount; ++i)
 		{
 			sprites[i] = new SpriteDefinition();
-			sprites[i].setId(id);
-			sprites[i].setFrame(i);
-			sprites[i].setMaxWidth(width);
-			sprites[i].setMaxHeight(height);
+			sprites[i].id = id;
+			sprites[i].frame = i;
+			sprites[i].maxWidth = width;
+			sprites[i].maxHeight = height;
 		}
 
 		for (int i = 0; i < spriteCount; ++i)
 		{
-			sprites[i].setOffsetX(is.readUnsignedShort());
+			sprites[i].offsetX = (is.readUnsignedShort());
 		}
 
 		for (int i = 0; i < spriteCount; ++i)
 		{
-			sprites[i].setOffsetY(is.readUnsignedShort());
+			sprites[i].offsetY = (is.readUnsignedShort());
 		}
 
 		for (int i = 0; i < spriteCount; ++i)
 		{
-			sprites[i].setWidth(is.readUnsignedShort());
+			sprites[i].width = (is.readUnsignedShort());
 		}
 
 		for (int i = 0; i < spriteCount; ++i)
 		{
-			sprites[i].setHeight(is.readUnsignedShort());
+			sprites[i].height = (is.readUnsignedShort());
 		}
 
 		// same as above + 3 bytes for each palette entry, except for the first one (which is transparent)
@@ -104,8 +104,8 @@ public class SpriteLoader
 		for (int i = 0; i < spriteCount; ++i)
 		{
 			SpriteDefinition def = sprites[i];
-			int spriteWidth = def.getWidth();
-			int spriteHeight = def.getHeight();
+			int spriteWidth = def.width;
+			int spriteHeight = def.height;
 			int dimension = spriteWidth * spriteHeight;
 			byte[] pixelPaletteIndicies = new byte[dimension];
 			byte[] pixelAlphas = new byte[dimension];
@@ -179,7 +179,7 @@ public class SpriteLoader
 				pixels[j] = palette[index] | (pixelAlphas[j] << 24);
 			}
 
-			def.setPixels(pixels);
+			def.pixels = (pixels);
 		}
 
 		return sprites;

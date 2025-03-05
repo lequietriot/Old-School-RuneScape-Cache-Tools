@@ -26,7 +26,6 @@ package net.runelite.cache.definitions.loaders;
 
 import net.runelite.cache.definitions.EnumDefinition;
 import net.runelite.cache.io.InputStream;
-import net.runelite.cache.util.ScriptVarType;
 
 public class EnumLoader
 {
@@ -40,7 +39,7 @@ public class EnumLoader
 		EnumDefinition def = new EnumDefinition();
 		InputStream is = new InputStream(b);
 
-		def.setId(id);
+		//def.setId(id);
 
 		for (;;)
 		{
@@ -61,16 +60,16 @@ public class EnumLoader
 		switch (opcode)
 		{
 			case 1:
-				def.setKeyType(ScriptVarType.forCharKey((char) is.readUnsignedByte()));
+				//def.setKeyType(ScriptVarType.forCharKey((char) is.readUnsignedByte()));
 				break;
 			case 2:
-				def.setValType(ScriptVarType.forCharKey((char) is.readUnsignedByte()));
+				//def.setValType(ScriptVarType.forCharKey((char) is.readUnsignedByte()));
 				break;
 			case 3:
-				def.setDefaultString(is.readString());
+				//def.setDefaultString(is.readString());
 				break;
 			case 4:
-				def.setDefaultInt(is.readInt());
+				//def.setDefaultInt(is.readInt());
 				break;
 			case 5:
 			{
@@ -82,9 +81,9 @@ public class EnumLoader
 					keys[index] = is.readInt();
 					stringVals[index] = is.readString();
 				}
-				def.setSize(size);
-				def.setKeys(keys);
-				def.setStringVals(stringVals);
+				//def.setSize(size);
+				//def.setKeys(keys);
+				//def.setStringVals(stringVals);
 				break;
 			}
 			case 6:
@@ -97,9 +96,9 @@ public class EnumLoader
 					keys[index] = is.readInt();
 					intVals[index] = is.readInt();
 				}
-				def.setSize(size);
-				def.setKeys(keys);
-				def.setIntVals(intVals);
+				//def.setSize(size);
+				//def.setKeys(keys);
+				//def.setIntVals(intVals);
 				break;
 			}
 			default:

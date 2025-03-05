@@ -33,4 +33,8 @@ public class DBTableDefinition
 	private final int id;
 	private ScriptVarType[][] types;
 	private Object[] defaultColumnValues;
+
+    public DBTableDefinition(int id) {
+        this.id = id;
+    }
 }

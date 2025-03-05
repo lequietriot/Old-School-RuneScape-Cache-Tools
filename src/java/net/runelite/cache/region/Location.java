@@ -34,4 +34,11 @@ public class Location
 	private final int type;
 	private final int orientation;
 	private final Position position;
+
+    public Location(int id, int type, int orientation, Position position) {
+        this.id = id;
+        this.type = type;
+        this.orientation = orientation;
+        this.position = position;
+    }
 }

@@ -29,8 +29,8 @@ import lombok.Data;
 @Data
 public class UnderlayDefinition
 {
-	private int id;
-	private int color;
+	public int id;
+	public int color;
 
 	private transient int hue;
 	private transient int saturation;

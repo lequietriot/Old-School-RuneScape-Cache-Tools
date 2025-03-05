@@ -3,20 +3,11 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/src/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/resources" type="java-resource" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="displee.rs.cache.library" level="project" />
-    <orderEntry type="library" name="formdev.flatlaf" level="project" />
-    <orderEntry type="library" name="projectlombok.lombok" level="project" />
-    <orderEntry type="library" name="apache.commons.compress" level="project" />
-    <orderEntry type="library" name="gagravarr.vorbis.java.core" level="project" />
-    <orderEntry type="library" name="openjfx.javafx.graphics" level="project" />
-    <orderEntry type="library" name="openjfx.javafx.fxml" level="project" />
-    <orderEntry type="library" name="openjfx.javafx.swing" level="project" />
-    <orderEntry type="library" name="google.code.gson" level="project" />
-    <orderEntry type="library" name="google.guava" level="project" />
+    <orderEntry type="library" name="lib" level="project" />
   </component>
 </module>

@@ -35,7 +35,7 @@ public class UnderlayLoader
 		UnderlayDefinition def = new UnderlayDefinition();
 		InputStream is = new InputStream(b);
 
-		def.setId(id);
+		def.id = (id);
 
 		for (;;)
 		{
@@ -48,7 +48,7 @@ public class UnderlayLoader
 			if (opcode == 1)
 			{
 				int color = is.read24BitInt();
-				def.setColor(color);
+				def.color = (color);
 			}
 		}
 

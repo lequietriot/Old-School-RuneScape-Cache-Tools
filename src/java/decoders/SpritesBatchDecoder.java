@@ -42,11 +42,11 @@ public class SpritesBatchDecoder {
     }
 
     private BufferedImage export(SpriteDefinition spriteDefinition) {
-        if (spriteDefinition.getWidth() <= 0 && spriteDefinition.getHeight() <= 0) {
+        if (spriteDefinition.width <= 0 && spriteDefinition.height <= 0) {
             return null;
         }
-        BufferedImage bi = new BufferedImage(spriteDefinition.getWidth(), spriteDefinition.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        bi.setRGB(0, 0, spriteDefinition.getWidth(), spriteDefinition.getHeight(), spriteDefinition.getPixels(), 0, spriteDefinition.getWidth());
+        BufferedImage bi = new BufferedImage(spriteDefinition.width, spriteDefinition.height, BufferedImage.TYPE_INT_ARGB);
+        bi.setRGB(0, 0, spriteDefinition.width, spriteDefinition.height, spriteDefinition.pixels, 0, spriteDefinition.width);
         return bi;
     }
 }

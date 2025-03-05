@@ -33,8 +33,8 @@ public class TextureDefinition
 {
 	public int field1777;
 	public boolean field1778;
-	private int id;
-	private int[] fileIds;
+	public int id;
+	public int[] fileIds;
 	public int[] field1780;
 	public int[] field1781;
 	public int[] field1786;
@@ -94,14 +94,14 @@ public class TextureDefinition
 
 			if (var11 == 0)
 			{
-				if (var3 == var7.getMaxWidth())
+				if (var3 == var7.maxWidth)
 				{
 					for (var12 = 0; var12 < var5; ++var12)
 					{
 						this.pixels[var12] = var9[var8[var12] & 255];
 					}
 				}
-				else if (var7.getMaxWidth() == 64 && var3 == 128)
+				else if (var7.maxWidth == 64 && var3 == 128)
 				{
 					var12 = 0;
 
@@ -115,7 +115,7 @@ public class TextureDefinition
 				}
 				else
 				{
-					if (var7.getMaxWidth() != 128 || var3 != 64)
+					if (var7.maxWidth != 128 || var3 != 64)
 					{
 						throw new RuntimeException();
 					}

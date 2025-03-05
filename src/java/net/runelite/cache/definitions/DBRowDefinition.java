@@ -34,4 +34,8 @@ public class DBRowDefinition
 	private int tableId;
 	private ScriptVarType[][] columnTypes;
 	private Object[][] columnValues;
+
+    public DBRowDefinition(int id) {
+        this.id = id;
+    }
 }

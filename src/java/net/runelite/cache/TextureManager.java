@@ -70,7 +70,7 @@ public class TextureManager implements TextureProvider
 	{
 		for (TextureDefinition td : textures)
 		{
-			if (td.getId() == id)
+			if (td.id == id)
 			{
 				return td;
 			}

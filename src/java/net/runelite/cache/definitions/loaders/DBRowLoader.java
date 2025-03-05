@@ -69,11 +69,11 @@ public class DBRowLoader
 					columnValues[columnId] = DBTableLoader.decodeColumnFields(stream, columnTypes);
 				}
 
-				def.setColumnTypes(types);
-				def.setColumnValues(columnValues);
+				//def.setColumnTypes(types);
+				//def.setColumnValues(columnValues);
 				break;
 			case 4:
-				def.setTableId(stream.readVarInt2());
+				//def.setTableId(stream.readVarInt2());
 				break;
 			default:
 				System.out.println("Unrecognized dbrow opcode " + opcode);

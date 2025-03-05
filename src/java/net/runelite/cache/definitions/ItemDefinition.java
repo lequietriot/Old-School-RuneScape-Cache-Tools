@@ -24,8 +24,9 @@
  */
 package net.runelite.cache.definitions;
 
-import java.util.Map;
 import lombok.Data;
+
+import java.util.Map;
 
 @Data
 public class ItemDefinition
@@ -105,7 +106,11 @@ public class ItemDefinition
 
 	public Map<Integer, Object> params = null;
 
-	public void linkNote(ItemDefinition notedItem, ItemDefinition unnotedItem)
+    public ItemDefinition(int id) {
+        this.id = id;
+    }
+
+    public void linkNote(ItemDefinition notedItem, ItemDefinition unnotedItem)
 	{
 		this.inventoryModel = notedItem.inventoryModel;
 		this.zoom2d = notedItem.zoom2d;

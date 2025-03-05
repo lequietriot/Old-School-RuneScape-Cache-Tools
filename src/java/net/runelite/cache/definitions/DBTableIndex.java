@@ -36,4 +36,9 @@ public class DBTableIndex
 	private final int columnId;
 	private BaseVarType[] tupleTypes;
 	private List<Map<Object, List<Integer>>> tupleIndexes;
+
+    public DBTableIndex(int tableId, int columnId) {
+        this.tableId = tableId;
+        this.columnId = columnId;
+    }
 }

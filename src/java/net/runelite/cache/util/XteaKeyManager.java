@@ -46,7 +46,7 @@ public class XteaKeyManager implements KeyProvider
 
 		for (XteaKey key : k)
 		{
-			keys.put(key.getRegion(), key.getKeys());
+			//keys.put(key.getRegion(), key.getKeys());
 		}
 
 		System.out.println("Loaded " + keys.size() + " keys.");

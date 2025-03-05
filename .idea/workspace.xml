@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="Old-School-RuneScape-Cache-Tools:jar" />
+    </artifacts-to-build>
+  </component>
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ff99cb81-229b-4f6a-ae79-9556ed12a440" name="Changes" comment="Upgrade to v0.6-beta, fix OSRS 229+ cache loading">
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Old-School-RuneScape-Cache-Tools.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Old-School-RuneScape-Cache-Tools.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/com/application/GUI.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/com/application/GUI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/decoders/InterfaceDecoder.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/decoders/SpritesBatchDecoder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/decoders/SpritesBatchDecoder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/encoders/ModelNewConverter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/encoders/ModelNewConverter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/ModelViewer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/controllers/ModelController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/model/Grid3D.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/model/Vector3i.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/model/Xform.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/polygonalmesh/OriginalPointArray.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/polygonalmesh/PolygonMesh.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/polygonalmesh/PolygonMeshView.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/polygonalmesh/SubdividedPointArray.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/polygonalmesh/SubdivisionMesh.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/polygonalmesh/SymbolicPointArray.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/polygonalmesh/SymbolicPolygonMesh.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/polygonalmesh/SymbolicSubdivisionBuilder.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/rs/Model.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/rs/buffer/Buffer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/scene/RSMeshGroup.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/scene/camera/OrbitCamera.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/modelviewer/util/ColorUtils.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/InterfaceManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/ObjectManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/OverlayManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/SpriteManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/StructManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/TextureManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/TextureManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/UnderlayManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/UnderlayManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/ClientScript1Instruction.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/ClientScript1Instruction.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/DBRowDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/DBRowDefinition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/DBTableDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/DBTableDefinition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/DBTableIndex.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/DBTableIndex.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/ItemDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/ItemDefinition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/KitDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/KitDefinition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/NpcDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/NpcDefinition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/SequenceDefinition.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/SpriteDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/SpriteDefinition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/StructDefinition.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/TextureDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/TextureDefinition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/UnderlayDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/UnderlayDefinition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/exporters/SpriteExporter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/exporters/SpriteExporter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/DBRowLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/DBRowLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/DBTableIndexLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/DBTableIndexLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/DBTableLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/DBTableLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/EnumLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/EnumLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/HitSplatLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/LocationsLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/MapLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/ObjectLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/OverlayLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/ParamLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/SequenceLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/SpriteLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/SpriteLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/StructLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/TextureLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/TextureLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/UnderlayLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/UnderlayLoader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/loaders/VarbitLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/providers/StructProvider.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/savers/InterfaceSaver.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/savers/ItemSaver.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/savers/LocationSaver.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/savers/MapSaver.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/savers/NpcSaver.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/definitions/savers/ObjectSaver.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/loaders/TextureLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/managers/TextureManager.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/region/Location.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/region/Location.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/region/Region.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/region/RegionLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/util/BaseVarType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/util/BaseVarType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/net/runelite/cache/util/ScriptVarType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/net/runelite/cache/util/ScriptVarType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/rshd/ModelData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/rshd/ModelData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/java/rshd/TextureLoaderHD.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/java/rshd/TextureLoaderHD.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="Old-School-RuneScape-Cache-Tools" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="Old-School-RuneScape-Cache-Tools" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="Old-School-RuneScape-Cache-Tools" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="other" type="c8890929:TasksNode$1" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Kotlin Class" />
+        <option value="AnnotationType" />
+        <option value="Interface" />
+        <option value="Enum" />
+        <option value="FxmlFile" />
+        <option value="HTML4 File" />
+        <option value="XHTML File" />
+        <option value="HTML File" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;lequietriot&quot;
+  }
+}</component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/lequietriot/Old-School-RuneScape-Cache-Tools&quot;,
+    &quot;accountId&quot;: &quot;686787ec-af25-42d0-aaa4-d7de744507ce&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="21fMp73rNFbBNKRwEK2O9OJe6LF" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Application.Main.executor": "Run",
+    "Downloaded.Files.Path.Enabled": "true",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "B:/IdeaProjects/Old-School-RuneScape-Cache-Tools/src",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CreateClassDialog.RecentsKey">
+      <recent name="com.application" />
+      <recent name="decoders" />
+      <recent name="runelite.models" />
+      <recent name="osrs" />
+      <recent name="encoders" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="B:\IdeaProjects\Old-School-RuneScape-Cache-Tools\src\java\synth" />
+      <recent name="B:\IdeaProjects\Old-School-RuneScape-Cache-Tools\OSRS" />
+      <recent name="B:\IdeaProjects\Old-School-RuneScape-Cache-Tools" />
+      <recent name="B:\IdeaProjects\Old-School-RuneScape-Cache-Tools\out\artifacts\Old_School_RuneScape_Cache_Tools_jar" />
+      <recent name="B:\IdeaProjects\Old-School-RuneScape-Cache-Tools\src\java\osrs" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="B:\IdeaProjects\Old-School-RuneScape-Cache-Tools" />
+      <recent name="B:\IdeaProjects\Old-School-RuneScape-Cache-Tools\src\resources" />
+      <recent name="B:\IdeaProjects\Old-School-RuneScape-Cache-Tools\out\artifacts\Old_School_RuneScape_Cache_Tools_jar" />
+      <recent name="B:\IdeaProjects\Old-School-RuneScape-Cache-Tools\out\artifacts\Old_School_RuneScape_Cache_Tools_jar\app" />
+      <recent name="B:\IdeaProjects\Old-School-RuneScape-Cache-Tools\src\java\com\application\html" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="" />
+      <recent name="runelite" />
+      <recent name="net.runelite" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.application" />
+      <recent name="rshd" />
+      <recent name="net.runelite.cache.managers" />
+      <recent name="encoders" />
+      <recent name="runelite.models" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.Main">
+    <configuration name="AudioStreamServer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="osrs.AudioStreamServer" />
+      <module name="Old-School-RuneScape-Cache-Tools" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.application.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Main" type="Application" factoryName="Application" temporary="true">
+      <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="MAIN_CLASS_NAME" value="com.application.Main" />
+      <module name="Old School RuneScape Cache Tools" />
+      <option name="VM_PARAMETERS" value="-Xmx2g" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="MusicPlayer (1)" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="synth.MusicPlayer" />
+      <module name="Old-School-RuneScape-Cache-Tools" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="synth.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="MusicPlayer" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.application.MusicPlayer" />
+      <module name="Old-School-RuneScape-Cache-Tools" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.application.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="PDFtoCSV" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.application.PDFtoCSV" />
+      <module name="Old-School-RuneScape-Cache-Tools" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.application.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="HDOS" type="JarApplication">
+      <option name="JAR_PATH" value="$USER_HOME$/hdos/code/client-main.jar" />
+      <option name="VM_PARAMETERS" value="-Dversion=458 -Xmx12g -cp &quot;./code/*&quot; hdos.Main" />
+      <option name="PROGRAM_PARAMETERS" value="-ea --developer-mode" />
+      <option name="WORKING_DIRECTORY" value="C:\Users\lequi\hdos" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <method v="2" />
+    </configuration>
+    <configuration name="RSPSi" type="JarApplication">
+      <option name="JAR_PATH" value="$USER_HOME$/Downloads/RSPSi_1.16.2/Editor_1.16.2.jar" />
+      <option name="VM_PARAMETERS" value="-Xmx20g" />
+      <option name="WORKING_DIRECTORY" value="C:\Users\lequi\Downloads\RSPSi_1.16.2" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TextureTool" type="JarApplication">
+      <option name="JAR_PATH" value="$USER_HOME$/Downloads/Texture Tool.jar" />
+      <option name="WORKING_DIRECTORY" value="B:\IdeaProjects\Old-School-RuneScape-Cache-Tools" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Application.AudioStreamServer" />
+      <item itemvalue="Application.Main" />
+      <item itemvalue="Application.MusicPlayer (1)" />
+      <item itemvalue="Application.MusicPlayer" />
+      <item itemvalue="Application.PDFtoCSV" />
+      <item itemvalue="JAR Application.HDOS" />
+      <item itemvalue="JAR Application.RSPSi" />
+      <item itemvalue="JAR Application.TextureTool" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.Main" />
+        <item itemvalue="Application.MusicPlayer (1)" />
+        <item itemvalue="Application.MusicPlayer" />
+        <item itemvalue="Application.AudioStreamServer" />
+        <item itemvalue="Application.PDFtoCSV" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ff99cb81-229b-4f6a-ae79-9556ed12a440" name="Changes" comment="" />
+      <created>1638327867818</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1638327867818</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Add project files">
+      <created>1638731413327</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1638731413327</updated>
+    </task>
+    <task id="LOCAL-00002" summary="GUI Improvements - More cache editing buttons">
+      <created>1638748800596</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1638748800596</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Troubleshooting file replacement">
+      <created>1638753023699</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1638753023699</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Changes/Improvements">
+      <created>1639121088334</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1639121088334</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Changes/Improvements">
+      <created>1639231855293</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1639231855293</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Changes/Improvements">
+      <created>1640704477872</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1640704477872</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Minor changes, making repository public">
+      <created>1645688279793</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1645688279793</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Update README.md">
+      <created>1645689596134</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1645689596134</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Added Shuffle mode to Music Player, allow multiple files for encoding at once">
+      <created>1646773211912</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1646773211912</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Fixed cache editing issues, and added/revised much more - see the README">
+      <created>1651323167624</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1651323167624</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Improvements to cache operations and some progress on HD Model Decoding">
+      <created>1651533071066</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1651533071066</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Refactored more of the RuneScape MIDI System, improved Sound Bank to Sound Font Converter">
+      <created>1651767301084</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1651767301084</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Save SoundFont to project directory instead">
+      <created>1651768044990</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1651768044990</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Some refactoring done, HD Model decoding now works with up to 742 revision caches, added known bugs to the ReadMe file">
+      <created>1652544917319</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1652544917319</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Lots of additions/changes, updated README.md reflects those - Big update to app, now in v0.3-beta">
+      <created>1653384584122</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1653384584122</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Small condition check fix for if SoundFont files have global region or not.">
+      <created>1653426221371</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1653426221371</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Update to v0.4-beta, featuring more tools, more in the README.md file">
+      <created>1662029002315</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1662029002315</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Model size fixes to the RSHD Model Decoder &amp; New -&gt; Old Model Converter">
+      <created>1662623007820</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1662623007820</updated>
+    </task>
+    <task id="LOCAL-00019" summary="More work on model converting tools, fix music instrument loading issue">
+      <created>1663916226152</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1663916226152</updated>
+    </task>
+    <task id="LOCAL-00020" summary="Added more RuneLite tools, some are now implemented into the suite + Some bug fixes">
+      <created>1670408760756</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1670408760756</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Model viewer has been implemented, on v0.5-beta">
+      <created>1670592640568</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1670592640568</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Model viewer improvements - supports RS2 and some RSHD textures">
+      <created>1670846470719</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1670846470719</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Fix for displaying OSRS Model Textures">
+      <created>1670847795205</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1670847795205</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Upgrade to v0.6-beta, fix OSRS 229+ cache loading">
+      <option name="closed" value="true" />
+      <created>1741144670176</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1741144670176</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
+    <servers />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="dependencySupport" implementationName="java:org.projectlombok:lombok" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="Add project files" />
+    <MESSAGE value="GUI Improvements - More cache editing buttons" />
+    <MESSAGE value="Troubleshooting file replacement" />
+    <MESSAGE value="Changes/Improvements" />
+    <MESSAGE value="Minor changes, making repository public" />
+    <MESSAGE value="Update README.md" />
+    <MESSAGE value="Added Shuffle mode to Music Player, allow multiple files for encoding at once" />
+    <MESSAGE value="Fixed cache editing issues, and added/revised much more - see the README" />
+    <MESSAGE value="Improvements to cache operations and some progress on HD Model Decoding" />
+    <MESSAGE value="Refactored more of the RuneScape MIDI System, improved Sound Bank to Sound Font Converter" />
+    <MESSAGE value="Save SoundFont to project directory instead" />
+    <MESSAGE value="Some refactoring done, HD Model decoding now works with up to 742 revision caches, added known bugs to the ReadMe file" />
+    <MESSAGE value="Lots of additions/changes, updated README.md reflects those - Big update to app, now in v0.3-beta" />
+    <MESSAGE value="Small condition check fix for if SoundFont files have global region or not." />
+    <MESSAGE value="Update to v0.4-beta, featuring more tools, more in the README.md file" />
+    <MESSAGE value="Model size fixes to the RSHD Model Decoder &amp; New -&gt; Old Model Converter" />
+    <MESSAGE value="More work on model converting tools, fix music instrument loading issue" />
+    <MESSAGE value="Added more RuneLite tools, some are now implemented into the suite + Some bug fixes" />
+    <MESSAGE value="Model viewer has been implemented, on v0.5-beta" />
+    <MESSAGE value="Model viewer improvements - supports RS2 and some RSHD textures" />
+    <MESSAGE value="Fix for displaying OSRS Model Textures" />
+    <MESSAGE value="Upgrade to v0.6-beta, fix OSRS 229+ cache loading" />
+    <option name="LAST_COMMIT_MESSAGE" value="Upgrade to v0.6-beta, fix OSRS 229+ cache loading" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.NoClassDefFoundError" package="java.lang" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.NullPointerException" package="java.lang" />
+          <option name="timeStamp" value="2" />
+        </breakpoint>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.lang.ArrayIndexOutOfBoundsException" package="java.lang" />
+          <option name="timeStamp" value="3" />
+        </breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Old_School_RuneScape_Cache_Tools$Main.ic" NAME="Main Coverage Results" MODIFIED="1707187748669" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/Old_School_RuneScape_Cache_Tools$MusicPlayer.ic" NAME="MusicPlayer Coverage Results" MODIFIED="1736823154012" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+      <FILTER>com.application.*</FILTER>
+    </SUITE>
+  </component>
+</project>

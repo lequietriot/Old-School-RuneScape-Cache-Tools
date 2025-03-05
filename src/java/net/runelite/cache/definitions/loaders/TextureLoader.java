@@ -36,7 +36,7 @@ public class TextureLoader
 
 		def.field1777 = is.readUnsignedShort();
 		def.field1778 = is.readByte() != 0;
-		def.setId(id);
+		def.id = (id);
 
 		int count = is.readUnsignedByte();
 		int[] files = new int[count];
@@ -44,7 +44,7 @@ public class TextureLoader
 		for (int i = 0; i < count; ++i)
 			files[i] = is.readUnsignedShort();
 
-		def.setFileIds(files);
+		def.fileIds = (files);
 
 		if (count > 1)
 		{

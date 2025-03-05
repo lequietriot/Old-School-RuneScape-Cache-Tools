@@ -79,8 +79,8 @@ public class DBTableLoader
 				}
 			}
 
-			def.setTypes(types);
-			def.setDefaultColumnValues(defaultValues);
+			//def.setTypes(types);
+			//def.setDefaultColumnValues(defaultValues);
 		}
 		else
 		{
