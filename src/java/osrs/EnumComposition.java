@@ -2,97 +2,136 @@ package osrs;
 
 public class EnumComposition extends DualNode {
 
-	static EvictingDualNodeHashTable EnumDefinition_cached;
-	static char[] cp1252AsciiExtension;
+	public static EvictingDualNodeHashTable EnumDefinition_cached;
+
+	static SpritePixels[] crossSprites;
+
 	public char inputType;
+
 	public char outputType;
+
 	public String defaultStr;
+
 	public int defaultInt;
+
 	public int outputCount;
+
 	public int[] keys;
+
 	public int[] intVals;
+
 	public String[] strVals;
 
 	static {
-		cp1252AsciiExtension = new char[]{'€', '\u0000', '‚', 'ƒ', '„', '…', '†', '‡', 'ˆ', '‰', 'Š', '‹', 'Œ', '\u0000', 'Ž', '\u0000', '\u0000', '‘', '’', '“', '”', '•', '–', '—', '˜', '™', 'š', '›', 'œ', '\u0000', 'ž', 'Ÿ'}; // L: 4
-		EnumDefinition_cached = new EvictingDualNodeHashTable(64); // L: 12
+		EnumDefinition_cached = new EvictingDualNodeHashTable(64);
 	}
 
 	public EnumComposition() {
-		this.defaultStr = "null"; // L: 15
-		this.outputCount = 0; // L: 17
-	} // L: 22
+		this.defaultStr = "null";
+		this.outputCount = 0;
+	}
+
+	public static String decodeStringCp1252(byte[] var0, int var1, int var2) {
+		char[] var3 = new char[var2];
+		int var4 = 0;
+
+		for (int var5 = 0; var5 < var2; ++var5) {
+			int var6 = var0[var5 + var1] & 255;
+			if (var6 != 0) {
+				if (var6 >= 128 && var6 < 160) {
+					char var7 = class399.cp1252AsciiExtension[var6 - 128];
+					if (var7 == 0) {
+						var7 = '?';
+					}
+
+					var6 = var7;
+				}
+
+				var3[var4++] = (char)var6;
+			}
+		}
+
+		return new String(var3, 0, var4);
+	}
 
 	public void decode(Buffer var1) {
 		while (true) {
-			int var2 = var1.readUnsignedByte(); // L: 36
-			if (var2 == 0) { // L: 37
-				return; // L: 40
+			int var2 = var1.readUnsignedByte();
+			if (var2 == 0) {
+				return;
 			}
 
-			this.decodeNext(var1, var2); // L: 38
+			this.decodeNext(var1, var2);
 		}
 	}
 
 	void decodeNext(Buffer var1, int var2) {
-		if (var2 == 1) { // L: 43
+		if (var2 == 1) {
 			this.inputType = (char)var1.readUnsignedByte();
-		} else if (var2 == 2) { // L: 44
+		} else if (var2 == 2) {
 			this.outputType = (char)var1.readUnsignedByte();
-		} else if (var2 == 3) { // L: 45
+		} else if (var2 == 3) {
 			this.defaultStr = var1.readStringCp1252NullTerminated();
-		} else if (var2 == 4) { // L: 46
+		} else if (var2 == 4) {
 			this.defaultInt = var1.readInt();
 		} else {
 			int var3;
-			if (var2 == 5) { // L: 47
-				this.outputCount = var1.readUnsignedShort(); // L: 48
-				this.keys = new int[this.outputCount]; // L: 49
-				this.strVals = new String[this.outputCount]; // L: 50
+			if (var2 == 5) {
+				this.outputCount = var1.readUnsignedShort();
+				this.keys = new int[this.outputCount];
+				this.strVals = new String[this.outputCount];
 
-				for (var3 = 0; var3 < this.outputCount; ++var3) { // L: 51
-					this.keys[var3] = var1.readInt(); // L: 52
-					this.strVals[var3] = var1.readStringCp1252NullTerminated(); // L: 53
+				for (var3 = 0; var3 < this.outputCount; ++var3) {
+					this.keys[var3] = var1.readInt();
+					this.strVals[var3] = var1.readStringCp1252NullTerminated();
 				}
-			} else if (var2 == 6) { // L: 56
-				this.outputCount = var1.readUnsignedShort(); // L: 57
-				this.keys = new int[this.outputCount]; // L: 58
-				this.intVals = new int[this.outputCount]; // L: 59
+			} else if (var2 == 6) {
+				this.outputCount = var1.readUnsignedShort();
+				this.keys = new int[this.outputCount];
+				this.intVals = new int[this.outputCount];
 
-				for (var3 = 0; var3 < this.outputCount; ++var3) { // L: 60
-					this.keys[var3] = var1.readInt(); // L: 61
-					this.intVals[var3] = var1.readInt(); // L: 62
+				for (var3 = 0; var3 < this.outputCount; ++var3) {
+					this.keys[var3] = var1.readInt();
+					this.intVals[var3] = var1.readInt();
 				}
 			}
 		}
 
-	} // L: 66
-
-	public int size() {
-		return this.outputCount; // L: 69
 	}
 
-	public static String decodeStringCp1252(byte[] var0, int var1, int var2) {
-		char[] var3 = new char[var2]; // L: 82
-		int var4 = 0; // L: 83
+	public int size() {
+		return this.outputCount;
+	}
 
-		for (int var5 = 0; var5 < var2; ++var5) { // L: 84
-			int var6 = var0[var5 + var1] & 255; // L: 85
-			if (var6 != 0) { // L: 86
-				if (var6 >= 128 && var6 < 160) { // L: 87
-					char var7 = cp1252AsciiExtension[var6 - 128]; // L: 88
-					if (var7 == 0) { // L: 89
-						var7 = '?';
-					}
+	public static int method999(int var0) {
+		--var0;
+		var0 |= var0 >>> 1;
+		var0 |= var0 >>> 2;
+		var0 |= var0 >>> 4;
+		var0 |= var0 >>> 8;
+		var0 |= var0 >>> 16;
+		return var0 + 1;
+	}
 
-					var6 = var7; // L: 90
-				}
-
-				var3[var4++] = (char)var6; // L: 92
-			}
+	static final int method1001(int var0, int var1, int var2) {
+		if (var2 > 179) {
+			var1 /= 2;
 		}
 
-		return new String(var3, 0, var4); // L: 94
+		if (var2 > 192) {
+			var1 /= 2;
+		}
+
+		if (var2 > 217) {
+			var1 /= 2;
+		}
+
+		if (var2 > 243) {
+			var1 /= 2;
+		}
+
+		int var3 = (var1 / 32 << 7) + (var0 / 4 << 10) + var2 / 2;
+		return var3;
 	}
 
 }

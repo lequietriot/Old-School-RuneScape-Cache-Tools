@@ -24,9 +24,8 @@
  */
 package net.runelite.cache.models;
 
-import net.runelite.cache.definitions.TextureDetails;
-import net.runelite.cache.managers.TextureManagerHD;
 import net.runelite.cache.definitions.ModelDefinition;
+import net.runelite.cache.managers.TextureManagerHD;
 
 import java.io.PrintWriter;
 
@@ -113,7 +112,7 @@ public class ObjExporterRS3
 
             mtlWriter.println("newmtl m" + i);
 
-            if (textureId == -1)
+            if (textureId != -2)
             {
                 int rgb = JagexColor.HSLtoRGB(model.faceColors[i], BRIGHTNESS);
                 double r = ((rgb >> 16) & 0xff) / 255.0;
@@ -124,10 +123,11 @@ public class ObjExporterRS3
             }
             else
             {
-                TextureDetails texture = null;//textureManager.findTexture(textureId);
-                assert texture != null;
+                //TextureDetails texture = null;//textureManager.findTexture(textureId);
+                //assert texture != null;
 
-                mtlWriter.println("map_Kd sprite/" + textureId + "-0.png");
+                //mtlWriter.println("map_Kd sprite/" + textureId + "-0.png");
+                //mtlWriter.println("map_Kd " + textureId + ".png");
             }
 
             int alpha = 0;

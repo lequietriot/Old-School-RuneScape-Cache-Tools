@@ -5,6 +5,7 @@ import com.displee.cache.index.Index;
 import com.sun.media.sound.SF2Soundbank;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -856,6 +857,9 @@ public class MidiPcmStream extends PcmStream {
 					if (new File(soundFontPath + File.separator + musicPatch.key + ".sf2").exists()) {
 						musicPatch.mapSoundFontSamples((int) musicPatch.key, channel, new SF2Soundbank(new File(soundFontPath + File.separator + musicPatch.key + ".sf2")));
 					}
+					else {
+						musicPatch.mapSoundFontSamples((int) musicPatch.key, channel, new SF2Soundbank(new File(soundFontPath)));
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -869,7 +873,11 @@ public class MidiPcmStream extends PcmStream {
 				for (int note = 0; note < 128; note++) {
 					musicPatch.audioDataSources[note] = null;
 				}
-				musicPatch.mapSoundFontSamples((int) musicPatch.key, channel, sf2Soundbank);
+				try {
+					musicPatch.mapSoundFontSamples((int) musicPatch.key, channel, sf2Soundbank);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}

@@ -56,7 +56,7 @@ public class ModelDefinition
 
 	public transient int maxPriority;
 
-	public static transient int animOffsetX, animOffsetY, animOffsetZ;
+	public transient int animOffsetX, animOffsetY, animOffsetZ;
 
 	public int version;
 

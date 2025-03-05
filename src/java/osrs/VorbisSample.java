@@ -2,6 +2,9 @@ package osrs;
 
 import com.displee.cache.index.Index;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -562,6 +565,16 @@ public class VorbisSample extends Node {
 			return null;
 		} else {
 			byte[] vorbisData = Objects.requireNonNull(Objects.requireNonNull(vorbisIndex.archive(archiveID)).file(fileID)).getData();
+			try {
+				File fileData = new File(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "772 Cache Music Data" + File.separator + "idx14" + File.separator + archiveID + ".dat");
+				FileOutputStream fileOutputStream = new FileOutputStream(fileData);
+				assert vorbisData != null;
+				fileOutputStream.write(vorbisData);
+				fileOutputStream.flush();
+				fileOutputStream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			return vorbisData == null ? null : new VorbisSample(vorbisData);
 		}
 	}

@@ -4,19 +4,19 @@ import com.displee.cache.CacheLibrary;
 import com.displee.cache.index.Index;
 import com.displee.cache.index.archive.Archive;
 import com.formdev.flatlaf.FlatDarculaLaf;
-import com.sun.media.sound.SF2Soundbank;
 import decoders.*;
 import encoders.*;
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
 import modelviewer.ModelViewer;
+import org.gagravarr.ogg.OggFile;
+import org.gagravarr.ogg.OggPacket;
+import org.gagravarr.ogg.OggPacketWriter;
+import org.gagravarr.vorbis.*;
 import osrs.*;
+import synth.soundfont2.SF2Sample;
+import synth.soundfont2.SF2Soundbank;
 
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
+import javax.imageio.ImageIO;
+import javax.sound.midi.*;
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -28,6 +28,7 @@ import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -43,27 +44,13 @@ public class GUI extends JFrame {
 
     public static MidiPcmStream midiPcmStream;
 
-    static JPanel contentPanel;
-
-    static JPanel contentPreviewPane;
-
     JScrollPane cacheScrollPane;
-
-    JTree cacheTree;
 
     final JMenuItem modelDecoder;
 
     JTextField songNameInput;
 
     public static JLabel cacheOperationInfo;
-
-    DefaultMutableTreeNode cacheNode;
-
-    DefaultMutableTreeNode indexNode;
-
-    DefaultMutableTreeNode archiveNode;
-
-    DefaultMutableTreeNode fileNode;
 
     public static int selectedIndex;
     public int[] selectedIndices;
@@ -72,24 +59,23 @@ public class GUI extends JFrame {
     public static int selectedFile;
     public int[] selectedFiles;
 
-    private static final File defaultCachePath;
+    public static File defaultCachePath;
 
     static {
         defaultCachePath = new File(System.getProperty("user.home") + File.separator + "jagexcache" + File.separator + "oldschool" + File.separator + "LIVE");
     }
 
-    JFXPanel modelViewPanel;
-    Scene modelScene;
     ModelViewer modelViewer;
 
     public GUI() {
-        super("Old School RuneScape Cache Tools v0.5-beta");
+        super("Old School RuneScape Cache Tools v0.6-beta");
+        //setUndecorated(true);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(640, 480);
         setMinimumSize(new Dimension(640, 480));
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("logo.png"))).getImage());
+        //setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("logo.png"))).getImage());
         setLayout(new GridLayout());
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         try {
             UIManager.setLookAndFeel(new FlatDarculaLaf());
             SwingUtilities.updateComponentTreeUI(this);
@@ -114,6 +100,10 @@ public class GUI extends JFrame {
         JMenuItem searchCache = new JMenuItem("Search Cache for...");
         searchCache.addActionListener(e -> searchCacheData());
         fileMenu.add(searchCache);
+
+        JMenuItem closeApplication = new JMenuItem("Exit/Close");
+        closeApplication.addActionListener(e -> closeCacheApp());
+        fileMenu.add(closeApplication);
 
         JMenu encoderMenu = new JMenu("Data Encoders");
         jMenuBar.add(encoderMenu);
@@ -148,9 +138,13 @@ public class GUI extends JFrame {
         modelDecoder = new JMenuItem("Model Decoder");
         decoderMenu.add(modelDecoder);
 
+        JMenuItem fbxModelDecoder = new JMenuItem("Model Decoder (FBX)");
+        //fbxModelDecoder.addActionListener(e -> new FBXModelDecoderOSRS(this));
+        //decoderMenu.add(fbxModelDecoder);
+
         JMenuItem rs3ModelDecoder = new JMenuItem("RS3 Model Decoder");
         rs3ModelDecoder.addActionListener(e -> new ModelDecoderRS3(this));
-        //decoderMenu.add(rs3ModelDecoder);
+        decoderMenu.add(rs3ModelDecoder);
 
         JMenuItem vorbisDecoder = new JMenuItem("Vorbis Decoder");
         vorbisDecoder.addActionListener(e -> new VorbisDecoder(this));
@@ -160,12 +154,20 @@ public class GUI extends JFrame {
         soundBankDecoder.addActionListener(e -> new SoundBankDecoder(this));
         decoderMenu.add(soundBankDecoder);
 
+        JMenuItem interfaceDecoder = new JMenuItem("Interface Decoder");
+        interfaceDecoder.addActionListener(e -> new InterfaceDecoder(this));
+        decoderMenu.add(interfaceDecoder);
+
         JMenu batchDecoderMenu = new JMenu("Batch Decoders");
         jMenuBar.add(batchDecoderMenu);
 
         JMenuItem enumBatchDecoder = new JMenuItem("Configuration - Enums");
         enumBatchDecoder.addActionListener(e -> new EnumDecoder());
         batchDecoderMenu.add(enumBatchDecoder);
+
+        JMenuItem spritesBatchDecoder = new JMenuItem("Sprites");
+        spritesBatchDecoder.addActionListener(e -> new SpritesBatchDecoder());
+        batchDecoderMenu.add(spritesBatchDecoder);
 
         JMenu toolsMenu = new JMenu("Tools");
         jMenuBar.add(toolsMenu);
@@ -178,9 +180,13 @@ public class GUI extends JFrame {
         musicPort.addActionListener(e -> useMusicPort());
         toolsMenu.add(musicPort);
 
+        JMenuItem writeOGGTags = new JMenuItem("Write OGG Tags");
+        writeOGGTags.addActionListener(e -> writeOggTagsFromSf2());
+        toolsMenu.add(writeOGGTags);
+
         JMenuItem quickTest = new JMenuItem("Quick Sound Test");
         quickTest.addActionListener(e -> quickTestSound());
-        //toolsMenu.add(quickTest);
+        toolsMenu.add(quickTest);
 
         JMenuItem synthPatchEditor = new JMenuItem("Synth Patch Editor");
         synthPatchEditor.addActionListener(e -> editSynthPatch());
@@ -206,13 +212,59 @@ public class GUI extends JFrame {
         loadCacheLabel.setVerticalAlignment(SwingConstants.CENTER);
         loadCacheLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        contentPanel = new JPanel();
+        JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BorderLayout());
         contentPanel.add(loadCacheLabel);
 
         setContentPane(contentPanel);
         loadCache(defaultCachePath);
-        initModelToolModes();
+    }
+
+    private void closeCacheApp() {
+        System.exit(0);
+    }
+
+    private void writeOggTagsFromSf2() {
+        try {
+            File oggPath = new File("");
+            for (File file : Objects.requireNonNull(oggPath.listFiles())) {
+                SF2Soundbank sf2Soundbank = new SF2Soundbank(new File(AppConstants.customSoundFontPath));
+                for (SF2Sample sf2Sample : sf2Soundbank.getSamples()) {
+                    if (sf2Sample.getName().equals(file.getName().replace(".ogg", ""))) {
+                        VorbisFile vorbisFile = new VorbisFile(file);
+
+                        FileOutputStream fileOutputStream = new FileOutputStream(file.getName());
+                        OggFile oggFile = new OggFile(fileOutputStream);
+                        OggPacketWriter oggPacketWriter = oggFile.getPacketWriter();
+
+                        VorbisInfo vorbisInfo = vorbisFile.getInfo();
+                        oggPacketWriter.bufferPacket(vorbisInfo.write(), true);
+
+                        VorbisComments vorbisComments = vorbisFile.getComment();
+                        vorbisComments.addComment("Sample Rate", String.valueOf(sf2Sample.getSampleRate()));
+                        vorbisComments.addComment("Sample Size", String.valueOf(sf2Sample.getEndLoop()));
+                        vorbisComments.addComment("Loop Start", String.valueOf(sf2Sample.getStartLoop()));
+                        vorbisComments.addComment("Loop End", String.valueOf(sf2Sample.getEndLoop()));
+                        oggPacketWriter.bufferPacket(vorbisComments.write(), true);
+
+                        VorbisSetup vorbisSetup = vorbisFile.getSetup();
+                        oggPacketWriter.bufferPacket(new OggPacket(vorbisSetup.getData()), true);
+
+                        for (VorbisAudioData vorbisAudioData = vorbisFile.getNextAudioPacket(); vorbisAudioData != null; vorbisAudioData = vorbisFile.getNextAudioPacket()) {
+                            if (vorbisAudioData.getData() != null) {
+                                //oggPacketWriter.setGranulePosition(vorbisAudioData.getGranulePosition());
+                                oggPacketWriter.bufferPacket(new OggPacket(vorbisAudioData.getData()), true);
+                            }
+                        }
+
+                        fileOutputStream.flush();
+                        fileOutputStream.close();
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void findSelectFile() {
@@ -262,7 +314,7 @@ public class GUI extends JFrame {
                                     for (int file = 0; file < Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).files().length; file++) {
                                         if (Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file) != null) {
                                             NPCComposition npcComposition = new NPCComposition();
-                                            npcComposition.decode(new Buffer(cacheLibrary.data(index, archive, file)));
+                                            //npcComposition.decode(new Buffer(cacheLibrary.data(index, archive, file)));
                                             if (npcComposition.name.contains(searchPrompt)) {
                                                 System.out.println("Index " + index + ", " + "Archive " + archive + ", File " + file);
                                             }
@@ -291,19 +343,7 @@ public class GUI extends JFrame {
     }
 
     private void testTool() {
-        /*
-        NPCComposition npcComposition = new NPCComposition();
-        npcComposition.decode(new Buffer(cacheLibrary.data(selectedIndex, selectedArchive, selectedFile)));
-        System.out.println("Name: " + npcComposition.name);
-        System.out.println("Model IDs: " + Arrays.toString(npcComposition.models));
-        System.out.println("Size: " + npcComposition.size);
-        System.out.println("Idle Sequence: " + npcComposition.idleSequence);
-        System.out.println("Walk Sequence: " + npcComposition.walkSequence);
-        System.out.println("Walk Back Sequence: " + npcComposition.walkBackSequence);
-        System.out.println("Walk Left Sequence: " + npcComposition.walkLeftSequence);
-        System.out.println("Walk Right Sequence: " + npcComposition.walkRightSequence);
-        System.out.println("Actions: " + Arrays.toString(npcComposition.actions));
-         */
+        MusicPatch musicPatch = new MusicPatch(cacheLibrary.data(15, 0, 0));
     }
 
     private void editSynthPatch() {
@@ -312,9 +352,9 @@ public class GUI extends JFrame {
 
     private void chooseMusicTrack() {
 
-        JSplitPane musicPlayerMasterPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-
         JPanel musicPlayerPanel = new JPanel();
+        
+        JSplitPane musicPlayerMasterPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
         JLabel songInfoLabel = new JLabel("Current Loaded Song:");
 
@@ -340,9 +380,6 @@ public class GUI extends JFrame {
         JButton musicRenderAllButton = new JButton("Render all Music to Files");
         musicRenderAllButton.addActionListener(e -> renderAllSongs());
 
-        JButton exitMusicPlayerButton = new JButton("Exit Music Player");
-        exitMusicPlayerButton.addActionListener(e -> exitPlayer());
-
         musicPlayerPanel.add(songInfoLabel);
         musicPlayerPanel.add(songNameInput);
         musicPlayerPanel.add(loadMusicButton);
@@ -353,7 +390,6 @@ public class GUI extends JFrame {
         musicPlayerPanel.add(musicStopButton);
         musicPlayerPanel.add(musicRenderButton);
         musicPlayerPanel.add(musicRenderAllButton);
-        musicPlayerPanel.add(exitMusicPlayerButton);
 
         JPanel settingsPanel = new JPanel();
 
@@ -434,6 +470,8 @@ public class GUI extends JFrame {
             midiPcmStream.setInitialPatch(9, 128);
             midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.index(15), new SoundCache(cacheLibrary.index(4), cacheLibrary.index(14)), 0);
             midiPcmStream.setPcmStreamVolume(AppConstants.volumeLevel);
+            //midiPcmStream.loadSoundFont(new com.sun.media.sound.SF2Soundbank(new File(AppConstants.customSoundFontPath)), -1);
+
 
             MidiReceiver midiReceiver = new MidiReceiver(midiPcmStream);
             MidiDevice.Info[] infoArray = MidiSystem.getMidiDeviceInfo();
@@ -463,7 +501,7 @@ public class GUI extends JFrame {
                     devicePcmPlayer.fill(devicePcmPlayer.samples, 256);
                     devicePcmPlayer.write();
                 }
-            } catch (MidiUnavailableException | LineUnavailableException e) {
+            } catch (MidiUnavailableException | LineUnavailableException | IOException e) {
                 e.printStackTrace();
             }
         }).start();
@@ -478,7 +516,7 @@ public class GUI extends JFrame {
         }
     }
 
-    private void updateCurrentSong(JTextField songName) {
+    public void updateCurrentSong(JTextField songName) {
         if (songName.getText() != null) {
             AppConstants.currentSongName = songName.getText();
         }
@@ -565,6 +603,96 @@ public class GUI extends JFrame {
         }
     }
 
+    private void autoQueueNextSong(String songName, String sounds) {
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "Current Song.txt");
+            DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
+            File selected = null;
+            for (File file : AppConstants.currentMusicFiles) {
+                if (file.getName().toLowerCase().contains(songName.toLowerCase().replace("_", " "))) {
+                    String name = file.getName().toLowerCase().replace(".mid", "").substring(file.getName().indexOf(" - ")).replace(" - ", "");
+                    songName = songName.replace("_", " ");
+                    if (name.equals(songName)) {
+                        selected = file;
+                    }
+                }
+            }
+            if (selected != null) {
+                AppConstants.nextMidiFileBytes = Files.readAllBytes(Paths.get(selected.toURI()));
+                AppConstants.nextSongName = selected.getName().replace(".mid", "").trim() + " (Custom)";
+            }
+            else {
+                AppConstants.requestPosition++;
+                System.out.println("SKIPPING " + songName + ": INVALID SONG/MISSING FILE");
+            }
+            AppConstants.soundFontName = sounds;
+            if (AppConstants.currentSongName.contains(" - ")) {
+                int index = AppConstants.currentSongName.lastIndexOf(" - ");
+                String name = AppConstants.currentSongName.substring(index).replace(".mid", "").replace(" - ", "").trim();
+                if (name.contains("(Custom)")) {
+                    name = name.replace("(Custom)", "").trim();
+                }
+                dataOutputStream.write(("Current Song: " + name).getBytes(StandardCharsets.UTF_8));
+            } else {
+                String name = AppConstants.currentSongName.replace(".mid", "").trim();
+                if (name.contains("(Custom)")) {
+                    name = name.replace("(Custom)", "").trim();
+                }
+                dataOutputStream.write(("Current Song: " + name).getBytes(StandardCharsets.UTF_8));
+            }
+            if (AppConstants.shuffle) {
+                if (AppConstants.nextSongName.contains(" - ")) {
+                    int index = AppConstants.nextSongName.lastIndexOf(" - ");
+                    String name = AppConstants.nextSongName.substring(index).replace(" - ", "").trim();
+                    if (name.contains("(Custom)")) {
+                        name = name.replace("(Custom)", "").trim();
+                    }
+                    dataOutputStream.write(("\nNext Song: " + name).getBytes(StandardCharsets.UTF_8));
+                } else {
+                    String name = AppConstants.nextSongName.replace(".mid", "").trim();
+                    if (name.contains("(Custom)")) {
+                        name = name.replace("(Custom)", "").trim();
+                    }
+                    dataOutputStream.write(("\nNext Song: " + name).getBytes(StandardCharsets.UTF_8));
+                }
+            }
+            dataOutputStream.flush();
+            dataOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            String[] soundFontNames = new String[]{"RS2.sf2", "OSRS.sf2", "RSHD.sf2", "RS3.sf2"};
+            String[] soundFontPNGNames = new String[]{"RS2.png", "OSRS.png", "RSHD.png", "RS3.png"};
+            int index = (int) (Math.random() * soundFontNames.length);
+            if (AppConstants.currentSongName.contains(songName) && !AppConstants.soundFontName.equals("")) {
+                if (AppConstants.soundFontName.toUpperCase().contains("RS2")) {
+                    index = 0;
+                }
+                if (AppConstants.soundFontName.toUpperCase().contains("OSRS")) {
+                    index = 1;
+                }
+                if (AppConstants.soundFontName.toUpperCase().contains("RSHD")) {
+                    index = 2;
+                }
+                if (AppConstants.soundFontName.toUpperCase().contains("RS3")) {
+                    index = 3;
+                }
+            }
+            com.sun.media.sound.SF2Soundbank sf2Soundbank = new com.sun.media.sound.SF2Soundbank(new File(AppConstants.customSoundFontPath + File.separator + soundFontNames[index]));
+            midiPcmStream.loadSoundFont(sf2Soundbank, -1);
+            BufferedImage bufferedImage = ImageIO.read(new File(System.getProperty("user.home") + File.separator + "Documents" + File.separator + soundFontPNGNames[index]));
+            FileOutputStream fileOutputStream = new FileOutputStream(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "Current Image.png");
+            DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
+            ImageIO.write(bufferedImage, "png", dataOutputStream);
+            dataOutputStream.flush();
+            dataOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void playSong() {
         try {
             if (AppConstants.streaming) {
@@ -585,8 +713,13 @@ public class GUI extends JFrame {
                     dataOutputStream.write(("Current Song: " + name).getBytes(StandardCharsets.UTF_8));
                 }
                 if (AppConstants.shuffle) {
-                    if (AppConstants.currentSongName.contains("(Custom)")) {
+                    if (AppConstants.currentMusicFiles != null) {
                         File selected = AppConstants.currentMusicFiles[(int) (Math.random() * AppConstants.currentMusicFiles.length)];
+                        for (File file : AppConstants.currentMusicFiles) {
+                            if (file.getName().contains(AppConstants.currentSongName)) {
+                                selected = file;
+                            }
+                        }
                         if (selected.getName().endsWith(".mid")) {
                             AppConstants.nextMidiFileBytes = Files.readAllBytes(Paths.get(selected.toURI()));
                             AppConstants.nextSongName = selected.getName().replace(".mid", "").trim() + "(Custom)";
@@ -602,7 +735,12 @@ public class GUI extends JFrame {
                         }
                         dataOutputStream.write(("\nNext Song: " + name).getBytes(StandardCharsets.UTF_8));
                     }
+                    else {
+                        dataOutputStream.write(("\nNext Song: " + AppConstants.nextSongName).getBytes(StandardCharsets.UTF_8));
+                    }
                 }
+                dataOutputStream.flush();
+                dataOutputStream.close();
             }
             initSoundEngine();
         } catch (IOException | LineUnavailableException e) {
@@ -637,6 +775,19 @@ public class GUI extends JFrame {
 
                 MusicTrack musicTrack = new MusicTrack();
                 if (AppConstants.currentSongName.contains("(Custom)")) {
+
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    try {
+                        Sequence sequence = MidiSystem.getSequence(new ByteArrayInputStream(AppConstants.midiMusicFileBytes));
+                        sequence.getTracks()[0].add(new MidiEvent(new ShortMessage(ShortMessage.NOTE_ON, 0, 0, 0), (sequence.getTickLength()) + 900));
+                        sequence.getTracks()[0].add(new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 0, 0), (sequence.getTickLength()) + 903));
+                        MidiSystem.write(sequence, 1, byteArrayOutputStream);
+
+                        AppConstants.midiMusicFileBytes = byteArrayOutputStream.toByteArray();
+                    } catch (InvalidMidiDataException | IOException e) {
+                        e.printStackTrace();
+                    }
+
                     musicTrack = MusicTrack.setTrack(AppConstants.midiMusicFileBytes);
                 } else {
                     try {
@@ -654,7 +805,7 @@ public class GUI extends JFrame {
                     midiPcmStream.setPcmStreamVolume(AppConstants.volumeLevel);
                     midiPcmStream.setMusicTrack(musicTrack, false);
                     if (AppConstants.usingSoundFont) {
-                        midiPcmStream.loadSoundFont(new SF2Soundbank(new File(AppConstants.customSoundFontPath)), -1);
+                        midiPcmStream.loadSoundFont(new com.sun.media.sound.SF2Soundbank(new File(AppConstants.customSoundFontPath)), -1);
                     }
                     devicePcmPlayer.init();
                     devicePcmPlayer.setStream(midiPcmStream);
@@ -668,7 +819,8 @@ public class GUI extends JFrame {
                     try {
                         File outputFilePath = new File(cacheLibrary.getPath() + File.separator + "Output");
                         boolean madeDirectory = outputFilePath.mkdirs();
-                        AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(outputFilePath + File.separator + AppConstants.currentSongName + "_Index_" + AppConstants.currentMusicIndex + ".wav"));
+                        //AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(outputFilePath + File.separator + AppConstants.currentSongName + "_Index_" + AppConstants.currentMusicIndex + ".wav"));
+                        AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE, new File(outputFilePath + File.separator + AppConstants.currentSongName.replace("(Custom)", "") + ".wav"));
                         if (madeDirectory) {
                             cacheOperationInfo.setText("An output directory in your current cache folder was created!\n" + AppConstants.currentSongName + " was then rendered successfully to your output folder!");
                         } else {
@@ -706,7 +858,6 @@ public class GUI extends JFrame {
 
     private void exitPlayer() {
         stopSong();
-        setContentPane(contentPanel);
         revalidate();
     }
 
@@ -736,19 +887,59 @@ public class GUI extends JFrame {
 
                     SoundCache soundCache = new SoundCache(cacheLibrary.index(4), cacheLibrary.index(14));
 
+                    /*
+                    URL url = new URL("https://www.youtube.com/live_chat?v=fhBApGM06Mc");
+                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                    urlConnection.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36,gzip(gfe)");
+                    InputStream inputStream = urlConnection.getInputStream();
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    List<String> lines = bufferedReader.lines().collect(Collectors.toList());
+                    for (int index = 0; index < lines.size(); index++) {
+                        if (lines.get(index).toLowerCase().contains("!request ")) {
+                            String[] comment = lines.get(index).split(" ");
+                            for (int commentIndex = 0; commentIndex < comment.length; commentIndex++) {
+                                if (comment[commentIndex].contains("!request")) {
+                                    if (AppConstants.requests != null && AppConstants.requests.size() > AppConstants.requestPosition) {
+                                        String[] requested = AppConstants.requests.get(AppConstants.requestPosition).split(" ");
+                                        autoQueueNextSong(requested[0], requested[1]);
+                                        if (!AppConstants.requests.contains(comment[commentIndex + 1] + " " + comment[commentIndex + 2].split("\"")[0]))
+                                        {
+                                            AppConstants.requests.add(comment[commentIndex + 1] + " " + comment[commentIndex + 2].split("\"")[0]);
+                                            System.out.println("NEW REQUEST ADDED " + Arrays.toString(requested));
+                                        }
+                                        AppConstants.requestPosition++;
+                                    }
+                                    else {
+                                        if (AppConstants.requests != null) {
+                                            if (!AppConstants.requests.contains(comment[commentIndex + 1] + " " + comment[commentIndex + 2].split("\"")[0]))
+                                            {
+                                                AppConstants.requests.add(comment[commentIndex + 1] + " " + comment[commentIndex + 2].split("\"")[0]);
+                                                System.out.println("NEW REQUEST ADDED " + Arrays.toString((comment[commentIndex + 1] + " " + comment[commentIndex + 2].split("\"")[0]).split(" ")));
+                                            }
+                                            if (AppConstants.requests.size() > AppConstants.requestPosition) {
+                                                String[] requested = AppConstants.requests.get(AppConstants.requestPosition).split(" ");
+                                                autoQueueNextSong(requested[0], requested[1]);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                     */
+
                     if (musicTrack != null && midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.index(15), soundCache, 0)) {
                         midiPcmStream.setPcmStreamVolume(AppConstants.volumeLevel);
                         midiPcmStream.setMusicTrack(musicTrack, false);
+                        midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.index(15), soundCache, 0);
                         if (AppConstants.usingSoundFont) {
-                            midiPcmStream.loadSoundFont(new SF2Soundbank(new File(AppConstants.customSoundFontPath)), -1);
-                        }
-                        else {
-                            midiPcmStream.loadMusicTrack(musicTrack, cacheLibrary.index(15), soundCache, 0);
+                            midiPcmStream.loadSoundFonts(AppConstants.customSoundFontPath, -1);
                         }
                         devicePcmPlayer.init();
                         devicePcmPlayer.setStream(midiPcmStream);
                         devicePcmPlayer.open(16384);
                         devicePcmPlayer.samples = new int[512];
+
                         while (midiPcmStream != null && midiPcmStream.isReady()) {
                             devicePcmPlayer.fill(devicePcmPlayer.samples, 256);
                             devicePcmPlayer.write();
@@ -757,7 +948,7 @@ public class GUI extends JFrame {
                                 AppConstants.currentSongName = AppConstants.nextSongName;
                                 AppConstants.midiMusicFileBytes = AppConstants.nextMidiFileBytes;
                                 playSong();
-                                System.out.println("Playing " + AppConstants.currentSongName);
+                                System.out.println("Playing " + AppConstants.currentSongName.replace("(Custom)", "") + " with " + AppConstants.soundFontName + " soundbank");
                             }
                         }
                     }
@@ -812,6 +1003,10 @@ public class GUI extends JFrame {
 
     private void loadCache(File cache) {
 
+        selectedIndex = 0;
+        selectedArchive = 0;
+        selectedFile = 0;
+
         if (cache.isDirectory() && cache.exists()) {
             try {
                 cacheLibrary = new CacheLibrary(cache.getPath(), false, null);
@@ -829,20 +1024,7 @@ public class GUI extends JFrame {
                     AppConstants.cacheType = "RuneScape 3";
                 }
                 initModelToolModes();
-
-                modelViewer = new ModelViewer();
-                modelViewPanel = new JFXPanel();
-                Platform.runLater(() -> {
-                    try {
-                        modelScene = modelViewer.start(new Stage()).getScene();
-                        modelViewPanel.setScene(modelScene);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-
                 initFileViewer();
-                contentPreviewPane.revalidate();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -888,7 +1070,9 @@ public class GUI extends JFrame {
 
     private void initFileViewer() {
 
-        contentPanel.removeAll();
+        getContentPane().removeAll();
+
+        DetailedViewPanel detailedViewPanel = new DetailedViewPanel();
 
         JLabel cacheLoadedInfo = new JLabel("Loaded cache from local path - " + cacheLibrary.getPath());
         cacheLoadedInfo.setFont(cacheLoadedInfo.getFont().deriveFont(Font.BOLD, 14));
@@ -897,13 +1081,8 @@ public class GUI extends JFrame {
 
         JSplitPane splitCacheViewPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
-        buildTreeNode();
-
-        cacheTree = new JTree();
-        cacheTree.setModel(new DefaultTreeModel(cacheNode));
-
-        contentPreviewPane = new JPanel();
-        contentPreviewPane.setLayout(new GridLayout());
+        JTree cacheTree = new JTree();
+        cacheTree.setModel(new DefaultTreeModel(buildTreeNode()));
 
         cacheScrollPane = new JScrollPane(cacheTree);
         cacheScrollPane.setViewportView(cacheTree);
@@ -965,7 +1144,6 @@ public class GUI extends JFrame {
         JTable infoTable = new JTable();
 
         cacheTree.addTreeSelectionListener(e -> {
-
             if (cacheTree.getSelectionPaths() != null && cacheTree.getSelectionPaths().length > 1) {
 
                 selectedIndices = new int[cacheTree.getSelectionPaths().length];
@@ -1015,7 +1193,7 @@ public class GUI extends JFrame {
                 }
             }
             else {
-                if (Objects.requireNonNull(cacheTree.getSelectionPath()).toString().contains("Index")) {
+                if ((Objects.requireNonNull(cacheTree.getSelectionPath())).toString().contains("Index")) {
 
                     String[] indexStrings = cacheTree.getSelectionPath().toString().split(",");
                     selectedIndex = Integer.parseInt(indexStrings[1].replace("Index ", "").replace("]", "").trim());
@@ -1162,17 +1340,11 @@ public class GUI extends JFrame {
                 }
             }
 
-            if (modelViewer != null) {
-                modelViewer = null;
-                Platform.runLater(() -> {
-                    try {
-                        modelViewer = new ModelViewer();
-                        modelScene = modelViewer.start(new Stage()).getScene();
-                        modelViewPanel.setScene(modelScene);
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                    }
-                });
+            if (AppConstants.cacheType.equals("RuneScape 2") && selectedIndex == 1) {
+                System.out.println("models");
+            }
+            if (AppConstants.cacheType.equals("Old School RuneScape") && selectedIndex == 7) {
+                System.out.println("models");
             }
         });
 
@@ -1189,19 +1361,15 @@ public class GUI extends JFrame {
         splitCacheViewPane.setResizeWeight(0.5);
         splitCacheViewPane.revalidate();
 
-        contentPreviewPane.add(modelViewPanel);
-        contentPreviewPane.revalidate();
-
         JSplitPane splitCacheDetailedViewPane = new JSplitPane();
         splitCacheDetailedViewPane.setLeftComponent(splitCacheViewPane);
-        splitCacheDetailedViewPane.setRightComponent(contentPreviewPane);
+        splitCacheDetailedViewPane.setRightComponent(detailedViewPanel);
         splitCacheDetailedViewPane.setResizeWeight(0.3);
         splitCacheDetailedViewPane.revalidate();
 
-        contentPanel.add(splitCacheDetailedViewPane, BorderLayout.CENTER);
-        contentPanel.revalidate();
-        contentPanel.add(cacheLoadedInfo, BorderLayout.SOUTH);
-        contentPanel.revalidate();
+        getContentPane().add(splitCacheDetailedViewPane, BorderLayout.CENTER);
+        getContentPane().add(cacheLoadedInfo, BorderLayout.SOUTH);
+        getContentPane().revalidate();
     }
 
     private void addCacheFiles() {
@@ -1254,7 +1422,7 @@ public class GUI extends JFrame {
                                 for (int archive : selectedArchives) {
                                     if (selectedFiles != null) {
                                         for (int file : selectedFiles) {
-                                            File fileData = new File(selected.getPath() + File.separator + archive + "-" + file + ".dat");
+                                            File fileData = new File(selected.getPath() + File.separator + archive + ".dat");//"-" + file + ".dat");
                                             FileOutputStream fileOutputStream = new FileOutputStream(fileData);
                                             fileOutputStream.write(Objects.requireNonNull(cacheLibrary.data(index, archive, file)));
                                             fileOutputStream.flush();
@@ -1296,7 +1464,7 @@ public class GUI extends JFrame {
             if (cacheLibrary.index(selectedIndex).archive(selectedArchive) != null) {
                 Archive renamedArchive = cacheLibrary.index(selectedIndex).archive(selectedArchive);
                 assert renamedArchive != null;
-                renamedArchive.setHashName(Integer.parseInt(fileNameToSet));
+                renamedArchive.setHashName(fileNameToSet.hashCode());
                 cacheLibrary.index(selectedIndex).add(renamedArchive, renamedArchive.getId());
                 if (cacheLibrary.index(selectedIndex).update()) {
                     loadCache(new File(cacheLibrary.getPath()));
@@ -1395,24 +1563,24 @@ public class GUI extends JFrame {
         cacheOperationInfo.setText("Operation completed successfully.");
     }
 
-    private void buildTreeNode() {
-        cacheNode = new DefaultMutableTreeNode("Main Cache");
-        cacheLibrary.indices();
+    private DefaultMutableTreeNode buildTreeNode() {
+        DefaultMutableTreeNode cacheNode = new DefaultMutableTreeNode("Main Cache");
         for (Index index : cacheLibrary.indices()) {
-            indexNode = new DefaultMutableTreeNode(index);
+            DefaultMutableTreeNode indexNode = new DefaultMutableTreeNode(index);
             cacheNode.add(indexNode);
             index.archives();
             for (Archive archive : index.archives()) {
-                archiveNode = new DefaultMutableTreeNode("Archive " + archive.getId());
+                DefaultMutableTreeNode archiveNode = new DefaultMutableTreeNode("Archive " + archive.getId());
                 indexNode.add(archiveNode);
                 archive.getFiles();
                 for (com.displee.cache.index.archive.file.File file : archive.files()) {
-                    fileNode = new DefaultMutableTreeNode("File " + file.getId());
+                    DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode("File " + file.getId());
                     archiveNode.add(fileNode);
                 }
             }
         }
         this.revalidate();
+        return cacheNode;
     }
 
     private void xteaKeysTool() {
@@ -1449,7 +1617,7 @@ public class GUI extends JFrame {
 
     private void quickTestSound() {
         new Thread(() -> {
-            MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(AppConstants.customSoundFontsPath);
+            MidiPcmStream[] midiPcmStreams = initMidiPcmStreams(AppConstants.customSoundFontPath);
             DevicePcmPlayer[] devicePcmPlayers = initDevicePcmPlayers(midiPcmStreams);
             while (true) {
                 playDevicePcmPlayers(devicePcmPlayers);
@@ -1501,7 +1669,7 @@ public class GUI extends JFrame {
                 devicePcmPlayers[index].open(2048);
                 devicePcmPlayers[index].samples = new int[512];
             }
-        } catch (LineUnavailableException e) {
+        } catch (LineUnavailableException | IOException e) {
             e.printStackTrace();
         }
         return devicePcmPlayers;
@@ -1510,8 +1678,8 @@ public class GUI extends JFrame {
     private void playDevicePcmPlayers(DevicePcmPlayer[] devicePcmPlayers) {
         devicePcmPlayers[0].fill(devicePcmPlayers[0].samples, 256);
         devicePcmPlayers[1].fill(devicePcmPlayers[1].samples, 256);
-        devicePcmPlayers[0].write();
-        devicePcmPlayers[1].write();
+        //devicePcmPlayers[0].write();
+        //devicePcmPlayers[1].write();
     }
 
     private static class FieldActionListener implements ActionListener {

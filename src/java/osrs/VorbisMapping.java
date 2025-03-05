@@ -22,10 +22,10 @@ public class VorbisMapping {
 		this.submapFloor = new int[this.submaps];
 		this.submapResidue = new int[this.submaps];
 
-		for (int var1 = 0; var1 < this.submaps; ++var1) {
+		for (int submap = 0; submap < this.submaps; ++submap) {
 			VorbisSample.readBits(8);
-			this.submapFloor[var1] = VorbisSample.readBits(8);
-			this.submapResidue[var1] = VorbisSample.readBits(8);
+			this.submapFloor[submap] = VorbisSample.readBits(8);
+			this.submapResidue[submap] = VorbisSample.readBits(8);
 		}
 
 	}

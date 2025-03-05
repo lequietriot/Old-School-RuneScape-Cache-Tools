@@ -30,6 +30,7 @@ import net.runelite.cache.definitions.loaders.InterfaceLoader;
 import net.runelite.cache.fs.*;
 import net.runelite.cache.util.Namer;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -99,6 +100,20 @@ public class InterfaceManager
 		return interfaces[groupId][childId];
 	}
 
+	public Component getInterfaceComponent(int groupId, int childId) {
+		return new Component() {
+			@Override
+			public String getName() {
+				return getInterface(groupId, childId).getDataText();
+			}
+
+			@Override
+			public boolean isVisible() {
+				return true;
+			}
+		};
+	}
+
 	public InterfaceDefinition[][] getInterfaces()
 	{
 		return interfaces;
@@ -152,12 +167,12 @@ public class InterfaceManager
 				}
 				for (InterfaceDefinition def : defs)
 				{
-					if (def == null || def.name == null || def.name.equalsIgnoreCase("NULL"))
+					if (def == null || def.dataText == null || def.dataText.equalsIgnoreCase("NULL"))
 					{
 						continue;
 					}
 
-					String name = namer.name(def.name, def.id);
+					String name = namer.name(def.dataText, def.id);
 					if (name == null)
 					{
 						continue;

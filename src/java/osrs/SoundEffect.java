@@ -2,6 +2,9 @@ package osrs;
 
 import com.displee.cache.index.Index;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Objects;
 
 public class SoundEffect {
@@ -103,6 +106,16 @@ public class SoundEffect {
 
 	public static SoundEffect readSoundEffect(Index var0, int var1, int var2) {
 		byte[] var3 = Objects.requireNonNull(Objects.requireNonNull(var0.archive(var1)).file(var2)).getData();
+		try {
+			File fileData = new File(System.getProperty("user.home") + File.separator + "Documents" + File.separator + "772 Cache Music Data" + File.separator + "idx4" + File.separator + var1 + ".dat");
+			FileOutputStream fileOutputStream = new FileOutputStream(fileData);
+			assert var3 != null;
+			fileOutputStream.write(var3);
+			fileOutputStream.flush();
+			fileOutputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return var3 == null ? null : new SoundEffect(new Buffer(var3));
 	}
 }

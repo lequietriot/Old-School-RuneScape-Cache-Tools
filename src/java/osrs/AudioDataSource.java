@@ -1,10 +1,5 @@
 package osrs;
 
-/**
- * This class holds all the sample data and information.
- * Source Code: https://github.com/bome/java-wavetable-synth
- * @author Rodolfo Ruiz-Velasco (https://github.com/lequietriot)
- */
 public class AudioDataSource extends AudioDataPosition {
 
 	/**

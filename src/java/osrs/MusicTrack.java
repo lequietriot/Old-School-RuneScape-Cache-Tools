@@ -361,20 +361,20 @@ public class MusicTrack extends Node {
 
 		midiBuff.flip();
 
-		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		this.midi = midiBuff.array();
+
 		try {
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			Sequence sequence = MidiSystem.getSequence(new ByteArrayInputStream(midiBuff.array()));
 			sequence.getTracks()[0].add(new MidiEvent(new ShortMessage(ShortMessage.NOTE_ON, 0, 0, 0), (sequence.getTickLength()) + 900));
 			sequence.getTracks()[0].add(new MidiEvent(new ShortMessage(ShortMessage.NOTE_OFF, 0, 0, 0), (sequence.getTickLength()) + 903));
 			MidiSystem.write(sequence, 1, byteArrayOutputStream);
 
 			this.midi = byteArrayOutputStream.toByteArray();
-			return;
+
 		} catch (InvalidMidiDataException | IOException e) {
 			e.printStackTrace();
 		}
-
-		this.midi = midiBuff.array();
 	}
 
 	public void readMidiTrack() {

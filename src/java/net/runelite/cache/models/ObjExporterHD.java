@@ -115,7 +115,7 @@ public class ObjExporterHD
 
             mtlWriter.println("newmtl m" + i);
 
-            if (textureId != 0)
+            //if (textureId == -1)
             {
                 int rgb = JagexColor.HSLtoRGB(model.faceColors[i], BRIGHTNESS);
                 double r = ((rgb >> 16) & 0xff) / 255.0;
@@ -123,13 +123,15 @@ public class ObjExporterHD
                 double b = (rgb & 0xff) / 255.0;
 
                 mtlWriter.println("Kd " + r + " " + g + " " + b);
+                //mtlWriter.println("map_Kd " + textureId);
             }
-            else
+            //else
             {
                 //TextureDetails texture = textureManager.findTexture(textureId);
                 //assert texture != null;
 
-                mtlWriter.println("map_Kd sprite/" + textureId + "-0.png");
+                //mtlWriter.println("map_Kd sprite/" + textureId + "-0.png");
+                //mtlWriter.println("map_Kd " + textureId);
             }
 
             int alpha = 0;

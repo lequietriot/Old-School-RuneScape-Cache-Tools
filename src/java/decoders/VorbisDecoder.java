@@ -29,26 +29,38 @@ public class VorbisDecoder {
         int archive = currentGUI.selectedArchive;
         int file = currentGUI.selectedFile;
         try {
-            decodeAsOGG(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file)).getData(), archive);
+            for (archive = 1; archive < 100000; archive++) {
+                if (cacheLibrary.index(14).archive(archive) != null) {
+                    decodeAsOGG(Objects.requireNonNull(cacheLibrary.index(14).archive(archive)).file(0).getData(), archive);
+                }
+            }
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
     }
 
-    private void decodeAsOGG(byte[] data, int archiveID) throws IOException, URISyntaxException {
+    public VorbisDecoder(byte[] data, int id) {
+        try {
+            decodeAsOGG(data, id);
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void decodeAsOGG(byte[] data, int archiveID) throws IOException, URISyntaxException {
         File outputFilePath = new File(GUI.cacheLibrary.getPath() + File.separator + "Decoded Data" + File.separator + "OGG Vorbis");
         boolean madeDirectory = outputFilePath.mkdirs();
         if (madeDirectory) {
-            currentGUI.cacheOperationInfo.setText("Archive " + archiveID + " was decoded successfully. New folder created in cache directory.");
+            //currentGUI.cacheOperationInfo.setText("Archive " + archiveID + " was decoded successfully. New folder created in cache directory.");
         } else {
-            currentGUI.cacheOperationInfo.setText("Archive " + archiveID + " was decoded successfully. It is in the cache directory.");
+            //currentGUI.cacheOperationInfo.setText("Archive " + archiveID + " was decoded successfully. It is in the cache directory.");
         }
         File outputFile = new File(outputFilePath + File.separator + archiveID + ".ogg");
         FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
         OggFile newOggFile = new OggFile(fileOutputStream);
         OggPacketWriter oggPacketWriter = newOggFile.getPacketWriter();
 
-        VorbisFile exampleOgg = new VorbisFile(new OggFile(getClass().getClassLoader().getResourceAsStream("example.ogg")));
+        VorbisFile exampleOgg = new VorbisFile(new OggFile(VorbisDecoder.class.getClassLoader().getResourceAsStream("example.ogg")));
 
         ByteBuffer buffer = ByteBuffer.wrap(data);
         int samplingRate = buffer.getInt();

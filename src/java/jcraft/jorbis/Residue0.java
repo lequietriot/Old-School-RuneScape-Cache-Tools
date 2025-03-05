@@ -29,7 +29,7 @@ package jcraft.jorbis;
 import jcraft.jogg.*;
 
 class Residue0 extends FuncResidue{
-  void pack(Object vr, Buffer opb){
+  public void pack(Object vr, Buffer opb){
     InfoResidue0 info=(InfoResidue0)vr;
     int acc=0;
     opb.write(info.begin, 24);
@@ -61,7 +61,7 @@ class Residue0 extends FuncResidue{
     }
   }
 
-  Object unpack(Info vi, Buffer opb){
+  public Object unpack(Info vi, Buffer opb){
     int acc=0;
     InfoResidue0 info=new InfoResidue0();
     info.begin=opb.read(24);

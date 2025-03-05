@@ -2,28 +2,33 @@ package modelviewer.scene;
 
 import com.application.AppConstants;
 import com.application.GUI;
+import javafx.animation.Animation;
+import javafx.animation.TranslateTransition;
 import javafx.scene.image.Image;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.TriangleMesh;
 import javafx.scene.transform.Scale;
+import javafx.util.Duration;
 import lombok.Getter;
 import modelviewer.model.Vector3i;
 import modelviewer.util.ColorUtils;
 import net.runelite.cache.TextureManager;
+import net.runelite.cache.definitions.FrameDefinition;
+import net.runelite.cache.definitions.FramemapDefinition;
 import net.runelite.cache.definitions.ModelDefinition;
 import net.runelite.cache.definitions.SpriteDefinition;
+import net.runelite.cache.definitions.loaders.FrameLoader;
+import net.runelite.cache.definitions.loaders.FramemapLoader;
 import net.runelite.cache.definitions.loaders.SpriteLoader;
 import net.runelite.cache.fs.Store;
 import rshd.TextureLoaderHD;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -34,6 +39,9 @@ public class RSMeshGroup {
 
     private TextureManager textureManager;
     private TextureLoaderHD textureLoaderHD;
+
+    public MeshView view;
+    public TriangleMesh mesh;
 
     public RSMeshGroup(ModelDefinition model) {
         this.model = model;
@@ -56,7 +64,7 @@ public class RSMeshGroup {
         }
         model.computeTextureUVCoordinates();
         for (int face = 0; face < model.faceCount; face++) {
-            TriangleMesh mesh = new TriangleMesh();
+            mesh = new TriangleMesh();
             int faceA = model.faceIndices1[face];
             int faceB = model.faceIndices2[face];
             int faceC = model.faceIndices3[face];
@@ -82,7 +90,7 @@ public class RSMeshGroup {
             } else {
                 mesh.getTexCoords().addAll(0f, 0f, 1f, 0f, 0f, 1f);
             }
-            MeshView view = new MeshView(mesh);
+            view = new MeshView(mesh);
             view.getTransforms().add(new Scale(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE));
             if (textured) {
                 PhongMaterial mat = new PhongMaterial();
@@ -95,7 +103,7 @@ public class RSMeshGroup {
                 if (model.faceTextures != null && model.faceTextures[face] != -1 && AppConstants.cacheType.equals("RuneScape High Definition")) {
                     texture = exportToImageHD(model.faceTextures[face]);
                     mat.setDiffuseMap(texture);
-                    mat.setDiffuseColor(ColorUtils.rs2HSLToColor(model.faceColors[face], 0));//model.faceTransparencies == null ? 0 : model.faceTransparencies[face]));
+                    mat.setDiffuseColor(ColorUtils.rs2HSLToColor(model.faceColors[face], model.faceTransparencies == null ? 0 : model.faceTransparencies[face]));
                     view.setMaterial(mat);
                 }
                 else {
@@ -106,28 +114,10 @@ public class RSMeshGroup {
             } else {
                 view.setMaterial(new PhongMaterial(ColorUtils.rs2HSLToColor(model.faceColors[face], model.faceTransparencies == null ? 0 : model.faceTransparencies[face])));
             }
-            initListeners(view);
             meshes.add(view);
         }
     }
 
-
-    private void initListeners(MeshView view) {
-        view.setOnMouseClicked(event -> {
-            paint(view);
-        });
-        view.setOnMouseEntered(event -> {
-            if (event.isAltDown()) {
-                paint(view);
-            }
-        });
-    }
-
-    private void paint(MeshView view) {
-        PhongMaterial mat = new PhongMaterial();
-        mat.setDiffuseMap(texture);
-        view.setMaterial(mat);
-    }
 
     public BufferedImage export(SpriteDefinition spriteDefinition)
     {
@@ -147,6 +137,15 @@ public class RSMeshGroup {
     }
 
     public Image exportToImageHD(int id) {
+        SpriteLoader spriteLoader = new SpriteLoader();
+        SpriteDefinition spriteDefinition = spriteLoader.load(0, GUI.cacheLibrary.data(8, 0, 0))[0];
+        BufferedImage image = export(spriteDefinition);
+        try {
+            ImageIO.write(image, "png", new FileOutputStream(new File(System.getProperty("user.home") + "/Documents/Cache/0.png")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         byte[] data = GUI.cacheLibrary.data(9, id, 0);
         if (data != null) {
             if (data[1] == "P".getBytes()[0]) {
@@ -167,5 +166,63 @@ public class RSMeshGroup {
         }
          */
         return null;
+    }
+
+    public void animateModel(int sequenceID, ModelDefinition model) {
+        FramemapLoader framemapLoader = new FramemapLoader();
+        FramemapDefinition framemapDefinition = framemapLoader.load(sequenceID, GUI.cacheLibrary.data(1, sequenceID, 0));
+        FrameLoader frameLoader = new FrameLoader();
+        FrameDefinition frameDefinition = frameLoader.load(framemapDefinition, sequenceID, GUI.cacheLibrary.data(0, sequenceID, 0));
+
+        if (model.origVX == null)
+        {
+            model.origVX = Arrays.copyOf(model.vertexX, model.vertexX.length);
+            model.origVY = Arrays.copyOf(model.vertexY, model.vertexY.length);
+            model.origVZ = Arrays.copyOf(model.vertexZ, model.vertexZ.length);
+        }
+
+        final int[] verticesX = model.vertexX;
+        final int[] verticesY = model.vertexY;
+        final int[] verticesZ = model.vertexZ;
+        int var6 = frameDefinition.translatorCount;
+        int var8;
+        int var11;
+        int var12;
+        model.animOffsetX = 0;
+        model.animOffsetY = 0;
+        model.animOffsetZ = 0;
+
+        for (var8 = 0; var8 < var6; ++var8)
+        {
+            int var9 = frameDefinition.indexFrameIds[var8];
+            if (var9 < model.vertexGroups.length)
+            {
+                int[] var10 = model.vertexGroups[var9];
+
+                for (var11 = 0; var11 < var10.length; ++var11)
+                {
+                    var12 = var10[var11];
+                    model.animOffsetX += verticesX[var12];
+                    model.animOffsetY += verticesY[var12];
+                    model.animOffsetZ += verticesZ[var12];
+                }
+            }
+        }
+
+        TranslateTransition translateTransition = new TranslateTransition();
+        for (int index = 0; index < frameDefinition.translatorCount; index++) {
+            translateTransition.setDuration(Duration.millis(1000));
+            translateTransition.setFromX(model.getOrigVX()[index]);
+            translateTransition.setToX(model.getAnimOffsetX());
+            translateTransition.setFromX(model.getOrigVY()[index]);
+            translateTransition.setToX(model.getAnimOffsetY());
+            translateTransition.setFromX(model.getOrigVZ()[index]);
+            translateTransition.setToX(model.getAnimOffsetZ());
+            translateTransition.setCycleCount(Animation.INDEFINITE);
+            translateTransition.setNode(view);
+            translateTransition.play();
+
+            System.out.println("playing");
+        }
     }
 }

@@ -1,8 +1,8 @@
-# Old School RuneScape Cache Tools (v0.5-beta)
+# Old School RuneScape Cache Tools (v0.6-beta)
 ### The ultimate suite of RuneScape Cache modification tools!
-Made with IntelliJ IDEA using Java 1.8 SDK with various libraries including JavaFX.
+Made with IntelliJ IDEA using Java 1.8 SDK with various libraries.
 ## This suite features:
-### A simple 3D Model Viewer, built into the main window!
+### A simple 3D Model Viewer, built into the main window! (Taken down for now, implementing a better viewer)
 ### Cache Functions
 * Select Cache Data - A quick way to select a specific archive file in the cache.
 * Search Cache (Work in progress)

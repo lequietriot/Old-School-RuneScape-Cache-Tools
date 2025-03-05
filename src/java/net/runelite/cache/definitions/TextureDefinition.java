@@ -149,4 +149,5 @@ public class TextureDefinition
 		int var11 = (int) (var7 * 256.0D);
 		return var11 + (var10 << 8) + (var9 << 16);
 	}
+
 }

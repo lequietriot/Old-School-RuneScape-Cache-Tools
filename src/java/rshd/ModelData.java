@@ -342,7 +342,7 @@ public class ModelData {
         fourth.offset = i_46;
         fifth.offset = i_47;
         sixth.offset = i_48;
-        decodeTexturedTriangles(modelDefinition, first, second, third, fourth, fifth, sixth);
+        //decodeTexturedTriangles(modelDefinition, first, second, third, fourth, fifth, sixth);
         first.offset = totalFaces;
         if (hasParticleEffects) {
             int emitterCount = first.readUnsignedByte();
@@ -694,7 +694,7 @@ public class ModelData {
         rsbytebuffer_7.offset = i_25;
         rsbytebuffer_8.offset = i_22;
 
-        modelDefinition.faceTextureFlags = new int[faceCount];
+        modelDefinition.faceTextureFlags = new int[modelDefinition.faceCount];
         for (i_35 = 0; i_35 < modelDefinition.faceCount; i_35++) {
             modelDefinition.faceColors[i_35] = (short) rsbytebuffer_4.readUnsignedShort();
             if (i_9 == 1) {

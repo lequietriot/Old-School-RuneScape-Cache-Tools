@@ -3,12 +3,11 @@ package encoders;
 import com.application.AppConstants;
 import com.application.GUI;
 import com.displee.cache.CacheLibrary;
-import net.runelite.cache.fs.Store;
-import osrs.ByteBufferUtils;
-import rshd.ModelData;
 import net.runelite.cache.definitions.ModelDefinition;
 import net.runelite.cache.loaders.ModelLoader;
-import net.runelite.cache.managers.TextureManager;
+import osrs.ByteBufferUtils;
+import rs3.RS3ModelData;
+import rshd.ModelData;
 
 import java.io.*;
 import java.util.Objects;
@@ -29,13 +28,25 @@ public class ModelOldConverter {
         try {
             if (AppConstants.cacheType.equals("RuneScape High Definition")) {
                 ModelData loader = new ModelData();
+                for (archive = 0; archive < cacheLibrary.index(7).archives().length; archive++) {
+                    if (cacheLibrary.index(7).archive(archive) != null) {
+                        ModelDefinition model = loader.load(archive, Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(7).archive(archive)).file(0)).getData()));
+                        encode(model, archive);
+                    }
+                }
+            }
+            if (AppConstants.cacheType.equals("RuneScape 3")) {
+                RS3ModelData loader = new RS3ModelData(archive);
                 if (cacheLibrary.index(7).archive(archive) != null) {
-                    ModelDefinition model = loader.load(archive, Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(7).archive(archive)).file(0)).getData()));
+                    ModelDefinition model = loader.load(archive, Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(7).archive(archive)).file(0)).getData()), cacheLibrary);
                     encode(model, archive);
                 }
-            } else {
-                TextureManager tm = new TextureManager(new Store(new File(cacheLibrary.getPath())));
-                tm.load();
+            }
+            else {
+                //Store store = new Store(new File(cacheLibrary.getPath()));
+                //store.load();
+                //TextureManager tm = new TextureManager(store);
+                //tm.load();
 
                 ModelLoader loader = new ModelLoader();
                 ModelDefinition model = loader.load(archive, Objects.requireNonNull(Objects.requireNonNull(Objects.requireNonNull(cacheLibrary.index(index).archive(archive)).file(file)).getData()));
@@ -47,6 +58,8 @@ public class ModelOldConverter {
     }
 
     public void encode(ModelDefinition modelDefinition, int id) throws IOException {
+
+        //modelDefinition.resize(16, 16, 16);
 
         File file = new File(GUI.cacheLibrary.getPath() + File.separator + "Encoded Data" + File.separator + "Models");
         if (!file.exists()) {
@@ -141,53 +154,45 @@ public class ModelOldConverter {
         boolean hasTriangleSkins = modelDefinition.packedVertexGroups != null;
 
         for (int face = 0; face < modelDefinition.faceCount; face++) {
-
-            if (modelDefinition.faceColors[face] == 127) {
-                faceColorsBuffer.writeShort(modelDefinition.faceTextures[face]);
-            }
-
-            else {
-
-                if (modelDefinition.faceTextures[face] > 0) {
+            faceColorsBuffer.writeShort(modelDefinition.faceColors[face]);
+            /*
+            if (modelDefinition.faceColors != null) {
+                if (modelDefinition.faceTextures != null) {
                     if (modelDefinition.faceTextures[face] == 923) {
-                        modelDefinition.faceTextures[face] = 16;
+                        modelDefinition.faceTextures[face] = -1;
                     }
-                    if (modelDefinition.faceTextures[face] == 951) {
-                        modelDefinition.faceTextures[face] = 8;
-                    }
-                    if (modelDefinition.faceTextures[face] == 952) {
-                        modelDefinition.faceTextures[face] = 8;
-                    }
-                    if (modelDefinition.faceTextures[face] == 953) {
-                        modelDefinition.faceTextures[face] = 8;
-                    }
-                    if (modelDefinition.faceTextures[face] == 956) {
-                        modelDefinition.faceTextures[face] = 8;
+                    else {
+                        modelDefinition.faceTextures[face] = 60;
                     }
                     faceColorsBuffer.writeShort(modelDefinition.faceTextures[face]);
+                    if (modelDefinition.faceTextureFlags != null) {
+                        texturesBuffer.writeByte(modelDefinition.faceTextureFlags[face] & 0xFF);
+                    }
+                    else {
+                        texturesBuffer.writeByte(0xFFFF);
+                    }
                 }
-
                 else {
                     faceColorsBuffer.writeShort(modelDefinition.faceColors[face]);
                 }
-
             }
+             */
 
             if (hasTriangleInfo) {
-                faceTypesBuffer.writeByte(modelDefinition.faceRenderTypes[face]);
+                //faceTypesBuffer.writeByte(modelDefinition.faceRenderTypes[face]);
             }
 
             if (hasTrianglePriorities) {
-                trianglePrioritiesBuffer.writeByte(modelDefinition.faceRenderPriorities[face]);
+                //trianglePrioritiesBuffer.writeByte(modelDefinition.faceRenderPriorities[face]);
             }
 
             if (hasTriangleAlpha) {
-                faceAlphasBuffer.writeByte(modelDefinition.faceTransparencies[face]);
+                //faceAlphasBuffer.writeByte(modelDefinition.faceTransparencies[face]);
             }
 
             if (hasTriangleSkins) {
                 int weight = modelDefinition.packedVertexGroups[face];
-                faceSkinsBuffer.writeByte(weight);
+                //faceSkinsBuffer.writeByte(weight);
             }
 
         }
@@ -231,25 +236,29 @@ public class ModelOldConverter {
         }
 
         for (int face = 0; face < modelDefinition.numTextureFaces; face++) {
-            texturePointerBuffer.writeShort(modelDefinition.texIndices1[face] & 0xFFFF);
-            texturePointerBuffer.writeShort(modelDefinition.texIndices2[face] & 0xFFFF);
-            texturePointerBuffer.writeShort(modelDefinition.texIndices3[face] & 0xFFFF);
-        }
-
-        if (modelDefinition.faceTextureFlags != null) {
-            for (int face = 0; face < modelDefinition.faceCount; face++) {
-                texturesBuffer.writeByte(modelDefinition.faceTextureFlags[face] & 0xFFFF);
+            if (modelDefinition.faceTextures != null) {
+                if (modelDefinition.texIndices1 != null && modelDefinition.texIndices2 != null && modelDefinition.texIndices3 != null) {
+                    //texturePointerBuffer.writeShort(modelDefinition.texIndices1[face]);
+                    //texturePointerBuffer.writeShort(modelDefinition.texIndices2[face]);
+                    //texturePointerBuffer.writeShort(modelDefinition.texIndices3[face]);
+                }
             }
         }
 
         footerBuffer.writeShort(modelDefinition.vertexCount);
         footerBuffer.writeShort(modelDefinition.faceCount);
-        footerBuffer.writeByte(modelDefinition.numTextureFaces);
-        footerBuffer.writeByte(modelDefinition.faceTextures != null ? 1 : 0);
-        footerBuffer.writeByte((hasTrianglePriorities ? -1 : modelDefinition.priority));
-        footerBuffer.writeBoolean(hasTriangleAlpha);
-        footerBuffer.writeBoolean(hasTriangleSkins);
-        footerBuffer.writeBoolean(hasVertexLabels);
+        footerBuffer.writeByte(0);
+        //footerBuffer.writeByte(modelDefinition.numTextureFaces);
+        footerBuffer.writeByte(0);
+        footerBuffer.writeByte(10);
+        //footerBuffer.writeByte(modelDefinition.faceTextures != null ? 1 : 0);
+        //footerBuffer.writeByte(hasTrianglePriorities ? -1 : modelDefinition.priority);
+        //footerBuffer.writeBoolean(hasTriangleAlpha);
+        //footerBuffer.writeBoolean(hasTriangleSkins);
+        //footerBuffer.writeBoolean(hasVertexLabels);
+        footerBuffer.writeByte(0);
+        footerBuffer.writeByte(0);
+        footerBuffer.writeByte(0);
 
         footerBuffer.writeShort(verticesXBufferStream.toByteArray().length);
         footerBuffer.writeShort(verticesYBufferStream.toByteArray().length);
@@ -259,9 +268,9 @@ public class ModelOldConverter {
         dataOutputStream.write(vertexFlagsBufferStream.toByteArray());
         dataOutputStream.write(faceIndexTypesBufferStream.toByteArray());
         dataOutputStream.write(trianglePrioritiesBufferStream.toByteArray());
+        dataOutputStream.write(texturesBufferStream.toByteArray());
         dataOutputStream.write(faceSkinsBufferStream.toByteArray());
         dataOutputStream.write(faceTypesBufferStream.toByteArray());
-        dataOutputStream.write(texturesBufferStream.toByteArray());
         dataOutputStream.write(vertexSkinsBufferStream.toByteArray());
         dataOutputStream.write(faceAlphasBufferStream.toByteArray());
         dataOutputStream.write(triangleIndicesBufferStream.toByteArray());

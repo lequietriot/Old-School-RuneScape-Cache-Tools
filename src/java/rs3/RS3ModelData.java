@@ -236,7 +236,7 @@ public class RS3ModelData {
 				modelDataLength3 = modelDataLength2 + modelDefinition.vertexCount;
 				modelDataLength4 = modelDataLength3 + this.anInt1951 * 2;
 			}
-			
+
 			modelDefinition.vertexX = new int[modelDefinition.vertexCount];
 			modelDefinition.vertexY = new int[modelDefinition.vertexCount];
 			modelDefinition.vertexZ = new int[modelDefinition.vertexCount];
@@ -270,7 +270,7 @@ public class RS3ModelData {
 			}
 
 			if (hasFaceTextures == 1 && (modelDefinition.numTextureFaces > 0 || this.anInt1951 > 0)) {
-				this.faceTextures = new short[modelDefinition.faceCount];
+				modelDefinition.faceTextures = new short[modelDefinition.faceCount];
 			}
 
 			modelDefinition.faceColors = new short[modelDefinition.faceCount];
@@ -405,15 +405,15 @@ public class RS3ModelData {
 					this.faceMaterials[vertexCount] = (short) (sixth.readUnsignedShort() - 1);
 				}
 
-				if (this.faceTextures != null) {
+				if (modelDefinition.faceTextures != null) {
 					if (this.faceMaterials[vertexCount] != -1) {
 						if (this.anInt1942 >= 16) {
-							this.faceTextures[vertexCount] = (short) (seventh.readShortSmart() - 1);
+							modelDefinition.faceTextures[vertexCount] = (short) (seventh.readShortSmart() - 1);
 						} else {
-							this.faceTextures[vertexCount] = (short) (seventh.readUnsignedByte() - 1);
+							modelDefinition.faceTextures[vertexCount] = (short) (seventh.readUnsignedByte() - 1);
 						}
 					} else {
-						this.faceTextures[vertexCount] = -1;
+						modelDefinition.faceTextures[vertexCount] = -1;
 					}
 				}
 			}
@@ -1162,6 +1162,8 @@ public class RS3ModelData {
 		modelDefinition.modelData = data;
 
 		decode(modelDefinition, data, cacheLibrary);
+
+		//modelDefinition.resize(32, 32, 32);
 
 		return modelDefinition;
 	}

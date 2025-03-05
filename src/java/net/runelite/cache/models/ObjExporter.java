@@ -47,6 +47,7 @@ public class ObjExporter
 	{
 		model.computeNormals();
 		model.computeTextureUVCoordinates();
+		model.computeAnimationTables();
 
 		objWriter.println("mtllib " + model.id + ".mtl");
 
@@ -125,7 +126,8 @@ public class ObjExporter
 				TextureDefinition texture = textureManager.findTexture(textureId);
 				assert texture != null;
 
-				mtlWriter.println("map_Kd sprite/" + texture.getFileIds()[0] + "-0.png");
+				//mtlWriter.println("map_Kd sprite/" + texture.getFileIds()[0] + "-0.png");
+				mtlWriter.println("map_Kd " + textureId + ".png");
 			}
 
 			int alpha = 0;

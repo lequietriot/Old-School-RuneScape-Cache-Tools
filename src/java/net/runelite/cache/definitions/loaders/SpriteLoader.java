@@ -37,6 +37,10 @@ public class SpriteLoader
 	{
 		InputStream is = new InputStream(b);
 
+		if (is == null) {
+			return null;
+		}
+
 		is.setOffset(is.getLength() - 2);
 		int spriteCount = is.readUnsignedShort();
 

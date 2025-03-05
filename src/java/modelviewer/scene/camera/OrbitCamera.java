@@ -13,7 +13,7 @@ public class OrbitCamera {
     private final SubScene subScene;
     private final Group root3D;
 
-    private final double MAX_ZOOM = 300.0;
+    private final double MAX_ZOOM = 1000.0;
 
     public OrbitCamera(SubScene subScene, Group root) {
         this.subScene = subScene;

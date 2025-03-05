@@ -9,6 +9,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 public class DevicePcmPlayer extends PcmPlayer {
 
@@ -17,6 +18,7 @@ public class DevicePcmPlayer extends PcmPlayer {
 	int capacity2;
 	byte[] byteSamples;
 	public ByteArrayOutputStream byteArrayOutputStream;
+	OutputStream outputStream;
 
 	public void init() {
 		this.format = new AudioFormat((float) AppConstants.sampleRate, 16, AppConstants.stereo ? 2 : 1, true, false);
@@ -24,10 +26,10 @@ public class DevicePcmPlayer extends PcmPlayer {
 		this.byteArrayOutputStream = new ByteArrayOutputStream();
 	}
 
-	public void open(int var1) throws LineUnavailableException {
+	public void open(int var1) throws LineUnavailableException, IOException {
 		try {
-			Info var2 = new Info(SourceDataLine.class, this.format, var1 << (AppConstants.stereo ? 2 : 1));
-			this.line = (SourceDataLine)AudioSystem.getLine(var2);
+			Info info = new Info(SourceDataLine.class, this.format, var1 << (AppConstants.stereo ? 2 : 1));
+			this.line = (SourceDataLine)AudioSystem.getLine(info);
 			this.line.open();
 			this.line.start();
 			this.capacity2 = var1;
@@ -61,7 +63,7 @@ public class DevicePcmPlayer extends PcmPlayer {
 		return this.capacity2 - (this.line.available() >> (AppConstants.stereo ? 2 : 1));
 	}
 
-	public void write() {
+	public void write() throws IOException {
 		int var1 = 256;
 		if (AppConstants.stereo) {
 			var1 <<= 1;
@@ -91,8 +93,8 @@ public class DevicePcmPlayer extends PcmPlayer {
 				var3 = 8388607 ^ var3 >> 31;
 			}
 
-			this.byteSamples[var2 * 2] = (byte)(var3 >> 8 >> 1);
-			this.byteSamples[var2 * 2 + 1] = (byte)(var3 >> 16 >> 1);
+			this.byteSamples[var2 * 2] = (byte)(var3 >> 8);
+			this.byteSamples[var2 * 2 + 1] = (byte)(var3 >> 16);
 		}
 		try {
 			this.byteArrayOutputStream.write(this.byteSamples);

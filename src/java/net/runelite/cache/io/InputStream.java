@@ -39,11 +39,13 @@ public class InputStream extends java.io.InputStream
 			'\u017e', '\u0178'
 		};
 
-	private final ByteBuffer buffer;
+	private ByteBuffer buffer;
 
 	public InputStream(byte[] buffer)
 	{
-		this.buffer = ByteBuffer.wrap(buffer);
+		if (buffer != null) {
+			this.buffer = ByteBuffer.wrap(buffer);
+		}
 	}
 
 	public byte[] getArray()
@@ -72,7 +74,9 @@ public class InputStream extends java.io.InputStream
 
 	public void setOffset(int offset)
 	{
-		buffer.position(offset);
+		if (buffer != null) {
+			buffer.position(offset);
+		}
 	}
 
 	public int getOffset()
@@ -82,7 +86,10 @@ public class InputStream extends java.io.InputStream
 
 	public int getLength()
 	{
-		return buffer.limit();
+		if (buffer != null) {
+			return buffer.limit();
+		}
+		return 0;
 	}
 
 	public int remaining()
@@ -92,7 +99,10 @@ public class InputStream extends java.io.InputStream
 
 	public byte readByte()
 	{
-		return buffer.get();
+		if (buffer != null) {
+			return buffer.get();
+		}
+		return 0;
 	}
 
 	public void readBytes(byte[] buffer, int off, int len)
@@ -112,7 +122,10 @@ public class InputStream extends java.io.InputStream
 
 	public int readUnsignedShort()
 	{
-		return buffer.getShort() & 0xFFFF;
+		if (buffer != null) {
+			return buffer.getShort() & 0xFFFF;
+		}
+		return 0;
 	}
 
 	public short readShort()

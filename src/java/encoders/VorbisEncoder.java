@@ -32,9 +32,9 @@ public class VorbisEncoder {
             File outputFilePath = new File(gui.cacheLibrary.getPath() + File.separator + "Encoded Data" + File.separator + "Vorbis");
             boolean madeDirectory = outputFilePath.mkdirs();
             if (madeDirectory) {
-                JOptionPane.showMessageDialog(gui.getContentPane(), selected.getName() + " was encoded successfully.\nIt can be found in the newly created path: " + outputFilePath.getPath());
+                //JOptionPane.showMessageDialog(gui.getContentPane(), selected.getName() + " was encoded successfully.\nIt can be found in the newly created path: " + outputFilePath.getPath());
             } else {
-                JOptionPane.showMessageDialog(gui.getContentPane(), selected.getName() + " was encoded successfully.\nIt can be found in the following path: " + outputFilePath.getPath());
+                //JOptionPane.showMessageDialog(gui.getContentPane(), selected.getName() + " was encoded successfully.\nIt can be found in the following path: " + outputFilePath.getPath());
             }
             File outputFile = new File(outputFilePath + File.separator + selected.getName().replace(".ogg", ".dat").trim());
             DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(outputFile));
@@ -49,21 +49,18 @@ public class VorbisEncoder {
             if (oggFile.getTags().getComments("Sample Size").size() != 0) {
                 dataOutputStream.writeInt(Integer.parseInt(oggFile.getTags().getComments("Sample Size").get(0))); //Audio Sample Size
             } else {
-                dataOutputStream.writeInt(0);
                 System.out.println("WARNING: No comment tag in OGG file for Sample size/length!");
             }
 
             if (oggFile.getTags().getComments("Loop Start").size() != 0) {
                 dataOutputStream.writeInt(Integer.parseInt(oggFile.getTags().getComments("Loop Start").get(0))); //Sample Loop Start
             } else {
-                dataOutputStream.writeInt(0);
                 System.out.println("WARNING: No comment tag in OGG file for Sample Loop Start position!");
             }
 
             if (oggFile.getTags().getComments("Loop End").size() != 0) {
                 dataOutputStream.writeInt(Integer.parseInt(oggFile.getTags().getComments("Loop End").get(0))); //Sample Loop End
             } else {
-                dataOutputStream.writeInt(0);
                 System.out.println("WARNING: No comment tag in OGG file for Sample Loop End position!");
             }
 

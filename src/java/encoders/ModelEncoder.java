@@ -1,11 +1,12 @@
 package encoders;
 
 import com.application.GUI;
-import osrs.ByteBufferUtils;
 import net.runelite.cache.definitions.ModelDefinition;
 import net.runelite.cache.models.VertexNormal;
+import osrs.ByteBufferUtils;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
@@ -22,6 +23,7 @@ public class ModelEncoder {
         gui = selectedGUI;
         JFileChooser chooseModel = new JFileChooser();
         chooseModel.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooseModel.setFileFilter(new FileNameExtensionFilter("Model Object", "obj"));
         chooseModel.setMultiSelectionEnabled(true);
         if (chooseModel.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION) {
             File[] files = chooseModel.getSelectedFiles();
@@ -46,16 +48,19 @@ public class ModelEncoder {
         int vCount = 0;
         int vtCount = 0;
         int fCount = 0;
+        int fPosition = 0;
         List<Integer> vertexXList = new ArrayList<>();
         List<Integer> vertexYList = new ArrayList<>();
         List<Integer> vertexZList = new ArrayList<>();
-        //List<Float> textureUCoordinates = new ArrayList<>();
-        //List<Float> textureVCoordinates = new ArrayList<>();
         List<VertexNormal> vertexNormals = new ArrayList<>();
         List<Integer> faceXList = new ArrayList<>();
         List<Integer> faceYList = new ArrayList<>();
         List<Integer> faceZList = new ArrayList<>();
         List<Short> materialList = new ArrayList<>();
+        List<Short> textureList = new ArrayList<>();
+        List<Integer> textureXList = new ArrayList<>();
+        List<Integer> textureYList = new ArrayList<>();
+        List<Integer> textureZList = new ArrayList<>();
 
         for (int line = 0; line < modelLines.size(); line++) {
 
@@ -67,11 +72,6 @@ public class ModelEncoder {
                 vCount++;
             }
 
-            else if (modelLines.get(line).contains("vt ")) {
-                //Todo: Textures
-                vtCount++;
-            }
-
             else if (modelLines.get(line).contains("vn ")) {
                 String[] values = modelLines.get(line).split(" ");
                 VertexNormal vertexNormal = new VertexNormal();
@@ -80,24 +80,21 @@ public class ModelEncoder {
                 vertexNormal.z = (int) Double.parseDouble(values[3]);
                 vertexNormals.add(vertexNormal);
             }
+            else if (modelLines.get(line).contains("vt ")) {
+                vtCount++;
+            }
 
             else if (modelLines.get(line).contains("f ")) {
                 String[] values = modelLines.get(line).split(" ");
                 if (values[1].contains("/")) {
                     String[] values1 = values[1].split("/");
-                    faceXList.add(Integer.parseInt(values1[0]));
                     faceXList.add(Integer.parseInt(values1[1]));
-                    faceXList.add(Integer.parseInt(values1[2]));
 
                     String[] values2 = values[2].split("/");
-                    faceYList.add(Integer.parseInt(values2[0]));
                     faceYList.add(Integer.parseInt(values2[1]));
-                    faceYList.add(Integer.parseInt(values2[2]));
 
                     String[] values3 = values[3].split("/");
-                    faceZList.add(Integer.parseInt(values3[0]));
                     faceZList.add(Integer.parseInt(values3[1]));
-                    faceZList.add(Integer.parseInt(values3[2]));
                 }
                 else {
                     faceXList.add(Integer.parseInt(values[1]) - 1);
@@ -109,11 +106,11 @@ public class ModelEncoder {
         }
 
         for (int line = 0; line < materialLines.size(); line++) {
-            if (materialLines.get(line).contains("Kd ")) {
+            if (materialLines.get(line).startsWith("Kd")) {
                 String[] values = materialLines.get(line).split(" ");
-                int r = (int) (Double.parseDouble(values[1]) * 256.0);
-                int g = (int) (Double.parseDouble(values[2]) * 256.0);
-                int b = (int) (Double.parseDouble(values[3]) * 256.0);
+                int r = (int) (Float.parseFloat(values[1]) * 255.0);
+                int g = (int) (Float.parseFloat(values[2]) * 255.0);
+                int b = (int) (Float.parseFloat(values[3]) * 255.0);
 
                 float[] hsbColor = Color.RGBtoHSB(r, g, b, null);
                 float hue = (hsbColor[0]);
@@ -121,12 +118,33 @@ public class ModelEncoder {
                 float brightness = (hsbColor[2]);
                 int encode_hue = (int) (hue * 63);
                 int encode_saturation = (int) (saturation * 7);
-                int encode_brightness = (int) (brightness * 64);
+                int encode_brightness = (int) (brightness * 80);
                 short color = (short) ((encode_hue << 10) + (encode_saturation << 7) + (encode_brightness));
                 materialList.add(color);
+                textureList.add((short) -1);
+                textureXList.add(-1);
+                textureYList.add(-1);
+                textureZList.add(-1);
+                fPosition++;
             }
+
+            /*
+            if (materialLines.get(line).startsWith("map_Kd")) {
+                String[] values = materialLines.get(line).split(" ");
+                if (values[1].contains(".png")) {
+                    values[1] = values[1].replace(".png", "");
+                }
+                textureList.add(Short.parseShort(values[1]));
+                textureXList.add(faceXList.get(fPosition));
+                textureYList.add(faceYList.get(fPosition));
+                textureZList.add(faceZList.get(fPosition));
+                materialList.add((short) -1);
+                fPosition++;
+            }
+             */
         }
 
+        modelDefinition.priority = (byte) 0xFF;
         modelDefinition.vertexCount = vCount;
         modelDefinition.vertexX = new int[vCount];
         modelDefinition.vertexY = new int[vCount];
@@ -145,13 +163,19 @@ public class ModelEncoder {
                 modelDefinition.faceColors[index] = materialList.get(index);
             }
         }
-
         VertexNormal[] vNormals = new VertexNormal[vertexNormals.size()];
         for (int index = 0; index < vNormals.length; index++) {
             vNormals[index] = vertexNormals.get(index);
         }
 
         modelDefinition.vertexNormals = vNormals;
+
+        modelDefinition.faceTextures = new short[fCount];
+        if (textureList.size() == fCount) {
+            for (int index = 0; index < fCount; index++) {
+                modelDefinition.faceTextures[index] = textureList.get(index);
+            }
+        }
 
         modelDefinition.faceIndices1 = new int[fCount];
         modelDefinition.faceIndices2 = new int[fCount];
@@ -161,6 +185,17 @@ public class ModelEncoder {
             modelDefinition.faceIndices2[index] = faceYList.get(index);
             modelDefinition.faceIndices3[index] = faceZList.get(index);
         }
+
+        modelDefinition.texIndices1 = new short[textureXList.size()];
+        modelDefinition.texIndices2 = new short[textureYList.size()];
+        modelDefinition.texIndices3 = new short[textureZList.size()];
+        for (int texture = 0; texture < vtCount / 3; texture++) {
+            modelDefinition.texIndices1[texture] = (short) (modelDefinition.faceIndices1[texture]);
+            modelDefinition.texIndices2[texture] = (short) (modelDefinition.faceIndices2[texture]);
+            modelDefinition.texIndices3[texture] = (short) (modelDefinition.faceIndices3[texture]);
+        }
+
+        modelDefinition.numTextureFaces = vtCount / 3;
 
         File outputFilePath = new File(GUI.cacheLibrary.getPath() + File.separator + "Encoded Data" + File.separator + "Models");
         boolean madeDirectory = outputFilePath.mkdirs();
@@ -186,6 +221,7 @@ public class ModelEncoder {
         ByteArrayOutputStream verticesYBufferStream = new ByteArrayOutputStream();
         ByteArrayOutputStream verticesZBufferStream = new ByteArrayOutputStream();
         ByteArrayOutputStream texturesBufferStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream texturePointerBufferStream = new ByteArrayOutputStream();
         ByteArrayOutputStream footerBufferStream = new ByteArrayOutputStream();
 
         DataOutputStream vertexFlagsBuffer = new DataOutputStream(vertexFlagsBufferStream);
@@ -201,7 +237,10 @@ public class ModelEncoder {
         DataOutputStream verticesYBuffer = new DataOutputStream(verticesYBufferStream);
         DataOutputStream verticesZBuffer = new DataOutputStream(verticesZBufferStream);
         DataOutputStream texturesBuffer = new DataOutputStream(texturesBufferStream);
+        DataOutputStream texturePointerBuffer = new DataOutputStream(texturePointerBufferStream);
         DataOutputStream footerBuffer = new DataOutputStream(footerBufferStream);
+
+        modelDefinition.resize(32, 32, 32);
 
         boolean hasVertexLabels = modelDefinition.packedVertexGroups != null;
 
@@ -247,11 +286,32 @@ public class ModelEncoder {
         boolean hasTriangleInfo = modelDefinition.faceRenderTypes != null;
         boolean hasTrianglePriorities = modelDefinition.faceRenderPriorities != null;
         boolean hasTriangleAlpha = modelDefinition.faceTransparencies != null;
-        boolean hasTriangleSkins = modelDefinition.packedTransparencyVertexGroups != null;
+        boolean hasTriangleSkins = modelDefinition.packedVertexGroups != null;
 
         for (int face = 0; face < modelDefinition.faceCount; face++) {
-
             faceColorsBuffer.writeShort(modelDefinition.faceColors[face]);
+            /*
+            if (modelDefinition.faceColors != null) {
+                if (modelDefinition.faceTextures != null) {
+                    if (modelDefinition.faceTextures[face] == 923) {
+                        modelDefinition.faceTextures[face] = -1;
+                    }
+                    else {
+                        modelDefinition.faceTextures[face] = 60;
+                    }
+                    faceColorsBuffer.writeShort(modelDefinition.faceTextures[face]);
+                    if (modelDefinition.faceTextureFlags != null) {
+                        texturesBuffer.writeByte(modelDefinition.faceTextureFlags[face] & 0xFF);
+                    }
+                    else {
+                        texturesBuffer.writeByte(0xFFFF);
+                    }
+                }
+                else {
+                    faceColorsBuffer.writeShort(modelDefinition.faceColors[face]);
+                }
+            }
+             */
 
             if (hasTriangleInfo) {
                 faceTypesBuffer.writeByte(modelDefinition.faceRenderTypes[face]);
@@ -266,9 +326,10 @@ public class ModelEncoder {
             }
 
             if (hasTriangleSkins) {
-                int weight = modelDefinition.packedTransparencyVertexGroups[face];
+                int weight = modelDefinition.packedVertexGroups[face];
                 faceSkinsBuffer.writeByte(weight);
             }
+
         }
 
         int lastA = 0;
@@ -306,20 +367,26 @@ public class ModelEncoder {
                 lastB = currentB;
                 pAcc = lastC = currentC;
             }
+
         }
 
         for (int face = 0; face < modelDefinition.numTextureFaces; face++) {
-            texturesBuffer.writeShort(modelDefinition.texIndices1[face]);
-            texturesBuffer.writeShort(modelDefinition.texIndices2[face]);
-            texturesBuffer.writeShort(modelDefinition.texIndices3[face]);
+            if (modelDefinition.faceTextures != null) {
+                if (modelDefinition.texIndices1 != null && modelDefinition.texIndices2 != null && modelDefinition.texIndices3 != null) {
+                    texturePointerBuffer.writeShort(modelDefinition.texIndices1[face]);
+                    texturePointerBuffer.writeShort(modelDefinition.texIndices2[face]);
+                    texturePointerBuffer.writeShort(modelDefinition.texIndices3[face]);
+                }
+            }
         }
 
         footerBuffer.writeShort(modelDefinition.vertexCount);
         footerBuffer.writeShort(modelDefinition.faceCount);
         footerBuffer.writeByte(modelDefinition.numTextureFaces);
-
-        footerBuffer.writeByte(hasTriangleInfo ? 1 : 0);
-        footerBuffer.writeByte((hasTrianglePriorities ? -1 : modelDefinition.priority));
+        footerBuffer.writeByte(0);
+        footerBuffer.writeByte(10);
+        footerBuffer.writeByte(modelDefinition.faceTextures != null ? 1 : 0);
+        footerBuffer.writeByte(hasTrianglePriorities ? -1 : modelDefinition.priority);
         footerBuffer.writeBoolean(hasTriangleAlpha);
         footerBuffer.writeBoolean(hasTriangleSkins);
         footerBuffer.writeBoolean(hasVertexLabels);
@@ -332,13 +399,14 @@ public class ModelEncoder {
         dataOutputStream.write(vertexFlagsBufferStream.toByteArray());
         dataOutputStream.write(faceIndexTypesBufferStream.toByteArray());
         dataOutputStream.write(trianglePrioritiesBufferStream.toByteArray());
+        dataOutputStream.write(texturesBufferStream.toByteArray());
         dataOutputStream.write(faceSkinsBufferStream.toByteArray());
         dataOutputStream.write(faceTypesBufferStream.toByteArray());
         dataOutputStream.write(vertexSkinsBufferStream.toByteArray());
         dataOutputStream.write(faceAlphasBufferStream.toByteArray());
         dataOutputStream.write(triangleIndicesBufferStream.toByteArray());
         dataOutputStream.write(faceColorsBufferStream.toByteArray());
-        dataOutputStream.write(texturesBufferStream.toByteArray());
+        dataOutputStream.write(texturePointerBufferStream.toByteArray());
         dataOutputStream.write(verticesXBufferStream.toByteArray());
         dataOutputStream.write(verticesYBufferStream.toByteArray());
         dataOutputStream.write(verticesZBufferStream.toByteArray());
@@ -374,6 +442,12 @@ public class ModelEncoder {
         faceColorsBuffer.flush();
         faceColorsBuffer.close();
 
+        texturesBuffer.flush();
+        texturesBuffer.close();
+
+        texturePointerBuffer.flush();
+        texturePointerBuffer.close();
+
         verticesXBuffer.flush();
         verticesXBuffer.close();
 
@@ -382,9 +456,6 @@ public class ModelEncoder {
 
         verticesZBuffer.flush();
         verticesZBuffer.close();
-
-        texturesBuffer.flush();
-        texturesBuffer.close();
 
         footerBuffer.flush();
         footerBuffer.close();

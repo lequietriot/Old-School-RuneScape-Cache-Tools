@@ -24,7 +24,6 @@
  */
 package net.runelite.cache.fs;
 
-import com.google.common.base.Preconditions;
 import net.runelite.cache.io.InputStream;
 import net.runelite.cache.io.OutputStream;
 
@@ -64,8 +63,6 @@ public class ArchiveFiles
 
 	public void addFile(FSFile file)
 	{
-		Preconditions.checkArgument(file.getFileId() != -1);
-
 		if (fileMap.containsKey(file.getFileId()))
 		{
 			throw new IllegalStateException("duplicate file ids");
@@ -93,8 +90,6 @@ public class ArchiveFiles
 
 	public void loadContents(byte[] data)
 	{
-		System.out.println("Loading contents of archive (" + files.size() + " files)");
-
 		assert !this.getFiles().isEmpty();
 
 		if (this.getFiles().size() == 1)

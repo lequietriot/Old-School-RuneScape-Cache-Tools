@@ -341,21 +341,6 @@ public class Buffer extends Node {
 		return var2 == 0 ? "" : EnumComposition.decodeStringCp1252(this.array, var1, var2); // L: 297 298
 	}
 
-	public String readStringCp1252NullCircumfixed() {
-		byte var1 = this.array[++this.offset - 1]; // L: 302
-		if (var1 != 0) { // L: 303
-			throw new IllegalStateException("");
-		} else {
-			int var2 = this.offset; // L: 304
-
-			while (this.array[++this.offset - 1] != 0) { // L: 305
-			}
-
-			int var3 = this.offset - var2 - 1; // L: 306
-			return var3 == 0 ? "" : EnumComposition.decodeStringCp1252(this.array, var2, var3); // L: 307 308
-		}
-	}
-
 	public String readCESU8() {
 		byte var1 = this.array[++this.offset - 1]; // L: 312
 		if (var1 != 0) { // L: 313

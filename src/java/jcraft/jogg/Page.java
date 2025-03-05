@@ -57,11 +57,11 @@ public class Page{
   public int body;
   public int body_len;
 
-  int version(){
+  public int version(){
     return header_base[header+4]&0xff;
   }
 
-  int continued(){
+  public int continued(){
     return (header_base[header+5]&0x01);
   }
 
@@ -91,13 +91,13 @@ public class Page{
         |((header_base[header+17]&0xff)<<24);
   }
 
-  int pageno(){
+  public int pageno(){
     return (header_base[header+18]&0xff)|((header_base[header+19]&0xff)<<8)
         |((header_base[header+20]&0xff)<<16)
         |((header_base[header+21]&0xff)<<24);
   }
 
-  void checksum(){
+  public void checksum(){
     int crc_reg=0;
 
     for(int i=0; i<header_len; i++){

@@ -51,37 +51,37 @@ public class InterfaceSaver
 	{
 		OutputStream out = new OutputStream();
 		out.writeByte(def.type);
-		out.writeByte(def.menuType);
+		out.writeByte(def.buttonType);
 		out.writeShort(def.contentType);
-		out.writeShort(def.originalX);
-		out.writeShort(def.originalY);
-		out.writeShort(def.originalWidth);
-		out.writeShort(def.originalHeight);
-		out.writeByte(def.opacity);
+		out.writeShort(def.rawX);
+		out.writeShort(def.rawY);
+		out.writeShort(def.rawWidth);
+		out.writeShort(def.rawHeight);
+		out.writeByte(def.transparencyTop);
 		out.writeShort(def.parentId);
-		out.writeShort(def.hoveredSiblingId);
-		if (def.alternateOperators != null)
+		out.writeShort(def.mouseOverRedirect);
+		if (def.cs1Comparisons != null)
 		{
-			out.writeByte(def.alternateOperators.length);
-			for (int i = 0; i < def.alternateOperators.length; ++i)
+			out.writeByte(def.cs1Comparisons.length);
+			for (int i = 0; i < def.cs1Comparisons.length; ++i)
 			{
-				out.writeByte(def.alternateOperators[i]);
-				out.writeShort(def.alternateRhs[i]);
+				out.writeByte(def.cs1Comparisons[i]);
+				out.writeShort(def.cs1ComparisonValues[i]);
 			}
 		}
 		else
 		{
 			out.writeByte(0);
 		}
-		if (def.clientScripts != null)
+		if (def.cs1Instructions != null)
 		{
-			out.writeByte(def.clientScripts.length);
-			for (int i = 0; i < def.clientScripts.length; ++i)
+			out.writeByte(def.cs1Instructions.length);
+			for (int i = 0; i < def.cs1Instructions.length; ++i)
 			{
 				int len = 0;
-				for (int j = 0; j < def.clientScripts[i].length; ++j)
+				for (int j = 0; j < def.cs1Instructions[i].length; ++j)
 				{
-					ClientScript1Instruction ins = def.clientScripts[i][j];
+					ClientScript1Instruction ins = def.cs1Instructions[i][j];
 					len++;
 					if (ins.operands != null)
 					{
@@ -89,9 +89,9 @@ public class InterfaceSaver
 					}
 				}
 				out.writeShort(len);
-				for (int j = 0; j < def.clientScripts[i].length; ++j)
+				for (int j = 0; j < def.cs1Instructions[i].length; ++j)
 				{
-					ClientScript1Instruction ins = def.clientScripts[i][j];
+					ClientScript1Instruction ins = def.cs1Instructions[i][j];
 					out.writeShort(ins.opcode.ordinal());
 					if (ins.operands != null)
 					{
@@ -119,10 +119,10 @@ public class InterfaceSaver
 		}
 		if (def.type == 2)
 		{
-			out.writeByte((def.clickMask & 268435456) != 0 ? 1 : 0);
-			out.writeByte((def.clickMask & 1073741824) != 0 ? 1 : 0);
-			out.writeByte((def.clickMask & Integer.MIN_VALUE) != 0 ? 1 : 0);
-			out.writeByte((def.clickMask & 536870912) != 0 ? 1 : 0);
+			out.writeByte((def.flags & 268435456) != 0 ? 1 : 0);
+			out.writeByte((def.flags & 1073741824) != 0 ? 1 : 0);
+			out.writeByte((def.flags & Integer.MIN_VALUE) != 0 ? 1 : 0);
+			out.writeByte((def.flags & 536870912) != 0 ? 1 : 0);
 			out.writeByte(def.xPitch);
 			out.writeByte(def.yPitch);
 			for (int i = 0; i < 20; ++i)
@@ -153,13 +153,13 @@ public class InterfaceSaver
 		}
 		if (def.type == 3)
 		{
-			out.writeByte(def.filled ? 1 : 0);
+			out.writeByte(def.fill ? 1 : 0);
 		}
 		if (def.type == 4 || def.type == 1)
 		{
-			out.writeByte(def.xTextAlignment);
-			out.writeByte(def.yTextAlignment);
-			out.writeByte(def.lineHeight);
+			out.writeByte(def.textXAlignment);
+			out.writeByte(def.textYAlignment);
+			out.writeByte(def.textLineHeight);
 			out.writeShort(def.fontId);
 			out.writeByte(def.textShadowed ? 1 : 0);
 		}
@@ -170,7 +170,7 @@ public class InterfaceSaver
 		}
 		if (def.type == 1 || def.type == 3 || def.type == 4)
 		{
-			out.writeInt(def.textColor);
+			out.writeInt(def.color);
 		}
 		if (def.type == 3 || def.type == 4)
 		{
@@ -180,28 +180,28 @@ public class InterfaceSaver
 		}
 		if (def.type == 5)
 		{
-			out.writeInt(def.spriteId);
+			out.writeInt(def.spriteId2);
 			out.writeInt(def.alternateSpriteId);
 		}
 		if (def.type == 6)
 		{
 			out.writeShort(def.modelId);
 			out.writeShort(def.alternateModelId);
-			out.writeShort(def.animation);
+			out.writeShort(def.sequenceId);
 			out.writeShort(def.alternateAnimation);
 			out.writeShort(def.modelZoom);
-			out.writeShort(def.rotationX);
-			out.writeShort(def.rotationZ);
+			out.writeShort(def.modelAngleX);
+			out.writeShort(def.modelAngleY);
 		}
 		if (def.type == 7)
 		{
-			out.writeByte(def.xTextAlignment);
+			out.writeByte(def.textXAlignment);
 			out.writeShort(def.fontId);
 			out.writeByte(def.textShadowed ? 1 : 0);
-			out.writeInt(def.textColor);
+			out.writeInt(def.color);
 			out.writeShort(def.xPitch);
 			out.writeShort(def.yPitch);
-			out.writeByte((def.clickMask & 1073741824) != 0 ? 1 : 0);
+			out.writeByte((def.flags & 1073741824) != 0 ? 1 : 0);
 			for (int i = 0; i < 5; ++i)
 			{
 				out.writeString(def.configActions[i]);
@@ -211,13 +211,13 @@ public class InterfaceSaver
 		{
 			out.writeString(def.text);
 		}
-		if (def.menuType == 2 || def.type == 2)
+		if (def.buttonType == 2 || def.type == 2)
 		{
-			out.writeString(def.targetVerb);
+			out.writeString(def.spellActionName);
 			out.writeString(def.spellName);
-			out.writeShort((def.clickMask >>> 11) & 63);
+			out.writeShort((def.flags >>> 11) & 63);
 		}
-		if (def.menuType == 1 || def.menuType == 4 || def.menuType == 5 || def.menuType == 6)
+		if (def.buttonType == 1 || def.buttonType == 4 || def.buttonType == 5 || def.buttonType == 6)
 		{
 			out.writeString(def.tooltip);
 		}

@@ -924,7 +924,7 @@ public class MusicPatch extends Node {
 
 	}
 
-	boolean method4945(SoundCache var1, byte[] var2, int[] var3) {
+	public boolean method4945(SoundCache var1, byte[] var2, int[] var3) {
 		boolean var4 = true;
 		int var5 = 0;
 		AudioDataSource var6 = null;
@@ -944,11 +944,13 @@ public class MusicPatch extends Node {
 						if (var6 == null) {
 							var4 = false;
 						}
+
 					}
 
 					if (var6 != null) {
 						this.audioDataSources[var7] = var6;
 						this.sampleOffset[var7] = 0;
+
 					}
 				}
 			}
@@ -1172,7 +1174,10 @@ public class MusicPatch extends Node {
 		}
 	}
 
-	public void mapSoundFontSamples(int key, int channel, SF2Soundbank sf2Soundbank) {
+	public void mapSoundFontSamples(int key, int channel, SF2Soundbank sf2Soundbank) throws FileNotFoundException {
+
+		FileOutputStream fileOutputStream = new FileOutputStream("Patches" + File.separator + key + ".txt");
+		DataOutputStream dataOutputStream = new DataOutputStream(fileOutputStream);
 
 		if (channel == 0) {
 			Arrays.fill(panOffset, (byte) 0);
@@ -1240,6 +1245,25 @@ public class MusicPatch extends Node {
 									 this.pitchOffset[note] = (short) (((sf2Sample.getOriginalPitch() * 256) + ((pitchCorrection + fineTune + coarseTune))));
 								 }
 							 }
+						 }
+						 dataOutputStream.writeBytes(String.valueOf(noteRange[0]) + ";");
+						 dataOutputStream.writeBytes(String.valueOf(noteRange[1]) + ";");
+						 dataOutputStream.writeBytes(sf2Sample.getName() + ";");
+						 dataOutputStream.writeBytes(((this.pitchOffset[noteRange[0]]) + ";"));
+						 dataOutputStream.writeBytes("32;32;64;");
+						 if (musicPatchParameters[noteRange[0]] != null) {
+							 dataOutputStream.writeBytes(musicPatchParameters[noteRange[0]].field2918 + ";");
+							 dataOutputStream.writeBytes(musicPatchParameters[noteRange[0]].sustain + ";");
+							 dataOutputStream.writeBytes(musicPatchParameters[noteRange[0]].release + ";");
+							 dataOutputStream.writeBytes(musicPatchParameters[noteRange[0]].field2912 + ";");
+							 dataOutputStream.writeBytes(musicPatchParameters[noteRange[0]].vibratoPitchModulatorCents + ";");
+							 dataOutputStream.writeBytes(musicPatchParameters[noteRange[0]].vibratoFrequencyHertz + ";");
+							 dataOutputStream.writeBytes(musicPatchParameters[noteRange[0]].vibratoDelayMilliseconds + ";");
+							 dataOutputStream.writeBytes(Arrays.toString(musicPatchParameters[noteRange[0]].attackEnvelope) + ";");
+							 dataOutputStream.writeBytes(Arrays.toString(musicPatchParameters[noteRange[0]].decayEnvelope) + "\n");
+						 }
+						 else {
+							 dataOutputStream.writeBytes("0;0;0;0;0;0;0;0;null;null\n");
 						 }
 					 } catch (IOException e) {
 						 e.printStackTrace();

@@ -18,33 +18,35 @@ public class MidiDecoder {
         gui = currentGUI;
         cacheLibrary = GUI.cacheLibrary;
         int index = currentGUI.selectedIndex;
-        int archive = currentGUI.selectedArchive;
-        int file = currentGUI.selectedFile;
+        int archive = 0;// currentGUI.selectedArchive;
+        int file = 0;// currentGUI.selectedFile;
 
-        try {
-            File outputFilePath = null;
+        for (archive = 0; archive < 1000; archive++) {
+            try {
+                File outputFilePath = null;
 
-            if (index == 6) {
-                outputFilePath = new File(GUI.cacheLibrary.getPath() + File.separator + "Decoded Data" + File.separator + "MIDI Music");
-            }
-            if (index == 11) {
-                outputFilePath = new File(GUI.cacheLibrary.getPath() + File.separator + "Decoded Data" + File.separator + "MIDI Jingles");
-            }
-            if (outputFilePath != null) {
-                boolean madeDirectory = outputFilePath.mkdirs();
-                if (madeDirectory) {
-                    GUI.cacheOperationInfo.setText("Archive " + archive + " was decoded successfully. New folder created in cache directory.");
-                } else {
-                    GUI.cacheOperationInfo.setText("Archive " + archive + " was decoded successfully. It is in the cache directory.");
+                if (index == 6) {
+                    outputFilePath = new File(GUI.cacheLibrary.getPath() + File.separator + "Decoded Data" + File.separator + "MIDI Music");
                 }
-                File outputFile = new File(outputFilePath + File.separator + archive + ".mid");
-                FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
-                if (cacheLibrary.index(index).archive(archive) != null) {
-                    fileOutputStream.write(fixMidiFile(Objects.requireNonNull(MusicTrack.readTrack(cacheLibrary.index(index), archive, file)).midi));
+                if (index == 11) {
+                    outputFilePath = new File(GUI.cacheLibrary.getPath() + File.separator + "Decoded Data" + File.separator + "MIDI Jingles");
                 }
+                if (outputFilePath != null) {
+                    boolean madeDirectory = outputFilePath.mkdirs();
+                    if (madeDirectory) {
+                        GUI.cacheOperationInfo.setText("Archive " + archive + " was decoded successfully. New folder created in cache directory.");
+                    } else {
+                        GUI.cacheOperationInfo.setText("Archive " + archive + " was decoded successfully. It is in the cache directory.");
+                    }
+                    File outputFile = new File(outputFilePath + File.separator + archive + ".mid");
+                    FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+                    if (cacheLibrary.index(index).archive(archive) != null) {
+                        fileOutputStream.write(fixMidiFile(Objects.requireNonNull(MusicTrack.readTrack(cacheLibrary.index(index), archive, file)).midi));
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch(IOException e){
-            e.printStackTrace();
         }
     }
 

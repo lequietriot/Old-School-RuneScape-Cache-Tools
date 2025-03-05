@@ -34,7 +34,9 @@ public class ModelDecoderOS {
                 currentGUI.cacheOperationInfo.setText("Archive " + archive + " was decoded successfully. It is in the cache directory.");
             }
 
-            TextureManager tm = new TextureManager(new Store(new File(cacheLibrary.getPath())));
+            Store store = new Store(new File(cacheLibrary.getPath()));
+            store.load();
+            TextureManager tm = new TextureManager(store);
             tm.load();
 
             ModelLoader loader = new ModelLoader();

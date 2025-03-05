@@ -11,13 +11,13 @@ public class VorbisResidue {
 	int[] cascade;
 
 	VorbisResidue() {
-		this.residueType = VorbisSample.readBits(16); // L: 15
-		this.begin = VorbisSample.readBits(24); // L: 16
-		this.end = VorbisSample.readBits(24); // L: 17
-		this.partitionSize = VorbisSample.readBits(24) + 1; // L: 18
-		this.classifications = VorbisSample.readBits(6) + 1; // L: 19
-		this.classbook = VorbisSample.readBits(8); // L: 20
-		int[] var1 = new int[this.classifications]; // L: 21
+		this.residueType = VorbisSample.readBits(16);
+		this.begin = VorbisSample.readBits(24);
+		this.end = VorbisSample.readBits(24);
+		this.partitionSize = VorbisSample.readBits(24) + 1;
+		this.classifications = VorbisSample.readBits(6) + 1;
+		this.classbook = VorbisSample.readBits(8);
+		int[] var1 = new int[this.classifications];
 
 		int var2;
 		for (var2 = 0; var2 < this.classifications; ++var2) { // L: 22

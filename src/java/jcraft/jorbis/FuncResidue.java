@@ -32,9 +32,9 @@ abstract class FuncResidue{
   public static FuncResidue[] residue_P= {new Residue0(), new Residue1(),
       new Residue2()};
 
-  abstract void pack(Object vr, Buffer opb);
+  protected abstract void pack(Object vr, Buffer opb);
 
-  abstract Object unpack(Info vi, Buffer opb);
+  public abstract Object unpack(Info vi, Buffer opb);
 
   abstract Object look(DspState vd, InfoMode vm, Object vr);
 

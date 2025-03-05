@@ -9,7 +9,7 @@ public class IterableNodeHashTableIterator implements Iterator {
 	int index;
 	Node last;
 
-    IterableNodeHashTableIterator(IterableNodeHashTable var1) {
+    public IterableNodeHashTableIterator(IterableNodeHashTable var1) {
 		this.last = null; // L: 10
 		this.hashTable = var1; // L: 13
 		this.start(); // L: 14

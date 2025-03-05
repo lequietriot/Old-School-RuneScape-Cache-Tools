@@ -85,13 +85,16 @@ public class SoundCache {
 	}
 
 	public AudioDataSource getMusicSample(int var1, int[] var2) {
-		if (this.musicSampleIndex.archives().length == 1) {
-			return this.getMusicSample0(0, var1, var2);
-		} else if (Objects.requireNonNull(this.musicSampleIndex.archive(var1)).files().length == 1) {
-			return this.getMusicSample0(var1, 0, var2);
-		} else {
-			throw new RuntimeException();
+		if (musicSampleIndex.archive(var1) != null) {
+			if (this.musicSampleIndex.archives().length == 1) {
+				return this.getMusicSample0(0, var1, var2);
+			} else if (Objects.requireNonNull(this.musicSampleIndex.archive(var1)).files().length == 1) {
+				return this.getMusicSample0(var1, 0, var2);
+			} else {
+				throw new RuntimeException();
+			}
 		}
+		return new AudioDataSource(0, new byte[0], 0, 0);
 	}
 
 }

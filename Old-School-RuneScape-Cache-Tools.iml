@@ -10,13 +10,13 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="displee.rs.cache.library" level="project" />
     <orderEntry type="library" name="formdev.flatlaf" level="project" />
-    <orderEntry type="library" name="google.code.gson" level="project" />
     <orderEntry type="library" name="projectlombok.lombok" level="project" />
     <orderEntry type="library" name="apache.commons.compress" level="project" />
     <orderEntry type="library" name="gagravarr.vorbis.java.core" level="project" />
-    <orderEntry type="library" name="google.api.common" level="project" />
     <orderEntry type="library" name="openjfx.javafx.graphics" level="project" />
     <orderEntry type="library" name="openjfx.javafx.fxml" level="project" />
     <orderEntry type="library" name="openjfx.javafx.swing" level="project" />
+    <orderEntry type="library" name="google.code.gson" level="project" />
+    <orderEntry type="library" name="google.guava" level="project" />
   </component>
 </module>
